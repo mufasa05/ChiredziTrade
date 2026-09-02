@@ -173,9 +173,5 @@ function BarterNetworkContent() {
 }
 
 export default function BarterNetworkPage() {
-  return (
-    <LanguageProvider>
-      <BarterNetworkContent />
-    </LanguageProvider>
-  );
+  return <BarterNetworkContent />;
 }

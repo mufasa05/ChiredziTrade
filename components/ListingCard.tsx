@@ -47,19 +47,28 @@ export default function ListingCard({ listing, onProposeBarter, onBuyCash }: Lis
   );
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
 
+  const [imgError, setImgError] = useState(false);
   const primaryImage = listing.imageUrls[0] || 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=800&auto=format&fit=crop&q=80';
 
   return (
     <div className="group relative flex flex-col rounded-2xl glass-card overflow-hidden transition-all duration-300">
       {/* Image Header & Badges */}
       <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-lowveld-950">
-        <img
-          src={primaryImage}
-          alt={listing.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-darkbg via-transparent to-black/40" />
+        {!imgError ? (
+          <img
+            src={primaryImage}
+            alt=""
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-lowveld-900 via-lowveld-950 to-emerald-950 flex flex-col items-center justify-center text-emerald-400 p-4 text-center">
+            <ShoppingBag className="w-10 h-10 mb-1.5 opacity-60" />
+            <span className="text-[11px] font-bold text-gray-400 line-clamp-1">{listing.title}</span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-darkbg via-transparent to-black/40 pointer-events-none" />
 
         {/* Currency & Price Badge */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">

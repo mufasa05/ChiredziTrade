@@ -88,7 +88,7 @@ function MarketplaceContent() {
       />
 
       {/* Main Feed */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 sm:pb-12 w-full flex-1">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
             <h2 className="font-display font-bold text-lg sm:text-xl text-white flex items-center gap-2">
@@ -144,12 +144,12 @@ function MarketplaceContent() {
       />
 
       {/* Floating WhatsApp Action */}
-      <div className="fixed bottom-6 right-6 z-30">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30">
         <button
           onClick={() => setWhatsAppOpen(true)}
-          className="flex items-center gap-2 px-4 py-3 rounded-full bg-[#00a884] hover:bg-[#008f70] text-[#0a1014] font-black text-xs sm:text-sm shadow-2xl hover:scale-105 transition-all group"
+          className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-3 rounded-full bg-[#00a884] hover:bg-[#008f70] text-[#0a1014] font-black text-xs sm:text-sm shadow-2xl hover:scale-105 transition-all group backdrop-blur-md border border-emerald-400/30"
         >
-          <MessageCircle className="w-5 h-5 fill-current" />
+          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
           <span className="hidden sm:inline">{t.tryWhatsAppBot}</span>
           <span className="sm:hidden">Bot</span>
           <span className="w-2 h-2 rounded-full bg-emerald-950 animate-ping" />
@@ -160,9 +160,5 @@ function MarketplaceContent() {
 }
 
 export default function HomePage() {
-  return (
-    <LanguageProvider>
-      <MarketplaceContent />
-    </LanguageProvider>
-  );
+  return <MarketplaceContent />;
 }
