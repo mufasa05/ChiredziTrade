@@ -1,0 +1,26 @@
+{
+  "name": "ChiredziTrade - Lowveld Multi-Currency & Barter Marketplace",
+  "short_name": "ChiredziTrade",
+  "description": "Localized trade marketplace & WhatsApp engine for Chiredzi, Triangle, Mkwasine & Hippo Valley. Trade livestock, farm produce, borehole pumps, welding, and cane haulage.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070d09",
+  "theme_color": "#2e7c48",
+  "categories": ["shopping", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

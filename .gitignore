@@ -1,0 +1,28 @@
+# Next.js & Node.js dependencies
+/node_modules
+/.next/
+/out/
+/build
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & OS files
+.DS_Store
+*.pem
+.idea/
+.vscode/
+*.iml
+
+# Vercel
+.vercel
