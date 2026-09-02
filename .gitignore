@@ -24,5 +24,6 @@ yarn-error.log*
 .vscode/
 *.iml
 
-# Vercel
+# Vercel & Dart
 .vercel
+.dart_tool/
