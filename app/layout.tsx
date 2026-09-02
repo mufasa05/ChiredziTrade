@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import Script from 'next/script';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import AuthModal from '@/components/AuthModal';
 
 export const viewport: Viewport = {
@@ -55,16 +56,18 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="min-h-screen flex flex-col bg-[#070d09] text-gray-100 antialiased selection:bg-emerald-500 selection:text-white">
-        <LanguageProvider>
-          <AuthProvider>
-            <div className="flex-1 flex flex-col">
-              {children}
-            </div>
-            <Footer />
-            <AuthModal />
-          </AuthProvider>
-        </LanguageProvider>
+      <body className="min-h-screen flex flex-col bg-[#070d09] text-gray-100 antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-300">
+        <ThemeProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <div className="flex-1 flex flex-col">
+                {children}
+              </div>
+              <Footer />
+              <AuthModal />
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
 
         {/* Register PWA Service Worker */}
         <Script id="register-sw" strategy="afterInteractive">

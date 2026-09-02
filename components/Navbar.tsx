@@ -15,10 +15,13 @@ import {
   Menu,
   X,
   User,
-  ShoppingBag
+  ShoppingBag,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { Language } from '@/lib/i18n';
 
 interface NavbarProps {
@@ -29,6 +32,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
   const pathname = usePathname();
   const { language, setLanguage, t } = useLanguage();
   const { user, isAuthenticated, openAuthModal, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -111,6 +115,19 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
 
         {/* Desktop Right Actions */}
         <div className="hidden sm:flex items-center gap-2">
+          {/* Theme Switcher Toggle (Dark / Light) */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl bg-lowveld-950/80 hover:bg-lowveld-900 border border-emerald-500/30 text-emerald-300 transition-all"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-emerald-400" />
+            )}
+          </button>
+
           {/* Quadrilingual Language Selector */}
           <div className="relative">
             <button
@@ -218,8 +235,21 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           </button>
         </div>
 
-        {/* MOBILE CONTROLS (Language Switcher + Mobile Menu Drawer Toggle) */}
-        <div className="flex sm:hidden items-center gap-1.5 shrink-0">
+        {/* MOBILE CONTROLS (Theme + Language Switcher + Quick Post + Drawer Toggle) */}
+        <div className="flex sm:hidden items-center gap-1 shrink-0">
+          {/* Theme Switcher Toggle (Mobile) */}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-xl bg-lowveld-950 border border-emerald-500/30 text-emerald-300"
+            title="Toggle Theme"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+            ) : (
+              <Moon className="w-3.5 h-3.5 text-emerald-400" />
+            )}
+          </button>
+
           {/* Quadrilingual Language Selector (Mobile Compact) */}
           <div className="relative">
             <button
