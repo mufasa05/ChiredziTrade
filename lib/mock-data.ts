@@ -220,7 +220,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     barterTerms: 'Can accept 2 Brahman cows or trade for 15-tonne tipper sand and gravel loads',
     locationArea: 'Chiredzi Light Industry',
     imageUrls: [
-      'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1508873696983-2df515122519?w=800&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80',
     ],
     imageTags: ['solar inverter', 'lithium battery', 'deye', 'power backup', 'solar system'],

@@ -35,7 +35,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-lowveld-800/40 glass-panel">
+    <header className="sticky top-0 z-40 w-full border-b border-lowveld-800/60 bg-[#070d09]/95 backdrop-blur-md shadow-xl">
       {/* Micro Ticker */}
       <div className="hidden sm:flex items-center justify-between px-4 sm:px-8 py-1 bg-lowveld-950/80 border-b border-lowveld-900/50 text-[11px] text-gray-300">
         <div className="flex items-center gap-4">
