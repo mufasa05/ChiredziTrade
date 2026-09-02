@@ -27,6 +27,34 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
+      <head>
+        {/* Permanent Baseline CSS Fallback - Prevents unstyled white screens even if dev cache fails */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          html, body {
+            background-color: #070d09 !important;
+            color: #f1f5f3 !important;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+          }
+          a { color: inherit; text-decoration: none; }
+          * { box-sizing: border-box; }
+        ` }} />
+        {/* CSS Auto-Recovery Script */}
+        <Script id="css-recovery" strategy="beforeInteractive">
+          {`
+            window.addEventListener('error', function(e) {
+              if (e.target && e.target.tagName === 'LINK' && e.target.rel === 'stylesheet') {
+                console.warn('Stylesheet 404 detected, triggering CSS auto-recovery...');
+                setTimeout(function() { window.location.reload(); }, 500);
+              }
+            }, true);
+          `}
+        </Script>
+      </head>
       <body className="min-h-screen flex flex-col bg-[#070d09] text-gray-100 antialiased selection:bg-emerald-500 selection:text-white">
         <LanguageProvider>
           <AuthProvider>
