@@ -12,6 +12,7 @@
     "cap:sync": "npx cap sync"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.114.0",
     "canvas-confetti": "^1.9.3",
     "clsx": "^2.1.1",
     "lucide-react": "^0.441.0",
