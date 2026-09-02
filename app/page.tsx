@@ -88,8 +88,8 @@ function MarketplaceContent() {
       />
 
       {/* Main Feed */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 sm:pb-12 w-full flex-1">
-        <div className="mb-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pb-28 sm:pb-12 w-full flex-1">
+        <div className="mb-3.5">
           <div className="flex items-center justify-between mb-1">
             <h2 className="font-display font-bold text-lg sm:text-xl text-white flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-400" />

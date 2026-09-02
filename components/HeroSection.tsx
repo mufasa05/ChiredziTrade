@@ -33,32 +33,32 @@ export default function HeroSection({
   };
 
   return (
-    <div className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-lowveld-800/30">
+    <div className="relative overflow-hidden pt-6 pb-6 sm:pt-8 sm:pb-8 border-b border-lowveld-800/30">
       <div className="absolute top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 right-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
           {/* Top Lowveld Pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs font-semibold mb-5 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs font-semibold mb-3.5 shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Lowveld Trade Network: Chiredzi • Triangle • Mkwasine</span>
           </div>
 
           {/* Trilingual Heading */}
-          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] mb-4">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] mb-3">
             {t.heroTitle1}
             <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-amber-300 bg-clip-text text-transparent">
               {t.heroTitleHighlight}
             </span>
           </h1>
 
-          <p className="text-sm sm:text-base text-gray-300 mb-8 max-w-2xl mx-auto font-normal leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-300 mb-6 max-w-2xl mx-auto font-normal leading-relaxed">
             {t.heroSubtitle}
           </p>
 
           {/* Search Input Bar */}
-          <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto mb-4">
+          <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto mb-3.5">
             <div className="relative flex items-center shadow-2xl rounded-2xl overflow-hidden glass-panel border border-emerald-500/30 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
               <div className="pl-4 sm:pl-5 text-gray-400">
                 <Search className="w-5 h-5 text-emerald-400" />
@@ -68,7 +68,7 @@ export default function HeroSection({
                 value={localInput}
                 onChange={(e) => setLocalInput(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className="w-full py-4 pl-3 pr-28 sm:pr-36 bg-transparent text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none"
+                className="w-full py-3.5 sm:py-4 pl-3 pr-28 sm:pr-36 bg-transparent text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none"
               />
               <button
                 type="submit"
@@ -115,44 +115,44 @@ export default function HeroSection({
         </div>
 
         {/* Feature Highlights Ticker */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-10 max-w-4xl mx-auto text-xs sm:text-sm">
-          <div className="p-3 rounded-xl glass-card flex items-center gap-2.5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 mt-6 sm:mt-7 max-w-4xl mx-auto text-xs sm:text-sm">
+          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400 shrink-0">
               <Zap className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-bold text-white">{t.directWhatsApp}</p>
-              <p className="text-[11px] text-gray-400">Zero data waste for buyers</p>
+              <p className="font-bold text-white text-xs sm:text-sm">{t.directWhatsApp}</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400">Zero data waste for buyers</p>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl glass-card flex items-center gap-2.5">
+          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-400 shrink-0">
               <RefreshCw className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-bold text-white">{t.smartBarter}</p>
-              <p className="text-[11px] text-gray-400">Swap goods & trade cattle</p>
+              <p className="font-bold text-white text-xs sm:text-sm">{t.smartBarter}</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400">Swap goods & trade cattle</p>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl glass-card flex items-center gap-2.5">
+          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center text-blue-400 shrink-0">
               <span className="font-black text-xs">USD / ZAR</span>
             </div>
             <div>
-              <p className="font-bold text-white">{t.multiCurrency}</p>
-              <p className="text-[11px] text-gray-400">USD cash & SA Rand</p>
+              <p className="font-bold text-white text-xs sm:text-sm">{t.multiCurrency}</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400">USD cash & SA Rand</p>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl glass-card flex items-center gap-2.5">
+          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center text-purple-400 shrink-0">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-bold text-white">{t.verifiedArtisans}</p>
-              <p className="text-[11px] text-gray-400">Trusted Lowveld mechanics</p>
+              <p className="font-bold text-white text-xs sm:text-sm">{t.verifiedArtisans}</p>
+              <p className="text-[10px] sm:text-[11px] text-gray-400">Trusted Lowveld mechanics</p>
             </div>
           </div>
         </div>
