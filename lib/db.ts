@@ -1,9 +1,9 @@
 import { Listing, BarterProposal, TradeOrder, BotSession, SectorCategory, TradeCurrency, TradeReview } from './types';
 import { INITIAL_LISTINGS } from './mock-data';
 
-// Initialize Supabase Client if environment variables exist
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Initialize Supabase Client (with live production fallback)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kuevrcdsqxujcgdwwpup.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_Fp0NtFZZr1qHH4NCW8TTXQ_IzCOvjG7';
 
 let supabase: any = null;
 
@@ -214,7 +214,20 @@ export const db = {
     // If Supabase is connected, insert directly into live database!
     if (supabase) {
       try {
-        await supabase.from('listings').insert({
+        // 1. Upsert user into public.users to satisfy FOREIGN KEY (user_id) constraint
+        await supabase.from('users').upsert({
+          id: newListing.userId,
+          phone_number: newListing.user.phoneNumber || '+263770000000',
+          full_name: newListing.user.fullName || 'Lowveld Trader',
+          location_area: newListing.user.locationArea || 'Chiredzi Town',
+          avatar_url: newListing.user.avatarUrl || null,
+          verified_artisan: newListing.user.verifiedArtisan ?? true,
+          rating: newListing.user.rating ?? 5.0,
+          trade_count: newListing.user.tradeCount ?? 1,
+        }, { onConflict: 'id' });
+
+        // 2. Insert listing into public.listings
+        const { error } = await supabase.from('listings').insert({
           id: newListing.id,
           user_id: newListing.userId,
           user_data: newListing.user,
@@ -235,6 +248,10 @@ export const db = {
           created_at: newListing.createdAt,
           updated_at: newListing.updatedAt,
         });
+
+        if (error) {
+          console.error('Supabase insert listing error:', error);
+        }
       } catch (e) {
         console.warn('Supabase insert listing failed, saved to memory DB:', e);
       }

@@ -69,7 +69,9 @@ export async function GET(req: NextRequest) {
       harvestReady,
     });
 
-    return NextResponse.json({ success: true, count: listings.length, listings });
+    const response = NextResponse.json({ success: true, count: listings.length, listings });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    return response;
   } catch (error) {
     console.error('API Error in GET /api/listings:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch listings' }, { status: 500 });
