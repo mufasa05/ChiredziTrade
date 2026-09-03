@@ -315,6 +315,96 @@ export const db = {
     return memoryProposals.filter((p) => p.listingId === listingId);
   },
 
+  // Update listing status (e.g. 'sold', 'archived', 'active')
+  updateListingStatus: async (listingId: string, status: Listing['status']): Promise<Listing | null> => {
+    if (supabase) {
+      try {
+        await supabase
+          .from('listings')
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq('id', listingId);
+      } catch (e) {
+        console.warn('Supabase update listing status failed:', e);
+      }
+    }
+
+    const idx = memoryListings.findIndex((l) => l.id === listingId);
+    if (idx !== -1) {
+      memoryListings[idx].status = status;
+      memoryListings[idx].updatedAt = new Date().toISOString();
+      saveLocalListings();
+      return memoryListings[idx];
+    }
+    return null;
+  },
+
+  // Get all proposals for a list of listing IDs belonging to a seller
+  getProposalsForSeller: async (listingIds: string[]): Promise<BarterProposal[]> => {
+    if (listingIds.length === 0) return [];
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('barter_proposals')
+          .select('*')
+          .in('listing_id', listingIds)
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          return data.map((p: any) => ({
+            id: p.id,
+            listingId: p.listing_id,
+            proposerName: p.proposer_name,
+            proposerPhone: p.proposer_phone,
+            proposerLocation: p.proposer_location,
+            offeredItemTitle: p.offered_item_title,
+            offeredDescription: p.offered_description,
+            cashTopUp: p.cash_top_up,
+            status: p.status,
+            createdAt: p.created_at,
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase fetch seller proposals failed:', e);
+      }
+    }
+
+    return memoryProposals.filter((p) => listingIds.includes(p.listingId));
+  },
+
+  // Get all cash orders for a list of listing IDs belonging to a seller
+  getOrdersForSeller: async (listingIds: string[]): Promise<TradeOrder[]> => {
+    if (listingIds.length === 0) return [];
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('trade_orders')
+          .select('*')
+          .in('listing_id', listingIds)
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          return data.map((o: any) => ({
+            id: o.id,
+            listingId: o.listing_id,
+            buyerName: o.buyer_name,
+            buyerPhone: o.buyer_phone,
+            pickupLocation: o.pickup_location,
+            currencyChoice: o.currency_choice,
+            quantity: o.quantity,
+            totalPrice: o.total_price,
+            status: o.status,
+            notes: o.notes,
+            createdAt: o.created_at,
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase fetch seller orders failed:', e);
+      }
+    }
+
+    return memoryOrders.filter((o) => listingIds.includes(o.listingId));
+  },
+
   getBotSession: async (phoneNumber: string): Promise<BotSession> => {
     if (!memorySessions[phoneNumber]) {
       memorySessions[phoneNumber] = {

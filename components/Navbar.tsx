@@ -17,7 +17,8 @@ import {
   User,
   ShoppingBag,
   Sun,
-  Moon
+  Moon,
+  Package
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -196,12 +197,20 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                     <p className="text-[10px] text-emerald-400 font-mono mt-0.5 pr-1">{user.phoneNumber}</p>
                     <p className="text-[10px] text-gray-400">📍 {user.locationArea}</p>
                   </div>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 mt-1 rounded-xl text-emerald-300 hover:bg-emerald-500/10 font-bold transition-colors"
+                  >
+                    <Package className="w-4 h-4 text-emerald-400" />
+                    <span>Seller Dashboard</span>
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
                       setUserDropdownOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 mt-1 rounded-xl text-red-400 hover:bg-red-500/10 font-bold transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 mt-0.5 rounded-xl text-red-400 hover:bg-red-500/10 font-bold transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Log Out</span>
@@ -356,6 +365,21 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
               <MessageCircle className="w-4 h-4 text-emerald-400" />
               <span>{t.whatsAppEngine}</span>
             </Link>
+
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                  pathname === '/dashboard'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'text-gray-300 hover:bg-lowveld-900'
+                }`}
+              >
+                <Package className="w-4 h-4 text-emerald-400" />
+                <span>Seller Dashboard</span>
+              </Link>
+            )}
           </div>
 
           <div className="pt-2 border-t border-lowveld-800 space-y-2">
