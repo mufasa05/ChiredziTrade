@@ -25,13 +25,17 @@ export async function findSmartBarterMatches(targetListing: Listing): Promise<Ba
     // If either side has direct keywords or sector synergy
     let totalScore = Math.round(((score1 + score2) / 2) * 100);
 
-    // Baseline synergy boost if one is agric and other is agro-service/equipment
+    // Baseline synergy boost for real Lowveld barter pairings
     if (
       (targetListing.category === 'livestock_agric' && other.category === 'industrial_services') ||
       (targetListing.category === 'industrial_services' && other.category === 'livestock_agric') ||
-      (targetListing.category === 'livestock_agric' && other.category === 'transport_logistics')
+      (targetListing.category === 'livestock_agric' && other.category === 'transport_logistics') ||
+      (targetListing.category === 'livestock_agric' && other.category === 'grocery_wholesale') ||
+      (targetListing.category === 'livestock_agric' && other.category === 'building_construction') ||
+      (targetListing.category === 'clothing_textiles' && other.category === 'grocery_wholesale') ||
+      (targetListing.category === 'clothing_textiles' && other.category === 'livestock_agric')
     ) {
-      totalScore = Math.min(96, Math.max(totalScore, 72));
+      totalScore = Math.min(96, Math.max(totalScore, 75));
     }
 
     if (totalScore >= 50) {

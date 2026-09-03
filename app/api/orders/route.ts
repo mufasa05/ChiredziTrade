@@ -8,7 +8,7 @@ const CreateOrderSchema = z.object({
   buyerName: z.string().min(2, 'Name too short').max(100),
   buyerPhone: z.string().min(6, 'Phone too short').max(30),
   pickupLocation: z.string().max(100).optional().default('Tshovani'),
-  currencyChoice: z.enum(['USD', 'ZAR']).default('USD'),
+  currencyChoice: z.enum(['USD', 'ZAR', 'ZWG']).default('USD'),
   quantity: z.number().int().positive().max(1000).default(1),
   notes: z.string().max(500).optional().default(''),
 });

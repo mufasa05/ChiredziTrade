@@ -96,6 +96,16 @@ export default function FilterBar({
           >
             ZAR (R)
           </button>
+          <button
+            onClick={() => onSelectCurrency('ZWG')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              selectedCurrency === 'ZWG'
+                ? 'bg-amber-600 text-white'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            ZWG (ZiG)
+          </button>
         </div>
 
         {/* Barter Switch Toggle */}
