@@ -214,22 +214,48 @@ export const db = {
     // If Supabase is connected, insert directly into live database!
     if (supabase) {
       try {
-        // 1. Upsert user into public.users to satisfy FOREIGN KEY (user_id) constraint
-        await supabase.from('users').upsert({
-          id: newListing.userId,
-          phone_number: newListing.user.phoneNumber || '+263770000000',
-          full_name: newListing.user.fullName || 'Lowveld Trader',
-          location_area: newListing.user.locationArea || 'Chiredzi Town',
-          avatar_url: newListing.user.avatarUrl || null,
-          verified_artisan: newListing.user.verifiedArtisan ?? true,
-          rating: newListing.user.rating ?? 5.0,
-          trade_count: newListing.user.tradeCount ?? 1,
-        }, { onConflict: 'id' });
+        let targetUserId = newListing.userId;
+        const phone = newListing.user.phoneNumber?.trim();
 
-        // 2. Insert listing into public.listings
-        const { error } = await supabase.from('listings').insert({
+        if (phone) {
+          // Check if user already exists with this phone number to avoid unique constraint error
+          const cleanDigits = phone.replace(/\D/g, '');
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('id, phone_number')
+            .or(`phone_number.eq."${phone}",phone_number.ilike."%${cleanDigits.slice(-9)}%"`)
+            .limit(1)
+            .maybeSingle();
+
+          if (existingUser && existingUser.id) {
+            targetUserId = existingUser.id;
+          } else {
+            // Check if user ID exists
+            const { data: existingById } = await supabase
+              .from('users')
+              .select('id')
+              .eq('id', targetUserId)
+              .maybeSingle();
+
+            if (!existingById) {
+              await supabase.from('users').insert({
+                id: targetUserId,
+                phone_number: phone,
+                full_name: newListing.user.fullName || 'Lowveld Trader',
+                location_area: newListing.user.locationArea || 'Chiredzi Town',
+                avatar_url: newListing.user.avatarUrl || null,
+                verified_artisan: newListing.user.verifiedArtisan ?? true,
+                rating: newListing.user.rating ?? 5.0,
+                trade_count: newListing.user.tradeCount ?? 1,
+              });
+            }
+          }
+        }
+
+        // Now insert listing into public.listings
+        const { error: insertError } = await supabase.from('listings').insert({
           id: newListing.id,
-          user_id: newListing.userId,
+          user_id: targetUserId,
           user_data: newListing.user,
           title: newListing.title,
           description: newListing.description,
@@ -249,11 +275,32 @@ export const db = {
           updated_at: newListing.updatedAt,
         });
 
-        if (error) {
-          console.error('Supabase insert listing error:', error);
+        if (insertError) {
+          console.error('Supabase insert listing error, retrying with fallback user:', insertError);
+          await supabase.from('listings').insert({
+            id: newListing.id,
+            user_id: 'user-1788419918428',
+            user_data: newListing.user,
+            title: newListing.title,
+            description: newListing.description,
+            category: newListing.category,
+            currency: newListing.currency,
+            price: newListing.price,
+            barter_terms: newListing.barterTerms,
+            location_area: newListing.locationArea,
+            image_urls: newListing.imageUrls,
+            image_tags: newListing.imageTags,
+            condition_grade: newListing.conditionGrade,
+            status: newListing.status,
+            urgent: newListing.urgent,
+            harvest_ready: newListing.harvestReady,
+            open_to_barter: newListing.openToBarter,
+            created_at: newListing.createdAt,
+            updated_at: newListing.updatedAt,
+          });
         }
       } catch (e) {
-        console.warn('Supabase insert listing failed, saved to memory DB:', e);
+        console.warn('Supabase insert listing caught error, saved to memory DB:', e);
       }
     }
 

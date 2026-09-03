@@ -70,8 +70,8 @@ export default function PostListingPage() {
         img.src = event.target?.result as string;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
           let width = img.width;
           let height = img.height;
 
@@ -92,8 +92,8 @@ export default function PostListingPage() {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            // 82% quality JPEG provides clear photos at ~150-250KB
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            // 70% quality JPEG provides lightweight, fast photos at ~40-80KB
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.70);
             resolve(dataUrl);
           } else {
             resolve(img.src);
@@ -163,24 +163,28 @@ export default function PostListingPage() {
     }
   };
 
+  const defaultCategoryImages: Record<string, string> = {
+    livestock_agric: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&auto=format&fit=crop&q=80',
+    grocery_wholesale: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800&auto=format&fit=crop&q=80',
+    clothing_textiles: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&auto=format&fit=crop&q=80',
+    building_construction: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=80',
+    industrial_services: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=800&auto=format&fit=crop&q=80',
+    transport_logistics: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=800&auto=format&fit=crop&q=80',
+    general_services: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&auto=format&fit=crop&q=80',
+    woodwork_construction: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=800&auto=format&fit=crop&q=80',
+    retail_hardware: 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?w=800&auto=format&fit=crop&q=80',
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const finalSellerName = sellerName.trim() || user?.fullName || '';
-    const finalSellerPhone = sellerPhone.trim() || user?.phoneNumber || '';
+    const finalSellerName = sellerName.trim() || user?.fullName || 'Prince A. Shumba';
+    const finalSellerPhone = sellerPhone.trim() || user?.phoneNumber || '+263 783237918';
+    const finalImageUrl = imageUrl || defaultCategoryImages[category] || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800';
+    const finalDescription = description.trim() || 'Available for cash purchase or barter exchange in Chiredzi.';
 
-    if (!finalSellerName || !finalSellerPhone || finalSellerPhone === '+263') {
-      alert('Please provide your Full / Business Name and WhatsApp phone number so buyers can reach you.');
-      return;
-    }
-
-    if (!imageUrl) {
-      alert('Please take or upload a product photo from your device.');
-      return;
-    }
-
-    if (title.trim().length < 3) {
-      alert('Please enter a descriptive listing title (at least 3 characters).');
+    if (title.trim().length < 2) {
+      alert('Please enter a descriptive listing title.');
       return;
     }
 
@@ -199,14 +203,14 @@ export default function PostListingPage() {
           tradeCount: 1,
         },
         title: title.trim(),
-        description: description.trim(),
+        description: finalDescription,
         category,
         currency,
         price: currency === 'BARTER' ? null : (parseFloat(price) || 0),
         barterTerms: (openToBarter || currency === 'BARTER') ? barterTerms.trim() : null,
         locationArea,
-        imageUrls: [imageUrl],
-        imageTags: aiTags,
+        imageUrls: [finalImageUrl],
+        imageTags: aiTags.length > 0 ? aiTags : [category.replace('_', ' ')],
         conditionGrade,
         status: 'active',
         urgent: false,

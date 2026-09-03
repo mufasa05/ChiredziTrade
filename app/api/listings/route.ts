@@ -19,8 +19,8 @@ const CreateListingSchema = z.object({
     rating: z.number().min(0).max(5).optional(),
     tradeCount: z.number().int().nonnegative().optional(),
   }),
-  title: z.string().min(3, 'Title too short').max(140, 'Title too long'),
-  description: z.string().min(10, 'Description too short').max(2000, 'Description too long'),
+  title: z.string().min(2, 'Title too short').max(140, 'Title too long'),
+  description: z.string().min(1, 'Description required').max(2000, 'Description too long'),
   category: z.enum([
     'livestock_agric',
     'grocery_wholesale',
