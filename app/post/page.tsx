@@ -13,7 +13,10 @@ import {
   ArrowRight,
   Upload,
   CheckCircle2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  X,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '@/context/LanguageContext';
@@ -29,7 +32,7 @@ export default function PostListingPage() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<SectorCategory>('livestock_agric');
   const [currency, setCurrency] = useState<TradeCurrency>('USD');
-  const [price, setPrice] = useState<string>('650');
+  const [price, setPrice] = useState<string>('');
   const [barterTerms, setBarterTerms] = useState('');
   const [locationArea, setLocationArea] = useState<LowveldLocation | string>('Tshovani');
   const [conditionGrade, setConditionGrade] = useState<ConditionGrade>('New');
@@ -38,12 +41,12 @@ export default function PostListingPage() {
   const [sellerName, setSellerName] = useState('');
   const [sellerPhone, setSellerPhone] = useState('+263');
 
-  // Photo & Camera State
-  const [imageUrl, setImageUrl] = useState('https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80');
+  // Photo & Camera State - Clean empty initial state (no preloaded image)
+  const [imageUrl, setImageUrl] = useState('');
   const [analyzingImage, setAnalyzingImage] = useState(false);
-  const [aiTags, setAiTags] = useState<string[]>(['cattle', 'brahman', 'lowveld', 'livestock']);
-  const [aiConfidence, setAiConfidence] = useState<number | null>(0.94);
-  const [uploadSource, setUploadSource] = useState<'sample' | 'custom'>('sample');
+  const [aiTags, setAiTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
+  const [aiConfidence, setAiConfidence] = useState<number | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [whatsAppOpen, setWhatsAppOpen] = useState(false);
@@ -89,7 +92,7 @@ export default function PostListingPage() {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            // 82% quality JPEG provides crystal-clear photos at ~150-250KB
+            // 82% quality JPEG provides clear photos at ~150-250KB
             const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
             resolve(dataUrl);
           } else {
@@ -102,32 +105,33 @@ export default function PostListingPage() {
     });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setAnalyzingImage(true);
     try {
-      const compressedDataUrl = await compressImage(file);
-      setImageUrl(compressedDataUrl);
-      setUploadSource('custom');
+      const compressedBase64 = await compressImage(file);
+      setImageUrl(compressedBase64);
 
-      // Send to Gemini Vision for automatic appraising & tagging
+      // Intelligent AI Vision Appraisal
       const res = await fetch('/api/ai/vision-tag', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          imageBase64: compressedBase64,
           fileName: file.name,
-          imagePreview: compressedDataUrl.slice(0, 100), // metadata
         }),
       });
 
       const data = await res.json();
       if (data.success && data.analysis) {
         const { suggestedTitle, category: cat, tags, conditionGrade: grade, confidence } = data.analysis;
-        if (!title) setTitle(suggestedTitle);
-        setCategory(cat);
-        setAiTags(tags);
+        if (suggestedTitle && !title) setTitle(suggestedTitle);
+        if (cat) setCategory(cat);
+        if (Array.isArray(tags) && tags.length > 0) {
+          setAiTags(tags);
+        }
         if (grade) setConditionGrade(grade);
         setAiConfidence(confidence);
       }
@@ -138,39 +142,45 @@ export default function PostListingPage() {
     }
   };
 
-  const handleSelectSample = async (url: string, keyword: string) => {
-    setImageUrl(url);
-    setUploadSource('sample');
-    setAnalyzingImage(true);
+  const handleAddTag = (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
+    const clean = tagInput.trim().toLowerCase().replace(/^#/, '');
+    if (clean && !aiTags.includes(clean)) {
+      setAiTags([...aiTags, clean]);
+      setTagInput('');
+    }
+  };
 
-    try {
-      const res = await fetch('/api/ai/vision-tag', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: keyword }),
-      });
+  const handleRemoveTag = (tagToRemove: string) => {
+    setAiTags(aiTags.filter(t => t !== tagToRemove));
+  };
 
-      const data = await res.json();
-      if (data.success && data.analysis) {
-        const { suggestedTitle, category: cat, tags, conditionGrade: grade, confidence } = data.analysis;
-        setTitle(suggestedTitle);
-        setCategory(cat);
-        setAiTags(tags);
-        setConditionGrade(grade);
-        setAiConfidence(confidence);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setAnalyzingImage(false);
+  const handleRemovePhoto = () => {
+    setImageUrl('');
+    setAiConfidence(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isAuthenticated) {
-      openAuthModal('Please sign in or register to publish your listing to the live marketplace.');
+    const finalSellerName = sellerName.trim() || user?.fullName || '';
+    const finalSellerPhone = sellerPhone.trim() || user?.phoneNumber || '';
+
+    if (!finalSellerName || !finalSellerPhone || finalSellerPhone === '+263') {
+      alert('Please provide your Full / Business Name and WhatsApp phone number so buyers can reach you.');
+      return;
+    }
+
+    if (!imageUrl) {
+      alert('Please take or upload a product photo from your device.');
+      return;
+    }
+
+    if (title.trim().length < 3) {
+      alert('Please enter a descriptive listing title (at least 3 characters).');
       return;
     }
 
@@ -181,19 +191,19 @@ export default function PostListingPage() {
         userId: user?.id || `user-web-${Date.now().toString().slice(-4)}`,
         user: {
           id: user?.id || `user-web-${Date.now().toString().slice(-4)}`,
-          phoneNumber: sellerPhone || user?.phoneNumber || '+263770000000',
-          fullName: sellerName || user?.fullName || 'Lowveld Trader',
+          phoneNumber: finalSellerPhone,
+          fullName: finalSellerName,
           locationArea,
           verifiedArtisan: true,
           rating: 5.0,
           tradeCount: 1,
         },
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         category,
         currency,
-        price: currency === 'BARTER' ? null : parseFloat(price) || 0,
-        barterTerms: openToBarter ? barterTerms : null,
+        price: currency === 'BARTER' ? null : (parseFloat(price) || 0),
+        barterTerms: (openToBarter || currency === 'BARTER') ? barterTerms.trim() : null,
         locationArea,
         imageUrls: [imageUrl],
         imageTags: aiTags,
@@ -201,7 +211,7 @@ export default function PostListingPage() {
         status: 'active',
         urgent: false,
         harvestReady,
-        openToBarter,
+        openToBarter: openToBarter || currency === 'BARTER',
       };
 
       const res = await fetch('/api/listings', {
@@ -211,7 +221,7 @@ export default function PostListingPage() {
       });
 
       const data = await res.json();
-      if (data.success && data.listing) {
+      if (res.ok && data.success && data.listing) {
         confetti({
           particleCount: 100,
           spread: 80,
@@ -219,7 +229,10 @@ export default function PostListingPage() {
         });
         router.push(`/listing/${data.listing.id}`);
       } else {
-        alert(data.error || 'Failed to submit listing');
+        const errorMsg = data.details 
+          ? data.details.map((d: any) => `${d.path?.join('.')}: ${d.message}`).join(', ')
+          : (data.error || 'Failed to submit listing');
+        alert(`Could not post listing: ${errorMsg}`);
       }
     } catch (err) {
       console.error(err);
@@ -230,20 +243,20 @@ export default function PostListingPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#070d09]">
+    <div className="min-h-screen bg-[#070d09] text-gray-100 flex flex-col selection:bg-emerald-500 selection:text-white">
       <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full flex-1">
-        <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-3">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full">
+        <div className="mb-8 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>AI-Assisted Listing & Multi-Currency Engine</span>
+            <span>Lowveld Multi-Currency & Barter Marketplace</span>
           </div>
           <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-white">
             {t.postListing} on <span className="text-emerald-400">ChiredziTrade</span>
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 mt-2">
-            Reach commercial outgrowers, livestock ranchers, and town traders across the Lowveld.
+            Connect directly with outgrowers, ranchers, artisans, wholesalers, and traders across the Lowveld.
           </p>
         </div>
 
@@ -254,135 +267,140 @@ export default function PostListingPage() {
               <div>
                 <h3 className="font-display font-bold text-lg text-white flex items-center gap-2">
                   <Camera className="w-5 h-5 text-emerald-400" />
-                  <span>1. Photo & Computer Vision Inspection</span>
+                  <span>1. Real Product Photo</span>
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Take a photo or upload from your device to auto-generate tags and verify quality.
+                  Take a photo or upload from your device. Real photos increase buyer trust.
                 </p>
               </div>
 
               {aiConfidence && (
                 <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Gemini Vision: {Math.round(aiConfidence * 100)}% Pass</span>
+                  <span>Quality Verified</span>
                 </span>
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
-              <div className="sm:col-span-5">
-                <div className="relative h-52 sm:h-60 rounded-2xl overflow-hidden bg-lowveld-950 border-2 border-dashed border-emerald-500/40 group shadow-inner">
+            {/* Hidden native camera/file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageFileChange}
+              className="hidden"
+            />
+
+            {/* Photo Upload / Preview Zone */}
+            {!imageUrl ? (
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-emerald-500/40 hover:border-emerald-400 bg-lowveld-950/60 hover:bg-lowveld-950/90 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all group"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 group-hover:bg-emerald-500/25 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30 transition-transform group-hover:scale-105">
+                  <Camera className="w-8 h-8" />
+                </div>
+                <h4 className="font-bold text-white text-base sm:text-lg mb-1">
+                  Tap to Take Photo with Camera or Upload
+                </h4>
+                <p className="text-xs text-gray-400 max-w-sm mx-auto mb-4">
+                  Select a clear photo from your phone or computer. Images are auto-compressed for Lowveld mobile networks.
+                </p>
+                <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950 transition-all">
+                  <Upload className="w-4 h-4" />
+                  <span>Choose Photo / Open Camera</span>
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-lowveld-950 border border-lowveld-800 group shadow-xl">
                   <img
                     src={imageUrl}
-                    alt="Preview"
+                    alt="Product Preview"
                     className="w-full h-full object-cover"
                   />
                   {analyzingImage && (
                     <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-emerald-400 gap-2">
                       <RefreshCw className="w-6 h-6 animate-spin text-emerald-400" />
-                      <span className="text-xs font-bold font-mono">Gemini Appraising Photo...</span>
+                      <span className="text-xs font-bold font-mono">Analyzing Photo...</span>
                     </div>
                   )}
-
-                  {uploadSource === 'custom' && (
-                    <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-[10px] text-emerald-300 font-bold flex items-center gap-1 shadow-md">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                      <span>Custom Photo Loaded</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="sm:col-span-7 space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-2">
-                    Upload Real Product Photo from Device:
-                  </label>
-                  
-                  {/* Real File Input for Camera & Local Files */}
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                  />
-
-                  <div className="flex gap-2">
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-lowveld-600 hover:from-emerald-500 hover:to-lowveld-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-950 transition-all"
+                      className="px-3 py-1.5 rounded-xl bg-black/70 hover:bg-black text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all"
                     >
-                      <Camera className="w-4 h-4" />
-                      <span>Take Photo / Upload</span>
+                      Change Photo
                     </button>
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="p-1.5 rounded-xl bg-red-950/80 hover:bg-red-900 text-red-300 backdrop-blur-md border border-red-500/40 transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="absolute bottom-3 left-3">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-300 text-xs font-bold border border-emerald-500/40 backdrop-blur-md">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Custom Photo Ready</span>
+                    </span>
                   </div>
                 </div>
 
-                <div className="pt-1">
-                  <p className="text-[11px] text-gray-400 mb-1.5 font-medium">Or Pick a Lowveld Sample Preset:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80', 'Brahman heifers cattle')}
-                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-gray-300 border border-lowveld-700/60"
-                    >
-                      🐄 Cattle & Goats
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&auto=format&fit=crop&q=80', 'ladies fashion dresses boutique textiles')}
-                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-pink-300 border border-pink-500/30"
-                    >
-                      👗 Boutique & Textiles
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800&auto=format&fit=crop&q=80', 'wholesale groceries bulk cooking oil rice mealie meal')}
-                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-amber-300 border border-amber-500/30"
-                    >
-                      🍞 Groceries & Wholesale
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800&auto=format&fit=crop&q=80', 'building cement bricks construction materials')}
-                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-orange-300 border border-orange-500/30"
-                    >
-                      🧱 Building & Hardware
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=800&auto=format&fit=crop&q=80', 'welding cane trailer chassis')}
-                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-gray-300 border border-lowveld-700/60"
-                    >
-                      ⚙️ Trailer Welding
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&auto=format&fit=crop&q=80', '30t sugarcane haulage truck')}
-                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-gray-300 border border-lowveld-700/60"
-                    >
-                      🚛 Cane Haulage
-                    </button>
+                {/* Editable Tags */}
+                <div className="p-4 rounded-2xl bg-lowveld-950/60 border border-lowveld-800/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-300">Listing Tags (for search & matching):</span>
+                    <span className="text-[11px] text-gray-500">Tap tag to remove</span>
                   </div>
-                </div>
+                  
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    {aiTags.map((tag) => (
+                      <span 
+                        key={tag} 
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 text-xs border border-emerald-500/30"
+                      >
+                        <span>#{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(tag)}
+                          className="hover:text-red-400 transition-colors ml-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
 
-                {aiTags.length > 0 && (
-                  <div className="pt-2">
-                    <p className="text-[11px] text-gray-400 mb-1">AI Detected Tags:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {aiTags.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 text-[11px] border border-emerald-500/20">
-                          #{t}
-                        </span>
-                      ))}
+                    {/* Inline Add Tag Input */}
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddTag();
+                          }
+                        }}
+                        placeholder="Add tag..."
+                        className="px-2.5 py-1 rounded-lg bg-lowveld-900 text-white placeholder-gray-500 text-xs border border-lowveld-700 focus:outline-none focus:border-emerald-400 w-24 sm:w-32"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddTag}
+                        className="p-1 rounded-lg bg-lowveld-800 hover:bg-lowveld-700 text-gray-300 hover:text-white transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* STEP 2: LISTING CORE DETAILS */}
@@ -400,7 +418,7 @@ export default function PostListingPage() {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. 5 Young Brahman Heifers, 50kg Sugar & Cooking Oil Bulk, or Ladies Fashion Dresses"
+                placeholder="e.g. 5 Young Brahman Heifers, 50kg Sugar Wholesale, or Custom Tailored Dresses"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
               />
             </div>
@@ -415,12 +433,12 @@ export default function PostListingPage() {
                   onChange={(e) => setCategory(e.target.value as SectorCategory)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
                 >
-                  <option value="livestock_agric">Livestock & Cattle Farming</option>
-                  <option value="grocery_wholesale">Groceries, Food Wholesale & FMCG</option>
+                  <option value="livestock_agric">Livestock & Agric Produce</option>
+                  <option value="grocery_wholesale">Groceries & Food Wholesale (Tuckshops)</option>
                   <option value="clothing_textiles">Clothing, Boutiques & Textiles (Vasoni veHembe)</option>
                   <option value="building_construction">Building, Hardware & Construction</option>
-                  <option value="industrial_services">Industrial Trades, Welding & Engineering</option>
-                  <option value="transport_logistics">Transport, Haulage & Deliveries</option>
+                  <option value="industrial_services">Industrial Trades, Welding & Mechanics</option>
+                  <option value="transport_logistics">Haulage, Trucks & Bakkie Hire</option>
                   <option value="general_services">General Retail, Electronics & Services</option>
                 </select>
               </div>
@@ -492,6 +510,7 @@ export default function PostListingPage() {
                   </label>
                   <input
                     type="number"
+                    placeholder="e.g. 50"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-amber-500/40 focus:outline-none focus:border-amber-400 text-xs sm:text-sm font-mono font-bold"
@@ -565,14 +584,14 @@ export default function PostListingPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">
-                  WhatsApp Phone Number (E.164) *
+                  WhatsApp Phone Number *
                 </label>
                 <input
                   type="text"
                   required
                   value={sellerPhone}
                   onChange={(e) => setSellerPhone(e.target.value)}
-                  placeholder="+26377..."
+                  placeholder="+263 77..."
                   className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
                 />
               </div>
@@ -600,12 +619,14 @@ export default function PostListingPage() {
             </button>
           </div>
         </form>
-      </div>
+      </main>
 
+      {/* WhatsApp Bot Modal */}
       <WhatsAppSimulatorModal
         isOpen={whatsAppOpen}
         onClose={() => setWhatsAppOpen(false)}
+        onListingCreated={() => router.push('/')}
       />
-    </main>
+    </div>
   );
 }
