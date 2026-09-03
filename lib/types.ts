@@ -111,3 +111,16 @@ export interface VisionAnalysisResult {
   conditionGrade: ConditionGrade;
   confidence: number;
 }
+
+export interface TradeReview {
+  id: string;
+  sellerId: string;
+  listingId?: string;
+  reviewerName: string;
+  reviewerLocation: string;
+  rating: number; // 1 to 5
+  tradeType: string;
+  comment: string;
+  createdAt: string;
+}
+

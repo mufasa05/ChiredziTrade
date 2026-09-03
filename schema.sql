@@ -71,6 +71,19 @@ CREATE TABLE IF NOT EXISTS public.trade_orders (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. TRADE REVIEWS TABLE (RATINGS & VERIFIED REVIEWS)
+CREATE TABLE IF NOT EXISTS public.trade_reviews (
+  id VARCHAR(255) PRIMARY KEY,
+  seller_id VARCHAR(255) NOT NULL,
+  listing_id VARCHAR(255),
+  reviewer_name VARCHAR(255) NOT NULL,
+  reviewer_location VARCHAR(100) DEFAULT 'Chiredzi',
+  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  trade_type VARCHAR(100) DEFAULT 'General Trade',
+  comment TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ====================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES - PRODUCTION HARDENED
 -- ====================================================================
@@ -78,6 +91,11 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.barter_proposals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.trade_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.trade_reviews ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read trade_reviews" ON public.trade_reviews FOR SELECT USING (true);
+CREATE POLICY "Allow public insert trade_reviews" ON public.trade_reviews FOR INSERT WITH CHECK (true);
+
 
 -- 1. USERS POLICIES
 DROP POLICY IF EXISTS "Allow public read users" ON public.users;

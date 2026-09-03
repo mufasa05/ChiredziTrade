@@ -1,4 +1,4 @@
-import { Listing, BarterProposal, TradeOrder, BotSession, SectorCategory, TradeCurrency } from './types';
+import { Listing, BarterProposal, TradeOrder, BotSession, SectorCategory, TradeCurrency, TradeReview } from './types';
 import { INITIAL_LISTINGS } from './mock-data';
 
 // Initialize Supabase Client if environment variables exist
@@ -20,6 +20,28 @@ if (supabaseUrl && supabaseAnonKey) {
 let memoryListings: Listing[] = [...INITIAL_LISTINGS];
 let memoryProposals: BarterProposal[] = [];
 let memoryOrders: TradeOrder[] = [];
+let memoryReviews: TradeReview[] = [
+  {
+    id: 'rev-1',
+    sellerId: 'user-1',
+    reviewerName: 'Farai Moyo',
+    reviewerLocation: 'Triangle Estate',
+    rating: 5,
+    tradeType: 'Brahman Cattle Swap',
+    comment: 'Exceptional heifers. Excellent temperament and condition. Smooth exchange!',
+    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+  },
+  {
+    id: 'rev-2',
+    sellerId: 'user-2',
+    reviewerName: 'Simba Chauke',
+    reviewerLocation: 'Tshovani',
+    rating: 5,
+    tradeType: 'Sliding Gate Welding',
+    comment: 'Tongai welded our farm compound gates in 2 days. Heavy gauge steel, very solid.',
+    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+  }
+];
 let memorySessions: Record<string, BotSession> = {};
 
 // Load saved local listings if in browser environment
@@ -403,6 +425,65 @@ export const db = {
     }
 
     return memoryOrders.filter((o) => listingIds.includes(o.listingId));
+  },
+
+  // Reviews & Artisan Ratings
+  getReviewsForSeller: async (sellerId: string): Promise<TradeReview[]> => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('trade_reviews')
+          .select('*')
+          .eq('seller_id', sellerId)
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          return data.map((r: any) => ({
+            id: r.id,
+            sellerId: r.seller_id,
+            listingId: r.listing_id,
+            reviewerName: r.reviewer_name,
+            reviewerLocation: r.reviewer_location,
+            rating: r.rating,
+            tradeType: r.trade_type,
+            comment: r.comment,
+            createdAt: r.created_at,
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase fetch reviews failed:', e);
+      }
+    }
+
+    return memoryReviews.filter((r) => r.sellerId === sellerId);
+  },
+
+  createReview: async (review: Omit<TradeReview, 'id' | 'createdAt'>): Promise<TradeReview> => {
+    const newReview: TradeReview = {
+      ...review,
+      id: `rev-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (supabase) {
+      try {
+        await supabase.from('trade_reviews').insert({
+          id: newReview.id,
+          seller_id: newReview.sellerId,
+          listing_id: newReview.listingId || null,
+          reviewer_name: newReview.reviewerName,
+          reviewer_location: newReview.reviewerLocation,
+          rating: newReview.rating,
+          trade_type: newReview.tradeType,
+          comment: newReview.comment,
+          created_at: newReview.createdAt,
+        });
+      } catch (e) {
+        console.warn('Supabase insert review failed:', e);
+      }
+    }
+
+    memoryReviews.unshift(newReview);
+    return newReview;
   },
 
   getBotSession: async (phoneNumber: string): Promise<BotSession> => {

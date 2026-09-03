@@ -7,7 +7,8 @@ import Navbar from '@/components/Navbar';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
 import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
-import { Listing, BarterMatch } from '@/lib/types';
+import ReviewModal from '@/components/ReviewModal';
+import { Listing, BarterMatch, TradeReview } from '@/lib/types';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -17,7 +18,10 @@ import {
   Sparkles, 
   ShoppingBag,
   Share2,
-  Tag
+  Tag,
+  Star,
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 
@@ -28,6 +32,9 @@ function ListingDetailContent() {
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [barterMatches, setBarterMatches] = useState<BarterMatch[]>([]);
+  const [reviews, setReviews] = useState<TradeReview[]>([]);
+  const [avgRating, setAvgRating] = useState<number>(5.0);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
   const [barterModalOpen, setBarterModalOpen] = useState(false);
@@ -46,10 +53,21 @@ function ListingDetailContent() {
         if (data.success && data.listing) {
           setListing(data.listing);
 
-          const matchRes = await fetch(`/api/barter/match?listingId=${id}`);
+          const sellerId = data.listing.userId || data.listing.user?.id || 'user-1';
+          const [matchRes, reviewRes] = await Promise.all([
+            fetch(`/api/barter/match?listingId=${id}`),
+            fetch(`/api/reviews?sellerId=${encodeURIComponent(sellerId)}`),
+          ]);
+
           const matchData = await matchRes.json();
           if (matchData.success) {
             setBarterMatches(matchData.matches);
+          }
+
+          const reviewData = await reviewRes.json();
+          if (reviewData.success) {
+            setReviews(reviewData.reviews);
+            setAvgRating(reviewData.avgRating);
           }
         }
       } catch (err) {
@@ -61,6 +79,21 @@ function ListingDetailContent() {
 
     fetchListingAndMatches();
   }, [id]);
+
+  const reloadReviews = async () => {
+    if (!listing) return;
+    const sellerId = listing.userId || listing.user?.id || 'user-1';
+    try {
+      const res = await fetch(`/api/reviews?sellerId=${encodeURIComponent(sellerId)}`);
+      const data = await res.json();
+      if (data.success) {
+        setReviews(data.reviews);
+        setAvgRating(data.avgRating);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   if (loading) {
     return (
@@ -307,8 +340,53 @@ function ListingDetailContent() {
 
                 <div className="mt-3 flex items-center justify-between text-xs text-gray-400 px-3 py-2 rounded-xl bg-lowveld-950">
                   <span>{t.completedTrades}: <b className="text-white">{listing.user.tradeCount || 12}</b></span>
-                  <span>{t.rating}: <b className="text-amber-400">⭐ {listing.user.rating || '5.0'}</b></span>
+                  <span>{t.rating}: <b className="text-amber-400">⭐ {avgRating} ({reviews.length} reviews)</b></span>
                 </div>
+              </div>
+
+              {/* SELLER REPUTATION & VERIFIED REVIEWS SECTION */}
+              <div className="mt-6 pt-6 border-t border-lowveld-800/60 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-display font-bold text-base text-white flex items-center gap-2">
+                      <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                      <span>Trader Reviews ({reviews.length})</span>
+                    </h4>
+                    <p className="text-[11px] text-gray-400">Verified trade feedback from Lowveld buyers & ranchers.</p>
+                  </div>
+                  <button
+                    onClick={() => setReviewModalOpen(true)}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all"
+                  >
+                    Write Review
+                  </button>
+                </div>
+
+                {reviews.length === 0 ? (
+                  <p className="text-xs text-gray-500 italic py-2">No reviews left yet for this seller. Be the first to trade and leave feedback!</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {reviews.slice(0, 3).map((rev) => (
+                      <div key={rev.id} className="p-3 rounded-xl bg-lowveld-950/70 border border-lowveld-800/80 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-xs text-white">{rev.reviewerName}</span>
+                            <span className="text-[10px] text-gray-400">({rev.reviewerLocation})</span>
+                          </div>
+                          <div className="flex items-center gap-0.5 text-amber-400">
+                            {[...Array(rev.rating)].map((_, idx) => (
+                              <Star key={idx} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-300 italic">"{rev.comment}"</p>
+                        <span className="text-[10px] text-emerald-400 font-semibold block">
+                          Verified {rev.tradeType}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -359,6 +437,15 @@ function ListingDetailContent() {
       <BarterProposalModal
         listing={listing}
         onClose={() => setBarterModalOpen(false)}
+      />
+
+      <ReviewModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        sellerId={listing.userId || listing.user.id || 'user-1'}
+        sellerName={listing.user.fullName}
+        listingId={listing.id}
+        onReviewSubmitted={reloadReviews}
       />
 
       <WhatsAppSimulatorModal
