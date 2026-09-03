@@ -23,8 +23,12 @@ const CreateListingSchema = z.object({
   description: z.string().min(10, 'Description too short').max(2000, 'Description too long'),
   category: z.enum([
     'livestock_agric',
+    'grocery_wholesale',
+    'clothing_textiles',
+    'building_construction',
     'industrial_services',
     'transport_logistics',
+    'general_services',
     'woodwork_construction',
     'retail_hardware'
   ]),

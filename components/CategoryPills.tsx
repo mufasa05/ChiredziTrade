@@ -6,8 +6,10 @@ import {
   Sprout, 
   Wrench, 
   Truck, 
-  Hammer, 
-  ShoppingBag, 
+  Store, 
+  Shirt, 
+  Building2, 
+  Sparkles,
   Layers 
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -44,10 +46,28 @@ export default function CategoryPills({
       colorClass: 'text-emerald-400 border-emerald-500/40',
     },
     {
+      id: 'grocery_wholesale',
+      label: t.groceryWholesale,
+      icon: Store,
+      colorClass: 'text-amber-400 border-amber-500/40',
+    },
+    {
+      id: 'clothing_textiles',
+      label: t.clothingTextiles,
+      icon: Shirt,
+      colorClass: 'text-pink-400 border-pink-500/40',
+    },
+    {
+      id: 'building_construction',
+      label: t.buildingConstruction,
+      icon: Building2,
+      colorClass: 'text-orange-400 border-orange-500/40',
+    },
+    {
       id: 'industrial_services',
       label: t.industrialTrades,
       icon: Wrench,
-      colorClass: 'text-amber-400 border-amber-500/40',
+      colorClass: 'text-yellow-400 border-yellow-500/40',
     },
     {
       id: 'transport_logistics',
@@ -56,22 +76,16 @@ export default function CategoryPills({
       colorClass: 'text-blue-400 border-blue-500/40',
     },
     {
-      id: 'woodwork_construction',
-      label: t.woodworkBuilding,
-      icon: Hammer,
-      colorClass: 'text-orange-400 border-orange-500/40',
-    },
-    {
-      id: 'retail_hardware',
-      label: t.solarHardware,
-      icon: ShoppingBag,
+      id: 'general_services',
+      label: t.generalServices,
+      icon: Sparkles,
       colorClass: 'text-purple-400 border-purple-500/40',
     },
   ];
 
   return (
-    <div className="w-full py-4 overflow-x-auto no-scrollbar">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-max pb-1">
+    <div className="w-full py-2.5 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 sm:gap-2.5 min-w-max pb-1">
         {categoryDefinitions.map((cat) => {
           const Icon = cat.icon;
           const isSelected = selectedCategory === cat.id;
@@ -81,7 +95,7 @@ export default function CategoryPills({
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 ${
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 shrink-0 ${
                 isSelected
                   ? 'bg-gradient-to-r from-emerald-600 to-lowveld-700 text-white shadow-lg shadow-emerald-950/60 border border-emerald-400/50 scale-[1.02]'
                   : 'bg-lowveld-950/60 hover:bg-lowveld-900/80 text-gray-300 border border-lowveld-800/60 hover:border-lowveld-700'

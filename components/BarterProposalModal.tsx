@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Listing } from '@/lib/types';
-import { RefreshCw, X, CheckCircle, MessageCircle, Send, Sparkles } from 'lucide-react';
+import { RefreshCw, X, CheckCircle, MessageCircle, Send, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
 
@@ -12,6 +13,7 @@ interface BarterProposalModalProps {
 }
 
 export default function BarterProposalModal({ listing, onClose }: BarterProposalModalProps) {
+  const router = useRouter();
   const { user } = useAuth();
   const [proposerName, setProposerName] = useState(user?.fullName || '');
   const [proposerPhone, setProposerPhone] = useState(user?.phoneNumber || '');
@@ -30,7 +32,30 @@ export default function BarterProposalModal({ listing, onClose }: BarterProposal
     }
   }, [user]);
 
+  // Handle ESC key to dismiss modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleDismiss();
+      }
+    };
+    if (listing) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [listing]);
+
   if (!listing) return null;
+
+  const handleDismiss = () => {
+    setSubmitted(false);
+    onClose();
+  };
+
+  const handleReturnToMarketplace = () => {
+    handleDismiss();
+    router.push('/');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,12 +98,22 @@ export default function BarterProposalModal({ listing, onClose }: BarterProposal
   const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg rounded-3xl glass-panel border border-amber-500/40 p-6 sm:p-8 shadow-2xl overflow-hidden">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleDismiss();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg rounded-3xl glass-panel border border-amber-500/40 p-6 sm:p-8 shadow-2xl overflow-hidden cursor-default"
+      >
         {/* Close Button */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-lowveld-900/60 hover:bg-lowveld-800 text-gray-400 hover:text-white transition-colors"
+          type="button"
+          onClick={handleDismiss}
+          aria-label="Close modal"
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-lowveld-900/80 hover:bg-lowveld-800 text-gray-400 hover:text-white transition-all shadow-md"
         >
           <X className="w-5 h-5" />
         </button>
@@ -86,8 +121,8 @@ export default function BarterProposalModal({ listing, onClose }: BarterProposal
         {!submitted ? (
           <div>
             {/* Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/40">
+            <div className="flex items-center gap-3 mb-4 pr-8">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/40 shrink-0">
                 <RefreshCw className="w-5 h-5" />
               </div>
               <div>
@@ -148,7 +183,7 @@ export default function BarterProposalModal({ listing, onClose }: BarterProposal
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Tendai Sithole"
+                    placeholder="e.g. Prince A. Shumba"
                     value={proposerName}
                     onChange={(e) => setProposerName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
@@ -241,10 +276,12 @@ export default function BarterProposalModal({ listing, onClose }: BarterProposal
               </a>
 
               <button
-                onClick={onClose}
-                className="w-full py-2.5 px-4 rounded-xl bg-lowveld-900 hover:bg-lowveld-800 text-gray-300 font-semibold text-xs transition-colors"
+                type="button"
+                onClick={handleReturnToMarketplace}
+                className="w-full py-3 px-4 rounded-xl bg-lowveld-900 hover:bg-lowveld-800 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-emerald-500/30 shadow-md"
               >
-                Done & Return to Market
+                <ArrowLeft className="w-4 h-4" />
+                <span>Return to Marketplace</span>
               </button>
             </div>
           </div>

@@ -88,7 +88,28 @@ export default function HeroSection({
               onClick={() => handleQuickPrompt('Brahman Heifers')}
               className="px-2.5 py-1 rounded-lg bg-lowveld-900/60 hover:bg-lowveld-800 text-gray-300 hover:text-white border border-lowveld-700/50 transition-colors"
             >
-              🐄 Brahman Heifers
+              🐄 Cattle & Goats
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickPrompt('Boutique')}
+              className="px-2.5 py-1 rounded-lg bg-lowveld-900/60 hover:bg-lowveld-800 text-pink-300 hover:text-white border border-pink-500/30 transition-colors"
+            >
+              👗 Vasoni veHembe & Boutiques
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickPrompt('Groceries')}
+              className="px-2.5 py-1 rounded-lg bg-lowveld-900/60 hover:bg-lowveld-800 text-amber-300 hover:text-white border border-amber-500/30 transition-colors"
+            >
+              🍞 Groceries & Wholesale
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickPrompt('Cement')}
+              className="px-2.5 py-1 rounded-lg bg-lowveld-900/60 hover:bg-lowveld-800 text-orange-300 hover:text-white border border-orange-500/30 transition-colors"
+            >
+              🧱 Building & Hardware
             </button>
             <button
               type="button"
@@ -103,13 +124,6 @@ export default function HeroSection({
               className="px-2.5 py-1 rounded-lg bg-lowveld-900/60 hover:bg-lowveld-800 text-gray-300 hover:text-white border border-lowveld-700/50 transition-colors"
             >
               💧 Borehole Repair
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPrompt('Mashanga sugarcane tops')}
-              className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors"
-            >
-              🌾 Mashanga (Fodder)
             </button>
           </div>
         </div>

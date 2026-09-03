@@ -4,8 +4,12 @@ export type ListingStatus = 'active' | 'sold' | 'archived' | 'pending_review';
 
 export type SectorCategory = 
   | 'livestock_agric' 
+  | 'grocery_wholesale'
+  | 'clothing_textiles'
+  | 'building_construction'
   | 'industrial_services' 
   | 'transport_logistics' 
+  | 'general_services'
   | 'woodwork_construction' 
   | 'retail_hardware';
 

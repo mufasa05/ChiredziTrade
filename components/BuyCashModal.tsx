@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Listing } from '@/lib/types';
-import { ShoppingBag, X, CheckCircle, MessageCircle, Send, DollarSign, MapPin } from 'lucide-react';
+import { ShoppingBag, X, CheckCircle, MessageCircle, Send, DollarSign, MapPin, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -13,6 +14,7 @@ interface BuyCashModalProps {
 }
 
 export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
+  const router = useRouter();
   const { t } = useLanguage();
   const { user } = useAuth();
   const [buyerName, setBuyerName] = useState(user?.fullName || '');
@@ -32,7 +34,30 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
     }
   }, [user]);
 
+  // Handle ESC key to dismiss modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleDismiss();
+      }
+    };
+    if (listing) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [listing]);
+
   if (!listing) return null;
+
+  const handleDismiss = () => {
+    setSubmitted(false);
+    onClose();
+  };
+
+  const handleReturnToMarketplace = () => {
+    handleDismiss();
+    router.push('/');
+  };
 
   const calculatedPrice = (listing.price || 0) * (parseInt(quantity) || 1);
 
@@ -78,12 +103,22 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
   const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg rounded-3xl glass-panel border border-emerald-500/40 p-6 sm:p-8 shadow-2xl overflow-hidden">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleDismiss();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg rounded-3xl glass-panel border border-emerald-500/40 p-6 sm:p-8 shadow-2xl overflow-hidden cursor-default"
+      >
         {/* Close Button */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-lowveld-900/60 hover:bg-lowveld-800 text-gray-400 hover:text-white transition-colors"
+          type="button"
+          onClick={handleDismiss}
+          aria-label="Close modal"
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-lowveld-900/80 hover:bg-lowveld-800 text-gray-400 hover:text-white transition-all shadow-md"
         >
           <X className="w-5 h-5" />
         </button>
@@ -95,43 +130,41 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/40 shrink-0">
                 <ShoppingBag className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <h3 className="font-display font-bold text-xl text-white truncate">
+              <div>
+                <h3 className="font-display font-bold text-xl text-white">
                   {t.buyModalTitle}
                 </h3>
-                <p className="text-xs text-gray-300 truncate">
+                <p className="text-xs text-gray-300">
                   {t.buyModalSubtitle} <b className="text-emerald-400">{listing.user.fullName}</b> ({listing.locationArea})
                 </p>
               </div>
             </div>
 
-            {/* Target Item Summary Box (Fixed Overflow Alignment) */}
-            <div className="p-3.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 mb-5 text-xs flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1 pr-2">
-                <p className="text-gray-400">Target Item:</p>
-                <p className="font-bold text-white text-sm line-clamp-2 leading-snug">{listing.title}</p>
-                <p className="text-emerald-400 font-mono font-bold mt-1">
-                  {listing.currency === 'BARTER' ? 'Open Cash Offer' : `${listing.price} ${listing.currency}`}
-                </p>
+            {/* Target Item Pill */}
+            <div className="p-3.5 rounded-2xl bg-lowveld-950/80 border border-lowveld-800 mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] text-gray-400">Target Item:</p>
+                <p className="font-bold text-white text-sm">{listing.title}</p>
               </div>
-              <div className="shrink-0 text-right">
-                <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30 whitespace-nowrap inline-block">
-                  In Stock
+              <div className="text-right">
+                <span className="text-[11px] text-gray-400 block">Unit Price:</span>
+                <span className="font-mono font-bold text-sm text-emerald-400">
+                  {listing.currency === 'BARTER' ? 'Barter Trade' : `${listing.currency} $${listing.price?.toLocaleString()}`}
                 </span>
               </div>
             </div>
 
-            {/* Cash Purchase Form */}
+            {/* Order Form */}
             <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">
-                    {t.buyerName} *
+                    Your Name *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Farai Chauke"
+                    placeholder="e.g. Prince A. Shumba"
                     value={buyerName}
                     onChange={(e) => setBuyerName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-400"
@@ -140,7 +173,7 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
 
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">
-                    {t.buyerPhone} *
+                    Your WhatsApp Phone *
                   </label>
                   <input
                     type="text"
@@ -156,29 +189,31 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">
-                    {t.pickupLocation} *
+                    Pickup Location Hub
                   </label>
                   <select
                     value={pickupLocation}
                     onChange={(e) => setPickupLocation(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white focus:outline-none focus:border-emerald-400"
                   >
-                    <option value="Tshovani">Tshovani</option>
+                    <option value="Tshovani">Tshovani Town</option>
                     <option value="Chiredzi Light Industry">Chiredzi Light Industry</option>
+                    <option value="Hippo Valley">Hippo Valley Estate</option>
                     <option value="Triangle Estate">Triangle Estate</option>
-                    <option value="Hippo Valley">Hippo Valley</option>
                     <option value="Mkwasine">Mkwasine</option>
                     <option value="Buffalo Range">Buffalo Range</option>
+                    <option value="Malipati">Malipati</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">
-                    Quantity
+                    Quantity Needed
                   </label>
                   <input
                     type="number"
                     min="1"
+                    max="100"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white font-mono font-bold focus:outline-none focus:border-emerald-400"
@@ -188,11 +223,11 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
 
               <div>
                 <label className="block text-gray-300 font-semibold mb-1">
-                  Order Notes / Handover Preferred Time
+                  Delivery / Collection Notes (Optional)
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Will pick up tomorrow at Light Industry workshop..."
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Can meet near Chiredzi Post Office around 2pm on Thursday..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-400"
@@ -243,10 +278,12 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
               </a>
 
               <button
-                onClick={onClose}
-                className="w-full py-2.5 px-4 rounded-xl bg-lowveld-900 hover:bg-lowveld-800 text-gray-300 font-semibold text-xs transition-colors"
+                type="button"
+                onClick={handleReturnToMarketplace}
+                className="w-full py-3 px-4 rounded-xl bg-lowveld-900 hover:bg-lowveld-800 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-emerald-500/30 shadow-md"
               >
-                Done & Return to Market
+                <ArrowLeft className="w-4 h-4" />
+                <span>Return to Marketplace</span>
               </button>
             </div>
           </div>

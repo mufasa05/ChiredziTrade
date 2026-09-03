@@ -329,7 +329,28 @@ export default function PostListingPage() {
                       onClick={() => handleSelectSample('https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80', 'Brahman heifers cattle')}
                       className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-gray-300 border border-lowveld-700/60"
                     >
-                      🐄 Brahman Cattle
+                      🐄 Cattle & Goats
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&auto=format&fit=crop&q=80', 'ladies fashion dresses boutique textiles')}
+                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-pink-300 border border-pink-500/30"
+                    >
+                      👗 Boutique & Textiles
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800&auto=format&fit=crop&q=80', 'wholesale groceries bulk cooking oil rice mealie meal')}
+                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-amber-300 border border-amber-500/30"
+                    >
+                      🍞 Groceries & Wholesale
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800&auto=format&fit=crop&q=80', 'building cement bricks construction materials')}
+                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-orange-300 border border-orange-500/30"
+                    >
+                      🧱 Building & Hardware
                     </button>
                     <button
                       type="button"
@@ -337,13 +358,6 @@ export default function PostListingPage() {
                       className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-gray-300 border border-lowveld-700/60"
                     >
                       ⚙️ Trailer Welding
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSample('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=80', 'borehole solar pump repair')}
-                      className="px-2.5 py-1 rounded-lg bg-lowveld-900 hover:bg-lowveld-800 text-[11px] text-gray-300 border border-lowveld-700/60"
-                    >
-                      💧 Solar Borehole
                     </button>
                     <button
                       type="button"
@@ -386,7 +400,7 @@ export default function PostListingPage() {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. 5 Young Brahman Heifers or Heavy Duty Gate Fabrication"
+                placeholder="e.g. 5 Young Brahman Heifers, 50kg Sugar & Cooking Oil Bulk, or Ladies Fashion Dresses"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
               />
             </div>
@@ -402,10 +416,12 @@ export default function PostListingPage() {
                   className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
                 >
                   <option value="livestock_agric">Livestock & Cattle Farming</option>
-                  <option value="industrial_services">Industrial Services & Metalwork</option>
-                  <option value="transport_logistics">Transport & Cane Haulage</option>
-                  <option value="woodwork_construction">Carpentry & Construction</option>
-                  <option value="retail_hardware">Retail & Solar Hardware</option>
+                  <option value="grocery_wholesale">Groceries, Food Wholesale & FMCG</option>
+                  <option value="clothing_textiles">Clothing, Boutiques & Textiles (Vasoni veHembe)</option>
+                  <option value="building_construction">Building, Hardware & Construction</option>
+                  <option value="industrial_services">Industrial Trades, Welding & Engineering</option>
+                  <option value="transport_logistics">Transport, Haulage & Deliveries</option>
+                  <option value="general_services">General Retail, Electronics & Services</option>
                 </select>
               </div>
 

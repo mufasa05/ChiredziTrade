@@ -23,11 +23,15 @@ export interface Translations {
   multiCurrency: string;
   verifiedArtisans: string;
 
-  // Sectors
+  // Inclusive Umbrella Sectors
   allSectors: string;
   livestockAgric: string;
+  groceryWholesale: string;
+  clothingTextiles: string;
+  buildingConstruction: string;
   industrialTrades: string;
   haulageTransport: string;
+  generalServices: string;
   woodworkBuilding: string;
   solarHardware: string;
 
@@ -98,9 +102,13 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     verifiedArtisans: 'Verified Artisans',
 
     allSectors: 'All Sectors',
-    livestockAgric: 'Livestock & Agric',
-    industrialTrades: 'Industrial & Trades',
-    haulageTransport: 'Haulage & Transport',
+    livestockAgric: 'Livestock & Agric Produce',
+    groceryWholesale: 'Groceries & Wholesale',
+    clothingTextiles: 'Clothing, Boutiques & Tailors',
+    buildingConstruction: 'Building, Construction & Hardware',
+    industrialTrades: 'Industrial, Welding & Mechanics',
+    haulageTransport: 'Haulage, Trucks & Bakkie Hire',
+    generalServices: 'General Retail & Services',
     woodworkBuilding: 'Woodwork & Building',
     solarHardware: 'Solar & Hardware',
 
@@ -119,13 +127,13 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     barterTerms: 'Barter Terms: ',
     viewDetail: 'View Detail',
 
-    buyModalTitle: 'Buy Item with Cash (USD / ZAR)',
-    buyModalSubtitle: 'Direct Cash Purchase from',
-    purchaseMethod: 'Preferred Purchase & Delivery Method',
+    buyModalTitle: 'Buy with Cash (USD / ZAR)',
+    buyModalSubtitle: 'Direct collection & payment from',
+    purchaseMethod: 'Payment & Collection Method',
     cashOnDelivery: 'Cash on Handover / Collection in Chiredzi',
-    pickupLocation: 'Your Collection / Delivery Hub',
+    pickupLocation: 'Preferred Collection Hub',
     buyerName: 'Your Full Name',
-    buyerPhone: 'Your WhatsApp Number',
+    buyerPhone: 'Your WhatsApp Phone Number',
     paymentCurrency: 'Payment Currency',
     submitCashOrder: 'Place Cash Purchase Order',
     orderSubmitted: 'Cash Order Created!',
@@ -145,7 +153,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
   sn: {
     brandSubtitle: 'Zvipfuyo, Zvirimwa, Welder neMabasa eMaoko',
     marketplace: 'Musika weChiredzi',
-    smartBarterHub: 'Nzvimbo yeKutsinhana (Barter)',
+    smartBarterHub: 'Nzvimbo yeKuchinjana (Barter)',
     whatsAppEngine: 'WhatsApp Bot Hub',
     postListing: 'Isa Chigadzirwa',
     tryWhatsAppBot: 'Bvunza WhatsApp Bot',
@@ -154,25 +162,29 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     heroTitle1: 'Tengesa Zvipfuyo, Mbeu neMabasa eMaoko mu',
     heroTitleHighlight: 'Chiredzi',
-    heroSubtitle: 'Musika unatanidza varimi veshuwa, vapfuyi vezvipfuyo, ma-welder e-Industrial neva-dhiraivha e-truck paWhatsApp muChiredzi yese.',
-    searchPlaceholder: "Tsvaga (se: 'Mombe dzemukaka', 'Welder yeTshovani', 'Truck retakura nzimbe')...",
+    heroSubtitle: 'Musika unobatanidza varimi veshuwa, vapfuyi vezvipfuyo, vasoni vehembe, magirosari nema-welder paWhatsApp muChiredzi yese.',
+    searchPlaceholder: "Tsvaga (se: 'Mombe dzemukaka', 'Welder yeTshovani', 'Vasoni vehembe', 'Simende')...",
     searchBtn: 'Tsvaga',
     quickFind: 'Zvakakurumbira:',
     directWhatsApp: 'WhatsApp Imwe neImwe',
-    smartBarter: 'Kutsinhana Zvinhu',
+    smartBarter: 'Kuchinjana Zvinhu',
     multiCurrency: 'USD neRandi (ZAR)',
     verifiedArtisans: 'Vashandi Vakavimbika',
 
     allSectors: 'Mabasa Ese',
-    livestockAgric: 'Zvipfuyo neUrimi',
-    industrialTrades: 'Welding neZvigadzirwa',
-    haulageTransport: 'Dhirivhari neMakonyora',
+    livestockAgric: 'Zvipfuyo neZvirimwa',
+    groceryWholesale: 'Magirosari, Chikafu neTuckshops',
+    clothingTextiles: 'Mbatya, Mabutiki neVasoni veHembe',
+    buildingConstruction: 'Kuvaka, Simende neHardware',
+    industrialTrades: 'Welding, Machina neInjiniyaringi',
+    haulageTransport: 'Dhirivhari, Bakkie neMarhori',
+    generalServices: 'Zvigadzirwa, Mafoni neMabasa',
     woodworkBuilding: 'Mapuranga neKuvaka',
     solarHardware: 'Solar neZvikamu',
 
     allLocations: 'Nzvimbo Dzese',
     allCurrencies: 'Mari Dzese',
-    barterAccepted: 'Kutsinhana Kunoita',
+    barterAccepted: 'Kuchinjana Kunoita',
     caneHarvestReady: 'Zvakagadzirira Nzimbe',
     clearFilters: 'Dzima Zvakasarudzwa',
     showingListings: 'Zviratidzwa',
@@ -180,9 +192,9 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     buyNowCash: 'Tenga neMari (USD/ZAR)',
     contactSeller: 'Bata Mutengesi',
-    proposeBarter: 'Tsinhana Zvinhu',
-    barterOnly: 'KUTSINHANA CHETE',
-    barterTerms: 'Zviga zvekutsinhana: ',
+    proposeBarter: 'Chinjana Zvinhu',
+    barterOnly: 'KUCHINJANA CHETE',
+    barterTerms: 'Zviga zvekuchinjana: ',
     viewDetail: 'Wona Zvakazara',
 
     buyModalTitle: 'Tenga neMari (USD / ZAR Cash)',
@@ -197,15 +209,15 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     orderSubmitted: 'Oda Yatumirwa!',
     openWhatsAppBuy: 'Vura WhatsApp Uchimutengera',
 
-    barterModalTitle: 'Kumbira Kutsinhana Zvinhu',
-    whatYouOffer: 'Chii chaunacho chekutsinhanisa nacho?',
+    barterModalTitle: 'Kumbira Kuchinjana Zvinhu',
+    whatYouOffer: 'Chii chaunacho chekuchinjanisa nacho?',
     offerDetails: 'Zvakazara nezvechinhu chako',
-    submitBarterOffer: 'Tumira Chitsinhano',
+    submitBarterOffer: 'Tumira Chikumbiro Chekuchinjana',
 
     offeringDetails: 'Zvechigadzirwa',
     listedPriceTerms: 'Mutengo / Zviga:',
     sellerProfile: 'ZvaMutengesi',
-    completedTrades: 'Zvakatsinhana',
+    completedTrades: 'Zvakachinjwa',
     rating: 'Chiitiko',
   },
   nd: {
@@ -220,8 +232,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     heroTitle1: 'Thengisa Inkomo, Imizamo meZenzo Zezandla e',
     heroTitleHighlight: 'Chiredzi',
-    heroSubtitle: 'Imakethe exhumanisa balimi, babuyisi benkomo, bo-welder base-Industrial labatshayeli bamaloli ku-WhatsApp eChiredzi lonke.',
-    searchPlaceholder: "Cinga (isbonelo: 'Inkomo zokusenga', 'Welder eTshovani', 'Iloli lakatshukela')...",
+    heroSubtitle: 'Imakethe exhumanisa balimi, babuyisi benkomo, abathengisi lokugqoka labatshayeli bamaloli ku-WhatsApp eChiredzi lonke.',
+    searchPlaceholder: "Cinga (isbonelo: 'Inkomo zokusenga', 'Welder eTshovani', 'Izembatho')...",
     searchBtn: 'Cinga',
     quickFind: 'Okudingwa kakhulu:',
     directWhatsApp: 'WhatsApp Ngqo',
@@ -231,8 +243,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     allSectors: 'Ingxenye Zonke',
     livestockAgric: 'Inkomo leZilimelo',
+    groceryWholesale: 'Ukudla leMpuphu',
+    clothingTextiles: 'Izembatho labathungi',
+    buildingConstruction: 'Ukwakha leZinsimbi',
     industrialTrades: 'Izimboni leZinsimbi',
     haulageTransport: 'Izithuthi leZimoto',
+    generalServices: 'Izinsiza Zonke',
     woodworkBuilding: 'Izihlahla leZindlu',
     solarHardware: 'Solar leZingxenye',
 
@@ -258,7 +274,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     pickupLocation: 'Indawo yokuyithatha',
     buyerName: 'Ibizo lakho elipheleleyo',
     buyerPhone: 'Inombolo yakho ye-WhatsApp',
-    paymentCurrency: 'Imali obhadala ngayo font-mono',
+    paymentCurrency: 'Imali obhadala ngayo',
     submitCashOrder: 'Faka Isicelo Sokuthenga',
     orderSubmitted: 'Isicelo Singenile!',
     openWhatsAppBuy: 'Vula i-WhatsApp Ukuthenga',
@@ -286,8 +302,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     heroTitle1: 'Xavisa Mahlolwa, Zvimilwa neMitirho ya Mavoko e',
     heroTitleHighlight: 'Chiredzi',
-    heroSubtitle: 'Musika lowu hlanganisaka valimi va nchova, vafuwi va tihomu, vatsveri va welding ne vachayeri va tilori hi WhatsApp eChiredzi hinkwayo.',
-    searchPlaceholder: "Lava (xikombiso: 'Tihomu ta nchova', 'Welder ya Tshovani', 'Lori ya nchova')...",
+    heroSubtitle: 'Musika lowu hlanganisaka valimi va nchova, vafuwi va tihomu, vasoni va swiambalo ne vatsveri hi WhatsApp eChiredzi hinkwayo.',
+    searchPlaceholder: "Lava (xikombiso: 'Tihomu ta nchova', 'Swiambalo', 'Welder ya Tshovani')...",
     searchBtn: 'Lava',
     quickFind: 'Swa xihatla:',
     directWhatsApp: 'WhatsApp hi ku Direct',
@@ -297,8 +313,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     allSectors: 'Migingiriko Hinkwayo',
     livestockAgric: 'Tihomu ne Burimi',
+    groceryWholesale: 'Swakudya ne Tigrosari',
+    clothingTextiles: 'Swiambalo ne Vurhungi',
+    buildingConstruction: 'Ku Aka ne Hardware',
     industrialTrades: 'Welding ne Titirho',
     haulageTransport: 'Tilori ne Zvitutsi',
+    generalServices: 'Swilo Hinkwaswo',
     woodworkBuilding: 'Pulanga ne ku Aka',
     solarHardware: 'Solar ne Swiphemu',
 
