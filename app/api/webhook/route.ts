@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processWhatsAppMessage } from '@/lib/whatsapp-engine';
+import crypto from 'crypto';
 
 export const maxDuration = 30; // Max execution timeout for Vercel serverless functions
+
+// Cryptographic verification of Meta's X-Hub-Signature-256
+function verifyMetaSignature(payload: string, signatureHeader: string | null, appSecret: string): boolean {
+  if (!signatureHeader || !appSecret) return false;
+
+  const [prefix, signature] = signatureHeader.split('=');
+  if (prefix !== 'sha256' || !signature) return false;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', appSecret)
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+}
 
 // 1. Meta Webhook Subscription Verification (GET)
 export async function GET(req: NextRequest) {
@@ -10,7 +26,7 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
-  const VERIFY_TOKEN = process.env.WEBHOOK_VERIFY_TOKEN || 'chiredzi_trade_verify_token';
+  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'chiredzi_trade_verify_token_2026';
 
   if (mode === 'subscribe' && token === VERIFY_TOKEN) {
     return new NextResponse(challenge, { status: 200 });
@@ -22,7 +38,18 @@ export async function GET(req: NextRequest) {
 // 2. Incoming Messages Handler (POST)
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBodyText = await req.text();
+
+    // In production with APP_SECRET configured, enforce HMAC-SHA256 signature verification
+    const APP_SECRET = process.env.WHATSAPP_APP_SECRET;
+    const signature = req.headers.get('x-hub-signature-256');
+
+    if (APP_SECRET && !verifyMetaSignature(rawBodyText, signature, APP_SECRET)) {
+      console.warn('Unauthorized webhook payload rejected: Invalid HMAC signature');
+      return NextResponse.json({ status: 'error', error: 'Invalid signature' }, { status: 401 });
+    }
+
+    const body = JSON.parse(rawBodyText);
 
     // Check if message is a direct testing payload or Meta Graph Cloud API payload
     if (body.from && (body.body || body.text)) {
