@@ -9,10 +9,11 @@ import { useAuth } from '@/context/AuthContext';
 
 interface BarterProposalModalProps {
   listing: Listing | null;
+  isOpen?: boolean;
   onClose: () => void;
 }
 
-export default function BarterProposalModal({ listing, onClose }: BarterProposalModalProps) {
+export default function BarterProposalModal({ listing, isOpen = true, onClose }: BarterProposalModalProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [proposerName, setProposerName] = useState(user?.fullName || '');
@@ -39,13 +40,13 @@ export default function BarterProposalModal({ listing, onClose }: BarterProposal
         handleDismiss();
       }
     };
-    if (listing) {
+    if (listing && isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [listing]);
+  }, [listing, isOpen]);
 
-  if (!listing) return null;
+  if (!isOpen || !listing) return null;
 
   const handleDismiss = () => {
     setSubmitted(false);

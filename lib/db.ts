@@ -272,18 +272,23 @@ export const db = {
 
     if (supabase) {
       try {
-        await supabase.from('barter_proposals').insert({
+        const numericTopUp = parseFloat(String(newProposal.cashTopUp || '').replace(/[^0-9.]/g, '')) || 0;
+        const { error } = await supabase.from('barter_proposals').insert({
           id: newProposal.id,
           listing_id: newProposal.listingId,
           proposer_name: newProposal.proposerName,
           proposer_phone: newProposal.proposerPhone,
-          proposer_location: newProposal.proposerLocation,
           offered_item_title: newProposal.offeredItemTitle,
-          offered_description: newProposal.offeredDescription,
-          cash_top_up: newProposal.cashTopUp || '0',
+          offered_item_description: newProposal.offeredDescription || '',
+          cash_top_up: numericTopUp,
           status: newProposal.status,
+          notes: newProposal.proposerLocation || '',
           created_at: newProposal.createdAt,
         });
+
+        if (error) {
+          console.error('Supabase insert proposal error:', error);
+        }
       } catch (e) {
         console.warn('Supabase insert proposal failed:', e);
       }
@@ -303,19 +308,23 @@ export const db = {
 
     if (supabase) {
       try {
-        await supabase.from('trade_orders').insert({
+        const { error } = await supabase.from('trade_orders').insert({
           id: newOrder.id,
           listing_id: newOrder.listingId,
           buyer_name: newOrder.buyerName,
           buyer_phone: newOrder.buyerPhone,
-          pickup_location: newOrder.pickupLocation,
-          currency_choice: newOrder.currencyChoice,
-          quantity: newOrder.quantity,
-          total_price: newOrder.totalPrice,
+          quantity: newOrder.quantity || 1,
+          agreed_price: newOrder.totalPrice || 0,
+          currency: newOrder.currencyChoice || 'USD',
           status: newOrder.status,
-          notes: newOrder.notes,
+          payment_method: 'CASH_ON_DELIVERY',
+          notes: newOrder.pickupLocation || newOrder.notes || '',
           created_at: newOrder.createdAt,
         });
+
+        if (error) {
+          console.error('Supabase insert order error:', error);
+        }
       } catch (e) {
         console.warn('Supabase insert order failed:', e);
       }
@@ -338,10 +347,10 @@ export const db = {
             listingId: p.listing_id,
             proposerName: p.proposer_name,
             proposerPhone: p.proposer_phone,
-            proposerLocation: p.proposer_location,
+            proposerLocation: p.notes || 'Chiredzi',
             offeredItemTitle: p.offered_item_title,
-            offeredDescription: p.offered_description,
-            cashTopUp: p.cash_top_up,
+            offeredDescription: p.offered_item_description,
+            cashTopUp: p.cash_top_up ? `$${p.cash_top_up} USD` : undefined,
             status: p.status,
             createdAt: p.created_at,
           }));
@@ -394,10 +403,10 @@ export const db = {
             listingId: p.listing_id,
             proposerName: p.proposer_name,
             proposerPhone: p.proposer_phone,
-            proposerLocation: p.proposer_location,
+            proposerLocation: p.notes || 'Chiredzi',
             offeredItemTitle: p.offered_item_title,
-            offeredDescription: p.offered_description,
-            cashTopUp: p.cash_top_up,
+            offeredDescription: p.offered_item_description,
+            cashTopUp: p.cash_top_up ? `$${p.cash_top_up} USD` : undefined,
             status: p.status,
             createdAt: p.created_at,
           }));
@@ -427,10 +436,10 @@ export const db = {
             listingId: o.listing_id,
             buyerName: o.buyer_name,
             buyerPhone: o.buyer_phone,
-            pickupLocation: o.pickup_location,
-            currencyChoice: o.currency_choice,
-            quantity: o.quantity,
-            totalPrice: o.total_price,
+            pickupLocation: o.notes || 'Chiredzi',
+            currencyChoice: o.currency || 'USD',
+            quantity: o.quantity || 1,
+            totalPrice: Number(o.agreed_price) || 0,
             status: o.status,
             notes: o.notes,
             createdAt: o.created_at,

@@ -50,8 +50,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (data: { fullName: string; phoneNumber: string; email?: string; locationArea?: string }) => {
+    const cleanPhone = data.phoneNumber ? data.phoneNumber.replace(/\D/g, '') : '';
+    const cleanEmail = data.email ? data.email.trim().toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+    const deterministicId = cleanPhone
+      ? `user-phone-${cleanPhone}`
+      : (cleanEmail ? `user-email-${cleanEmail}` : `user-${Date.now()}`);
+
     const newUser: UserProfile = {
-      id: `user-${Date.now()}`,
+      id: deterministicId,
       fullName: data.fullName,
       phoneNumber: data.phoneNumber,
       email: data.email || '',

@@ -10,10 +10,11 @@ import { useAuth } from '@/context/AuthContext';
 
 interface BuyCashModalProps {
   listing: Listing | null;
+  isOpen?: boolean;
   onClose: () => void;
 }
 
-export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
+export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCashModalProps) {
   const router = useRouter();
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -41,13 +42,13 @@ export default function BuyCashModal({ listing, onClose }: BuyCashModalProps) {
         handleDismiss();
       }
     };
-    if (listing) {
+    if (listing && isOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [listing]);
+  }, [listing, isOpen]);
 
-  if (!listing) return null;
+  if (!isOpen || !listing) return null;
 
   const handleDismiss = () => {
     setSubmitted(false);

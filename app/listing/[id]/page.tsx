@@ -285,18 +285,21 @@ function ListingDetailContent() {
                 )}
               </div>
 
-              {/* Action Buttons: Cash Purchase, Barter Swap & WhatsApp */}
-              <div className="space-y-3">
-                {/* BUY CASH BUTTON */}
-                <button
-                  onClick={() => setBuyModalOpen(true)}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-xl shadow-emerald-950/60 transition-all hover:scale-[1.02]"
-                >
-                  <ShoppingBag className="w-5 h-5 text-white" />
-                  <span>{t.buyNowCash}</span>
-                </button>
+              {/* Action Buttons: Cash Purchase / WhatsApp / Barter Swap */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Cash Buy */}
+                {listing.currency !== 'BARTER' && (
+                  <button
+                    disabled={listing.status === 'sold'}
+                    onClick={() => setBuyModalOpen(true)}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl shadow-emerald-950/80 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>{listing.status === 'sold' ? 'Sold Out' : t.buyNowCash}</span>
+                  </button>
+                )}
 
-                {/* WhatsApp Chat Button */}
+                {/* Direct WhatsApp Contact */}
                 <a
                   href={directWhatsAppUrl}
                   target="_blank"
@@ -309,11 +312,12 @@ function ListingDetailContent() {
 
                 {/* Propose Barter Swap */}
                 <button
+                  disabled={listing.status === 'sold'}
                   onClick={() => setBarterModalOpen(true)}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold text-sm flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <RefreshCw className="w-4 h-4 text-amber-400" />
-                  <span>{t.proposeBarter}</span>
+                  <span>{listing.status === 'sold' ? 'Sold Out' : t.proposeBarter}</span>
                 </button>
               </div>
 
@@ -430,12 +434,14 @@ function ListingDetailContent() {
       </div>
 
       <BuyCashModal
-        listing={listing}
+        isOpen={buyModalOpen}
+        listing={buyModalOpen ? listing : null}
         onClose={() => setBuyModalOpen(false)}
       />
 
       <BarterProposalModal
-        listing={listing}
+        isOpen={barterModalOpen}
+        listing={barterModalOpen ? listing : null}
         onClose={() => setBarterModalOpen(false)}
       />
 
