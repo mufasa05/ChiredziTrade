@@ -15,9 +15,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'ChiredziTrade - Lowveld Multi-Currency & Barter Marketplace',
-  description: 'Localized trade engine for Chiredzi, Hippo Valley, Triangle, and Mkwasine. Trade cattle, farm produce, borehole pumps, welding, and cane haulage via WhatsApp and Web PWA.',
-  keywords: ['Chiredzi', 'Hippo Valley', 'Triangle', 'Mkwasine', 'Lowveld Zimbabwe', 'Cattle Barter', 'Cane Haulage', 'Tshovani Trades'],
+  title: 'Zim Barter - Zimbabwe Barter, Goods & Artisan Trades Engine',
+  description: 'Nationwide marketplace for Zimbabwe. Swap goods, farm produce, livestock, hardware, solar, and artisan services via WhatsApp and Web PWA across Harare, Bulawayo, Mutare, Masvingo, Chiredzi & nationwide.',
+  keywords: ['Zim Barter', 'Zimbabwe Barter', 'Harare Marketplace', 'Bulawayo Barter', 'Masvingo Trades', 'Chiredzi Trade', 'Cattle Barter Zimbabwe', 'ZWG USD Barter'],
   manifest: '/manifest.json',
 };
 
@@ -29,17 +29,23 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        {/* Permanent Baseline CSS Fallback - Prevents unstyled white screens even if dev cache fails */}
+        {/* Permanent Baseline CSS Fallback & Theme Baseline */}
         <style dangerouslySetInnerHTML={{ __html: `
           html, body {
-            background-color: #070d09 !important;
-            color: #f1f5f3 !important;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
             max-width: 100vw;
             width: 100%;
+          }
+          html.dark, html.dark body {
+            background-color: #070d09;
+            color: #f1f5f3;
+          }
+          html.light, html.light body {
+            background-color: #f4f8f5;
+            color: #0f1d13;
           }
           a { color: inherit; text-decoration: none; }
           * { box-sizing: border-box; }
@@ -56,7 +62,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="min-h-screen flex flex-col bg-[#070d09] text-gray-100 antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-300">
+      <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-300">
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

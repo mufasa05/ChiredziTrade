@@ -22,68 +22,18 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Light Theme Root Adjustments */
+/* Theme Root Adjustments */
+html.dark body {
+  background-color: #070d09;
+  color: #f1f5f3;
+}
+
 html.light body {
-  background-color: #f4f8f5 !important;
-  color: #0f1d13 !important;
+  background-color: #f4f8f5;
+  color: #0f1d13;
 }
 
-html.light .glass-panel {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08);
-}
-
-html.light .glass-card {
-  background: #ffffff;
-  border: 1px solid #d1e7d8;
-  box-shadow: 0 4px 14px rgba(15, 29, 19, 0.05);
-}
-
-html.light .glass-card:hover {
-  border-color: #10b981;
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
-}
-
-html.light .text-white {
-  color: #0f1d13 !important;
-}
-
-html.light .text-gray-300,
-html.light .text-gray-400 {
-  color: #374151 !important;
-}
-
-html.light .bg-lowveld-950 {
-  background-color: #e6f0e9 !important;
-}
-
-html.light .bg-lowveld-900 {
-  background-color: #dbece0 !important;
-}
-
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0d1510;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #254d32;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3e995c;
-}
-
-/* Glassmorphism effects */
+/* Glassmorphism effects - Dark Theme Default */
 .glass-panel {
   background: rgba(14, 25, 18, 0.75);
   backdrop-filter: blur(14px);
@@ -111,6 +61,65 @@ html.light .bg-lowveld-900 {
   box-shadow: 0 12px 30px -10px rgba(46, 124, 72, 0.25);
 }
 
+/* Glassmorphism effects - Light Theme */
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08);
+}
+
+html.light .glass-panel-amber {
+  background: rgba(254, 243, 199, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 4px 18px -2px rgba(245, 158, 11, 0.12);
+}
+
+html.light .glass-card {
+  background: #ffffff;
+  backdrop-filter: none;
+  border: 1px solid #d1e7d8;
+  box-shadow: 0 4px 14px rgba(15, 29, 19, 0.05);
+  transition: all 0.25s ease-in-out;
+}
+
+html.light .glass-card:hover {
+  border-color: #10b981;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d1510;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #e6f0e9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #254d32;
+  border-radius: 4px;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #a3d9b4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3e995c;
+}
+
 /* WhatsApp Message Bubble styles */
 .wa-bubble-in {
   background: #1f2c34;
@@ -127,18 +136,30 @@ html.light .bg-lowveld-900 {
 /* Badges and tags */
 .badge-usd {
   background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+html.dark .badge-usd {
+  color: #34d399;
 }
 
 .badge-zar {
   background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  color: #2563eb;
   border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+html.dark .badge-zar {
+  color: #60a5fa;
 }
 
 .badge-barter {
   background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
+  color: #d97706;
   border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+html.dark .badge-barter {
+  color: #fbbf24;
 }

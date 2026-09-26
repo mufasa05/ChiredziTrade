@@ -18,7 +18,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
   const { user } = useAuth();
   const [proposerName, setProposerName] = useState(user?.fullName || '');
   const [proposerPhone, setProposerPhone] = useState(user?.phoneNumber || '');
-  const [proposerLocation, setProposerLocation] = useState(user?.locationArea || 'Tshovani');
+  const [proposerLocation, setProposerLocation] = useState(user?.locationArea || 'Harare CBD');
   const [offeredItemTitle, setOfferedItemTitle] = useState('');
   const [offeredDescription, setOfferedDescription] = useState('');
   const [cashTopUp, setCashTopUp] = useState('');
@@ -103,7 +103,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
       onClick={(e) => {
         if (e.target === e.currentTarget) handleDismiss();
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-fade-in cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -114,7 +114,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
           type="button"
           onClick={handleDismiss}
           aria-label="Close modal"
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-lowveld-900/80 hover:bg-lowveld-800 text-gray-400 hover:text-white transition-all shadow-md"
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-slate-100 dark:bg-lowveld-900/80 hover:bg-slate-200 dark:hover:bg-lowveld-800 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all shadow-md"
         >
           <X className="w-5 h-5" />
         </button>
@@ -123,25 +123,25 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
           <div>
             {/* Header */}
             <div className="flex items-center gap-3 mb-4 pr-8">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/40 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-500 dark:text-amber-400 flex items-center justify-center border border-amber-500/40 shrink-0">
                 <RefreshCw className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-display font-bold text-xl text-white">
+                <h3 className="font-display font-bold text-xl text-slate-900 dark:text-white">
                   Propose Smart Barter Swap
                 </h3>
-                <p className="text-xs text-gray-300">
-                  Trading with <b className="text-emerald-400">{listing.user.fullName}</b> ({listing.locationArea})
+                <p className="text-xs text-slate-600 dark:text-gray-300">
+                  Trading with <b className="text-emerald-600 dark:text-emerald-400">{listing.user.fullName}</b> ({listing.locationArea})
                 </p>
               </div>
             </div>
 
             {/* Target Item Pill */}
-            <div className="p-3 rounded-xl bg-lowveld-950/80 border border-lowveld-800 mb-5 text-xs">
-              <p className="text-gray-400">Target Item:</p>
-              <p className="font-bold text-white text-sm">{listing.title}</p>
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-lowveld-950/80 border border-amber-200 dark:border-lowveld-800 mb-5 text-xs">
+              <p className="text-slate-500 dark:text-gray-400">Target Item:</p>
+              <p className="font-bold text-slate-900 dark:text-white text-sm">{listing.title}</p>
               {listing.barterTerms && (
-                <p className="text-amber-300 mt-1">
+                <p className="text-amber-800 dark:text-amber-300 mt-1">
                   <b>Seller seeks:</b> {listing.barterTerms}
                 </p>
               )}
@@ -150,7 +150,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
             {/* Proposal Form */}
             <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
               <div>
-                <label className="block text-gray-300 font-semibold mb-1">
+                <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
                   What item / service are you offering in return? *
                 </label>
                 <input
@@ -159,12 +159,12 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                   placeholder="e.g. 2 Boer goats, 20 bags maize, borehole repair, tractor ploughing"
                   value={offeredItemTitle}
                   onChange={(e) => setOfferedItemTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-lowveld-950/90 border border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-300 font-semibold mb-1">
+                <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
                   Details of your offer (Quantity, Condition, Terms)
                 </label>
                 <textarea
@@ -172,13 +172,13 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                   placeholder="e.g. Healthy 2-year-old Boer goat ewes vaccinated, or 5 hectares disc ridging..."
                   value={offeredDescription}
                   onChange={(e) => setOfferedDescription(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-lowveld-950/90 border border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">
+                  <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
                     Your Name *
                   </label>
                   <input
@@ -187,12 +187,12 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                     placeholder="e.g. Prince A. Shumba"
                     value={proposerName}
                     onChange={(e) => setProposerName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-lowveld-950/90 border border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">
+                  <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
                     Your WhatsApp Phone *
                   </label>
                   <input
@@ -201,33 +201,33 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                     placeholder="+263 77..."
                     value={proposerPhone}
                     onChange={(e) => setProposerPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-lowveld-950/90 border border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">
+                  <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
                     Your Location
                   </label>
                   <select
                     value={proposerLocation}
                     onChange={(e) => setProposerLocation(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-lowveld-950/90 border border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                   >
-                    <option value="Tshovani">Tshovani</option>
-                    <option value="Chiredzi Light Industry">Chiredzi Light Industry</option>
-                    <option value="Triangle Estate">Triangle Estate</option>
-                    <option value="Hippo Valley">Hippo Valley</option>
-                    <option value="Mkwasine">Mkwasine</option>
-                    <option value="Buffalo Range">Buffalo Range</option>
-                    <option value="Malipati">Malipati</option>
+                    <option value="Tshovani" className="bg-white text-slate-900 dark:bg-[#070d09] dark:text-white">Tshovani</option>
+                    <option value="Chiredzi Light Industry" className="bg-white text-slate-900 dark:bg-[#070d09] dark:text-white">Chiredzi Light Industry</option>
+                    <option value="Triangle Estate" className="bg-white text-slate-900 dark:bg-[#070d09] dark:text-white">Triangle Estate</option>
+                    <option value="Hippo Valley" className="bg-white text-slate-900 dark:bg-[#070d09] dark:text-white">Hippo Valley</option>
+                    <option value="Mkwasine" className="bg-white text-slate-900 dark:bg-[#070d09] dark:text-white">Mkwasine</option>
+                    <option value="Buffalo Range" className="bg-white text-slate-900 dark:bg-[#070d09] dark:text-white">Buffalo Range</option>
+                    <option value="Malipati" className="bg-white text-slate-900 dark:bg-[#070d09] dark:text-white">Malipati</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">
+                  <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
                     Cash Top-Up (Optional)
                   </label>
                   <input
@@ -235,7 +235,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                     placeholder="e.g. + $50 USD or + 500 ZAR"
                     value={cashTopUp}
                     onChange={(e) => setCashTopUp(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950/90 border border-lowveld-800 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-lowveld-950/90 border border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                   />
                 </div>
               </div>
@@ -244,7 +244,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-lowveld-950 font-black flex items-center justify-center gap-2 shadow-lg shadow-amber-950/40 transition-all disabled:opacity-50"
+                  className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 dark:shadow-amber-950/40 transition-all disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                   <span>{submitting ? 'Submitting...' : 'Submit Barter Proposal'}</span>
@@ -254,15 +254,15 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
           </div>
         ) : (
           <div className="text-center py-6">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/40">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/40">
               <CheckCircle className="w-8 h-8" />
             </div>
-            <h3 className="font-display font-bold text-2xl text-white mb-2">
+            <h3 className="font-display font-bold text-2xl text-slate-900 dark:text-white mb-2">
               Barter Offer Logged!
             </h3>
-            <p className="text-sm text-gray-300 mb-6 max-w-sm mx-auto">
+            <p className="text-sm text-slate-600 dark:text-gray-300 mb-6 max-w-sm mx-auto">
               Your trade offer has been recorded. To speed up the deal, send this offer directly to{' '}
-              <b className="text-white">{listing.user.fullName}</b> on WhatsApp now:
+              <b className="text-slate-900 dark:text-white">{listing.user.fullName}</b> on WhatsApp now:
             </p>
 
             <div className="space-y-3">
@@ -279,7 +279,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
               <button
                 type="button"
                 onClick={handleReturnToMarketplace}
-                className="w-full py-3 px-4 rounded-xl bg-lowveld-900 hover:bg-lowveld-800 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-emerald-500/30 shadow-md"
+                className="w-full py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-lowveld-900 dark:hover:bg-lowveld-800 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-emerald-500/30 shadow-md"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Return to Marketplace</span>

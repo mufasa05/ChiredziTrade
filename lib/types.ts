@@ -13,17 +13,34 @@ export type SectorCategory =
   | 'woodwork_construction' 
   | 'retail_hardware';
 
-export type LowveldLocation = 
-  | 'Tshovani' 
-  | 'Chiredzi Light Industry' 
-  | 'Triangle Estate' 
-  | 'Hippo Valley' 
-  | 'Mkwasine' 
-  | 'Buffalo Range' 
-  | 'Chipiwa Outgrowers' 
-  | 'Malipati' 
-  | 'Mwenezi / Rutenga' 
-  | 'Chiviga';
+export type ZimLocation = 
+  | 'Harare CBD'
+  | 'Harare - Borrowdale'
+  | 'Harare - Avondale'
+  | 'Harare - Mbare / Machipisa'
+  | 'Bulawayo CBD'
+  | 'Bulawayo - Hillside'
+  | 'Chiredzi / Triangle'
+  | 'Mutare'
+  | 'Gweru'
+  | 'Masvingo'
+  | 'Kwekwe'
+  | 'Chinhoyi'
+  | 'Bindura'
+  | 'Marondera'
+  | 'Victoria Falls'
+  | 'Beitbridge'
+  | 'Zvishavane'
+  | 'Kadoma'
+  | 'Kariba'
+  | 'Gwanda'
+  | 'Chipinge'
+  | 'Tshovani'
+  | 'Triangle Estate'
+  | 'Hippo Valley'
+  | 'Mkwasine';
+
+export type LowveldLocation = ZimLocation;
 
 export type ConditionGrade = 'New' | 'Used - Good' | 'Used - Fair' | 'Service Showcase';
 

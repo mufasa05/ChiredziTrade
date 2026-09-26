@@ -26,7 +26,7 @@ export async function analyzeItemPhoto(base64OrUrl: string, fileName?: string): 
       }
 
       parts.push({
-        text: `You are an expert Zimbabwean marketplace product classifier for ChiredziTrade in the Lowveld region.
+        text: `You are an expert Zimbabwean marketplace product classifier for Zim Barter, serving Harare, Bulawayo, Mutare, Masvingo, Chiredzi, and all of Zimbabwe.
 Analyze this photo carefully. Identify specifically what item, agricultural produce, livestock, clothing/textile, grocery wholesale product, construction material, or industrial trade service is shown.
 Respond strictly in valid JSON format:
 {

@@ -44,9 +44,9 @@ export default function WhatsAppSimulatorModal({
     {
       id: 'msg-init',
       sender: 'bot',
-      text: `Welcome to ChiredziTrade WhatsApp Bot\nLowveld Multi-Currency and Barter Marketplace\n\nType SELL to list livestock, goods, or artisan services.\nType what you need to SEARCH (e.g. "Welder in Tshovani" or "30t haulage").`,
+      text: `Welcome to Zim Barter WhatsApp Bot\nZimbabwe's #1 Barter & Trade Engine\n\nType SELL to list livestock, goods, or artisan services.\nType what you need to SEARCH (e.g. "Welder in Bulawayo" or "30t truck Harare").`,
       time: '19:00',
-      quickReplies: ['SELL', 'Nditsvagirewo Welder', 'Find Brahman Heifers', '30t Cane Truck'],
+      quickReplies: ['SELL', 'Nditsvagirewo Welder', 'Find Brahman Heifers', '30t Truck Hire'],
     },
   ]);
   const [input, setInput] = useState('');
@@ -124,7 +124,7 @@ export default function WhatsAppSimulatorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-md h-[90vh] max-h-[720px] rounded-3xl overflow-hidden shadow-2xl flex flex-col bg-[#0b141a] border border-[#202c33]">
         {/* WhatsApp Top Green Header */}
         <div className="bg-[#202c33] px-3.5 py-3 flex items-center justify-between text-white border-b border-[#2a3942]">

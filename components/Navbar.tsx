@@ -46,33 +46,33 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-lowveld-800/60 bg-[#070d09]/95 backdrop-blur-md shadow-xl">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-lowveld-800/60 bg-white/95 dark:bg-[#070d09]/95 backdrop-blur-md shadow-sm dark:shadow-xl transition-colors duration-300">
       {/* Micro Ticker */}
-      <div className="hidden sm:flex items-center justify-between px-4 sm:px-8 py-1 bg-lowveld-950/80 border-b border-lowveld-900/50 text-[11px] text-gray-300">
+      <div className="hidden sm:flex items-center justify-between px-4 sm:px-8 py-1 bg-slate-100 dark:bg-lowveld-950/80 border-b border-slate-200 dark:border-lowveld-900/50 text-[11px] text-slate-700 dark:text-gray-300">
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1 text-emerald-400 font-medium">
+          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             {t.liveMarket}
           </span>
-          <span className="text-gray-400">📍 Chiredzi • Hippo Valley • Triangle • Mkwasine • Mwenezi</span>
+          <span className="text-slate-600 dark:text-gray-400">📍 Harare • Bulawayo • Mutare • Masvingo • Chiredzi • Nationwide</span>
         </div>
-        <div className="flex items-center gap-4 font-mono text-gray-300">
+        <div className="flex items-center gap-4 font-mono text-slate-700 dark:text-gray-300">
           <span>💵 {t.multiCurrencyHeader}</span>
-          <span className="text-emerald-400/80">Sugarcane Harvest Season Active 🚜</span>
+          <span className="text-emerald-600 dark:text-emerald-400/80 font-medium">Nationwide Barter Active 🇿🇼</span>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
-        {/* Logo (Responsive Compact for Mobile) */}
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-lowveld-700 flex items-center justify-center text-white shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-lowveld-700 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30 group-hover:scale-105 transition-transform">
             <Tractor className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="flex items-center gap-1">
-            <span className="font-display font-extrabold text-base sm:text-2xl tracking-tight text-white">
-              Chiredzi<span className="text-emerald-400">Trade</span>
+            <span className="font-display font-extrabold text-base sm:text-2xl tracking-tight text-slate-900 dark:text-white">
+              Zim<span className="text-emerald-600 dark:text-emerald-400">Barter</span>
             </span>
-            <span className="hidden sm:inline-block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="hidden sm:inline-block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
               PWA
             </span>
           </div>
@@ -82,35 +82,24 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           <Link
             href="/"
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
               pathname === '/' 
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
-                : 'text-gray-300 hover:text-white hover:bg-lowveld-900/50'
+                ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
+                : 'text-slate-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-lowveld-900/50'
             }`}
           >
             {t.marketplace}
           </Link>
           <Link
             href="/barter-network"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
               pathname === '/barter-network'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                : 'text-gray-300 hover:text-white hover:bg-lowveld-900/50'
+                ? 'bg-amber-500/15 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                : 'text-slate-700 dark:text-gray-300 hover:text-amber-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-lowveld-900/50'
             }`}
           >
-            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+            <RefreshCw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
             <span>{t.smartBarterHub}</span>
-          </Link>
-          <Link
-            href="/whatsapp-bot"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              pathname === '/whatsapp-bot'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                : 'text-gray-300 hover:text-white hover:bg-lowveld-900/50'
-            }`}
-          >
-            <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{t.whatsAppEngine}</span>
           </Link>
         </nav>
 
@@ -119,13 +108,13 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           {/* Theme Switcher Toggle (Dark / Light) */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl bg-lowveld-950/80 hover:bg-lowveld-900 border border-emerald-500/30 text-emerald-300 transition-all"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-lowveld-950/80 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-300 transition-all shadow-sm"
             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
             {theme === 'dark' ? (
               <Sun className="w-4 h-4 text-amber-400" />
             ) : (
-              <Moon className="w-4 h-4 text-emerald-400" />
+              <Moon className="w-4 h-4 text-emerald-600" />
             )}
           </button>
 
@@ -133,16 +122,16 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           <div className="relative">
             <button
               onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-lowveld-950/80 hover:bg-lowveld-900 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition-all"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950/80 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 text-xs font-semibold transition-all shadow-sm"
             >
-              <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{languages.find((l) => l.code === language)?.flag}</span>
               <span className="uppercase text-[11px]">{language}</span>
               <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
             </button>
 
             {langDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-44 rounded-2xl glass-panel border border-emerald-500/40 p-1.5 shadow-2xl z-50 animate-fade-in">
+              <div className="absolute right-0 mt-2 w-44 rounded-2xl bg-white dark:bg-[#0b1410] border border-slate-200 dark:border-emerald-500/40 p-1.5 shadow-2xl z-50 animate-fade-in text-slate-900 dark:text-gray-200">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
@@ -152,15 +141,15 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
                       language === lang.code
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'text-gray-300 hover:bg-lowveld-900 hover:text-white'
+                        ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40'
+                        : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <span className="flex items-center gap-2">
                       <span>{lang.flag}</span>
                       <span>{lang.label}</span>
                     </span>
-                    {language === lang.code && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                    {language === lang.code && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                   </button>
                 ))}
               </div>
@@ -170,7 +159,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           {/* WhatsApp Simulator Launch Button */}
           <button
             onClick={onOpenWhatsApp}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#005c4b]/80 hover:bg-[#005c4b] text-emerald-100 border border-emerald-500/30 transition-all shadow-sm shadow-emerald-950"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#005c4b] hover:bg-[#00705b] text-white border border-emerald-500/30 transition-all shadow-sm"
           >
             <MessageCircle className="w-4 h-4 text-emerald-300 animate-pulse shrink-0" />
             <span className="hidden md:inline">{t.tryWhatsAppBot}</span>
@@ -181,9 +170,9 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-200 text-xs font-bold transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-xs font-bold transition-all"
               >
-                <div className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[11px] font-black flex items-center justify-center shrink-0">
+                <div className="w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-black flex items-center justify-center shrink-0">
                   {user.fullName.charAt(0)}
                 </div>
                 <span className="max-w-[90px] truncate">{user.fullName}</span>
@@ -191,18 +180,18 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
               </button>
 
               {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-2xl glass-panel border border-emerald-500/40 p-2 shadow-2xl z-50 animate-fade-in text-xs">
-                  <div className="px-3 py-2 border-b border-lowveld-800 text-gray-300">
-                    <p className="font-bold text-white truncate">{user.fullName}</p>
-                    <p className="text-[10px] text-emerald-400 font-mono mt-0.5 pr-1">{user.phoneNumber}</p>
-                    <p className="text-[10px] text-gray-400">📍 {user.locationArea}</p>
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-[#0b1410] border border-slate-200 dark:border-emerald-500/40 p-2 shadow-2xl z-50 animate-fade-in text-xs text-slate-900 dark:text-gray-200">
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-lowveld-800 text-slate-700 dark:text-gray-300">
+                    <p className="font-bold text-slate-900 dark:text-white truncate">{user.fullName}</p>
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 pr-1">{user.phoneNumber}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400">📍 {user.locationArea}</p>
                   </div>
                   <Link
                     href="/dashboard"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="w-full flex items-center gap-2 px-3 py-2 mt-1 rounded-xl text-emerald-300 hover:bg-emerald-500/10 font-bold transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 mt-1 rounded-xl text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 font-bold transition-colors"
                   >
-                    <Package className="w-4 h-4 text-emerald-400" />
+                    <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Seller Dashboard</span>
                   </Link>
                   <button
@@ -210,7 +199,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                       logout();
                       setUserDropdownOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 mt-0.5 rounded-xl text-red-400 hover:bg-red-500/10 font-bold transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 mt-0.5 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 font-bold transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Log Out</span>
@@ -221,9 +210,9 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           ) : (
             <button
               onClick={() => openAuthModal()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lowveld-950 hover:bg-lowveld-900 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 text-xs font-bold transition-all shadow-sm"
             >
-              <LogIn className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <LogIn className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Sign In</span>
             </button>
           )}
@@ -237,25 +226,25 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                 window.location.href = '/post';
               }
             }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white shadow-lg shadow-emerald-900/30 transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white shadow-md transition-all"
           >
             <PlusCircle className="w-4 h-4 shrink-0" />
             <span className="hidden md:inline">{t.postListing}</span>
           </button>
         </div>
 
-        {/* MOBILE CONTROLS (Theme + Language Switcher + Quick Post + Drawer Toggle) */}
+        {/* MOBILE CONTROLS */}
         <div className="flex sm:hidden items-center gap-1 shrink-0">
           {/* Theme Switcher Toggle (Mobile) */}
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-xl bg-lowveld-950 border border-emerald-500/30 text-emerald-300"
+            className="p-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-300"
             title="Toggle Theme"
           >
             {theme === 'dark' ? (
               <Sun className="w-3.5 h-3.5 text-amber-400" />
             ) : (
-              <Moon className="w-3.5 h-3.5 text-emerald-400" />
+              <Moon className="w-3.5 h-3.5 text-emerald-600" />
             )}
           </button>
 
@@ -263,15 +252,15 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           <div className="relative">
             <button
               onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-lowveld-950 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 text-[11px] font-bold"
             >
-              <Globe className="w-3 h-3 text-emerald-400 shrink-0" />
+              <Globe className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{languages.find((l) => l.code === language)?.flag}</span>
               <span className="uppercase">{language}</span>
             </button>
 
             {langDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-44 rounded-2xl glass-panel border border-emerald-500/40 p-1.5 shadow-2xl z-50 animate-fade-in">
+              <div className="absolute right-0 mt-2 w-44 rounded-2xl bg-white dark:bg-[#0b1410] border border-slate-200 dark:border-emerald-500/40 p-1.5 shadow-2xl z-50 animate-fade-in text-slate-900 dark:text-gray-200">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
@@ -281,15 +270,15 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
                       language === lang.code
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'text-gray-300 hover:bg-lowveld-900 hover:text-white'
+                        ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40'
+                        : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <span className="flex items-center gap-2">
                       <span>{lang.flag}</span>
                       <span>{lang.label}</span>
                     </span>
-                    {language === lang.code && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                    {language === lang.code && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                   </button>
                 ))}
               </div>
@@ -305,7 +294,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                 window.location.href = '/post';
               }
             }}
-            className="p-1.5 rounded-xl bg-emerald-500 text-white font-bold shadow-md"
+            className="p-1.5 rounded-xl bg-emerald-600 text-white font-bold shadow-md"
             title="Post a Listing"
           >
             <PlusCircle className="w-4 h-4" />
@@ -314,7 +303,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           {/* Hamburger Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 rounded-xl bg-lowveld-900 border border-emerald-500/30 text-emerald-300"
+            className="p-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300"
             aria-label="Toggle Mobile Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -324,7 +313,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
 
       {/* MOBILE SLIDE-DOWN DRAWER MENU */}
       {mobileMenuOpen && (
-        <div className="sm:hidden border-t border-lowveld-800 bg-[#070d09] px-4 py-4 space-y-3 animate-fade-in shadow-2xl">
+        <div className="sm:hidden border-t border-slate-200 dark:border-lowveld-800 bg-white dark:bg-[#070d09] px-4 py-4 space-y-3 animate-fade-in shadow-2xl text-slate-900 dark:text-gray-200">
           {/* Pages */}
           <div className="space-y-1">
             <Link
@@ -332,11 +321,11 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
                 pathname === '/'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  : 'text-gray-300 hover:bg-lowveld-900'
+                  ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                  : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900'
               }`}
             >
-              <ShoppingBag className="w-4 h-4 text-emerald-400" />
+              <ShoppingBag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{t.marketplace}</span>
             </Link>
 
@@ -345,25 +334,12 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
               onClick={() => setMobileMenuOpen(false)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
                 pathname === '/barter-network'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  : 'text-gray-300 hover:bg-lowveld-900'
+                  ? 'bg-amber-500/15 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                  : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900'
               }`}
             >
-              <RefreshCw className="w-4 h-4 text-amber-400" />
+              <RefreshCw className="w-4 h-4 text-amber-500 dark:text-amber-400" />
               <span>{t.smartBarterHub}</span>
-            </Link>
-
-            <Link
-              href="/whatsapp-bot"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
-                pathname === '/whatsapp-bot'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  : 'text-gray-300 hover:bg-lowveld-900'
-              }`}
-            >
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
-              <span>{t.whatsAppEngine}</span>
             </Link>
 
             {isAuthenticated && (
@@ -372,11 +348,11 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
                   pathname === '/dashboard'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'text-gray-300 hover:bg-lowveld-900'
+                    ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                    : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900'
                 }`}
               >
-                <Package className="w-4 h-4 text-emerald-400" />
+                <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Seller Dashboard</span>
               </Link>
             )}

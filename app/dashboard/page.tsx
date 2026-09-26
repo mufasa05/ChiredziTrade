@@ -108,19 +108,19 @@ export default function DashboardPage() {
 
   if (!isAuthenticated) {
     return (
-      <main className="min-h-screen flex flex-col bg-[#070d09]">
+      <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
         <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
-        <div className="max-w-lg mx-auto px-4 py-24 text-center glass-panel rounded-3xl mt-12 border border-emerald-500/20">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-emerald-400">
+        <div className="max-w-lg mx-auto px-4 py-24 text-center glass-panel rounded-3xl mt-12 border border-slate-200 dark:border-emerald-500/20 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-emerald-600 dark:text-emerald-400">
             <Package className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Trader Dashboard</h2>
-          <p className="text-sm text-gray-400 mb-6">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Trader Dashboard</h2>
+          <p className="text-sm text-slate-600 dark:text-gray-400 mb-6">
             Sign in to manage your active marketplace listings, review incoming barter proposals, and track cash buy orders.
           </p>
           <button
             onClick={() => openAuthModal('Sign in to view your seller dashboard and listings.')}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 text-white font-bold text-sm shadow-lg shadow-emerald-950 transition-all hover:scale-105"
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 text-white font-bold text-sm shadow-md transition-all hover:scale-105"
           >
             Sign In to Account
           </button>
@@ -131,84 +131,84 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#070d09]">
+    <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
       <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full flex-1">
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
               <span>Lowveld Trader Portal</span>
             </div>
-            <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-white">
+            <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-white">
               Seller Dashboard
             </h1>
-            <p className="text-xs sm:text-sm text-gray-400 mt-1">
-              Logged in as <span className="text-emerald-400 font-bold">{user?.fullName}</span> ({user?.phoneNumber}) · {user?.locationArea}
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mt-1">
+              Logged in as <span className="text-emerald-600 dark:text-emerald-400 font-bold">{user?.fullName}</span> ({user?.phoneNumber}) · {user?.locationArea}
             </p>
           </div>
 
           <Link
             href="/post"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-950 transition-all hover:scale-105"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all hover:scale-105"
           >
-            <PlusCircle className="w-4 h-4" />
+            <PlusCircle className="w-4 h-4 text-white" />
             <span>Post New Listing</span>
           </Link>
         </div>
 
         {/* STATS STRIP */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 mb-8">
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-lowveld-800/80">
+          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">My Listings</span>
-              <Package className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs text-slate-600 dark:text-gray-400 font-medium">My Listings</span>
+              <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <p className="text-xl sm:text-3xl font-black text-white font-display">
+            <p className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white font-display">
               {stats.totalListings}
             </p>
-            <span className="text-[11px] text-emerald-400/90 font-medium">
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
               {stats.activeListings} currently active
             </span>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-lowveld-800/80">
+          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">Barter Proposals</span>
-              <RefreshCw className="w-4 h-4 text-amber-400" />
+              <span className="text-xs text-slate-600 dark:text-gray-400 font-medium">Barter Proposals</span>
+              <RefreshCw className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             </div>
-            <p className="text-xl sm:text-3xl font-black text-amber-400 font-display">
+            <p className="text-xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 font-display">
               {stats.pendingProposals}
             </p>
-            <span className="text-[11px] text-gray-400 font-medium">
+            <span className="text-[11px] text-slate-500 dark:text-gray-400 font-medium">
               Asset swap offers
             </span>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-lowveld-800/80">
+          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">Cash Orders</span>
-              <ShoppingBag className="w-4 h-4 text-sky-400" />
+              <span className="text-xs text-slate-600 dark:text-gray-400 font-medium">Cash Orders</span>
+              <ShoppingBag className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             </div>
-            <p className="text-xl sm:text-3xl font-black text-white font-display">
+            <p className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white font-display">
               {stats.totalOrders}
             </p>
-            <span className="text-[11px] text-sky-400/90 font-medium">
+            <span className="text-[11px] text-sky-600 dark:text-sky-400 font-medium">
               COD Handover orders
             </span>
           </div>
 
-          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-lowveld-800/80">
+          <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">Order Value</span>
-              <DollarSign className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs text-slate-600 dark:text-gray-400 font-medium">Order Value</span>
+              <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <p className="text-xl sm:text-3xl font-black text-emerald-400 font-display">
+            <p className="text-xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-display">
               ${stats.totalOrderValue.toLocaleString()}
             </p>
-            <span className="text-[11px] text-gray-400 font-medium">
+            <span className="text-[11px] text-slate-500 dark:text-gray-400 font-medium">
               Gross sales interest
             </span>
           </div>

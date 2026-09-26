@@ -97,8 +97,8 @@ export default function CategoryPills({
               onClick={() => onSelectCategory(cat.id)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 shrink-0 ${
                 isSelected
-                  ? 'bg-gradient-to-r from-emerald-600 to-lowveld-700 text-white shadow-lg shadow-emerald-950/60 border border-emerald-400/50 scale-[1.02]'
-                  : 'bg-lowveld-950/60 hover:bg-lowveld-900/80 text-gray-300 border border-lowveld-800/60 hover:border-lowveld-700'
+                  ? 'bg-gradient-to-r from-emerald-600 to-lowveld-700 text-white shadow-md border border-emerald-400/50 scale-[1.02]'
+                  : 'bg-white dark:bg-lowveld-950/60 hover:bg-slate-100 dark:hover:bg-lowveld-900/80 text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-lowveld-800/60 hover:border-slate-300 dark:hover:border-lowveld-700 shadow-sm'
               }`}
             >
               <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : cat.colorClass.split(' ')[0]}`} />
@@ -106,7 +106,7 @@ export default function CategoryPills({
               {typeof count === 'number' && (
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                    isSelected ? 'bg-white/20 text-white' : 'bg-lowveld-800 text-gray-400'
+                    isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-lowveld-800 text-slate-600 dark:text-gray-400'
                   }`}
                 >
                   {count}

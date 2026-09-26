@@ -1,7 +1,7 @@
 {
-  "name": "ChiredziTrade - Lowveld Multi-Currency & Barter Marketplace",
-  "short_name": "ChiredziTrade",
-  "description": "Localized trade marketplace & WhatsApp engine for Chiredzi, Triangle, Mkwasine & Hippo Valley. Trade livestock, farm produce, borehole pumps, welding, and cane haulage.",
+  "name": "Zim Barter - Zimbabwe Barter, Goods & Artisan Trades Engine",
+  "short_name": "Zim Barter",
+  "description": "Nationwide trade marketplace & WhatsApp engine for Zimbabwe. Trade livestock, farm produce, solar equipment, hardware, and artisan services.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -18,17 +18,29 @@ interface FilterBarProps {
   hasActiveFilters: boolean;
 }
 
-export const LOWVELD_LOCATIONS = [
+export const ZIM_LOCATIONS = [
   'All Locations',
+  'Harare CBD',
+  'Harare - Borrowdale',
+  'Harare - Avondale',
+  'Harare - Mbare',
+  'Bulawayo CBD',
+  'Bulawayo - Hillside',
+  'Mutare',
+  'Gweru',
+  'Masvingo',
+  'Chiredzi / Triangle',
+  'Kwekwe',
+  'Chinhoyi',
+  'Bindura',
+  'Marondera',
+  'Victoria Falls',
+  'Beitbridge',
+  'Zvishavane',
   'Tshovani',
-  'Chiredzi Light Industry',
   'Triangle Estate',
   'Hippo Valley',
   'Mkwasine',
-  'Buffalo Range',
-  'Chipiwa Outgrowers',
-  'Malipati',
-  'Mwenezi / Rutenga',
 ];
 
 export default function FilterBar({
@@ -46,18 +58,18 @@ export default function FilterBar({
   const { t } = useLanguage();
 
   return (
-    <div className="w-full py-3 px-3 sm:px-4 rounded-2xl glass-panel border border-lowveld-800/40 mb-6 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+    <div className="w-full py-3 px-3 sm:px-4 rounded-2xl glass-panel border border-slate-200 dark:border-lowveld-800/40 mb-6 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         {/* Location Dropdown */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lowveld-950/70 border border-lowveld-800/70 text-gray-300">
-          <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950/70 border border-slate-200 dark:border-lowveld-800/70 text-slate-800 dark:text-gray-300">
+          <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <select
             value={selectedLocation}
             onChange={(e) => onSelectLocation(e.target.value)}
-            className="bg-transparent text-gray-200 focus:outline-none cursor-pointer text-xs sm:text-sm"
+            className="bg-transparent text-slate-800 dark:text-gray-200 focus:outline-none cursor-pointer text-xs sm:text-sm"
           >
-            {LOWVELD_LOCATIONS.map((loc) => (
-              <option key={loc} value={loc === 'All Locations' ? 'all' : loc} className="bg-lowveld-950 text-white">
+            {ZIM_LOCATIONS.map((loc) => (
+              <option key={loc} value={loc === 'All Locations' ? 'all' : loc} className="bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white">
                 {loc === 'All Locations' ? t.allLocations : loc}
               </option>
             ))}
@@ -65,13 +77,13 @@ export default function FilterBar({
         </div>
 
         {/* Currency Segment Filter */}
-        <div className="flex items-center bg-lowveld-950/70 p-1 rounded-xl border border-lowveld-800/70">
+        <div className="flex items-center bg-slate-100 dark:bg-lowveld-950/70 p-1 rounded-xl border border-slate-200 dark:border-lowveld-800/70">
           <button
             onClick={() => onSelectCurrency('all')}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
               selectedCurrency === 'all'
                 ? 'bg-emerald-600 text-white'
-                : 'text-gray-400 hover:text-white'
+                : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             {t.allCurrencies}
@@ -81,7 +93,7 @@ export default function FilterBar({
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
               selectedCurrency === 'USD'
                 ? 'bg-emerald-500 text-white'
-                : 'text-gray-400 hover:text-white'
+                : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             USD ($)
@@ -91,7 +103,7 @@ export default function FilterBar({
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
               selectedCurrency === 'ZAR'
                 ? 'bg-blue-600 text-white'
-                : 'text-gray-400 hover:text-white'
+                : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             ZAR (R)
@@ -101,7 +113,7 @@ export default function FilterBar({
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
               selectedCurrency === 'ZWG'
                 ? 'bg-amber-600 text-white'
-                : 'text-gray-400 hover:text-white'
+                : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             ZWG (ZiG)
@@ -113,11 +125,11 @@ export default function FilterBar({
           onClick={() => onToggleBarterOnly(!barterOnly)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
             barterOnly
-              ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-950'
-              : 'bg-lowveld-950/70 text-gray-400 border-lowveld-800/70 hover:text-gray-200'
+              ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/50 shadow-sm'
+              : 'bg-slate-100 dark:bg-lowveld-950/70 text-slate-600 dark:text-gray-400 border-slate-200 dark:border-lowveld-800/70 hover:text-slate-900 dark:hover:text-gray-200'
           }`}
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${barterOnly ? 'text-amber-400 animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${barterOnly ? 'text-amber-500 dark:text-amber-400 animate-spin' : ''}`} />
           <span>{t.barterAccepted}</span>
         </button>
 
@@ -126,11 +138,11 @@ export default function FilterBar({
           onClick={() => onToggleHarvestReady(!harvestReady)}
           className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
             harvestReady
-              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
-              : 'bg-lowveld-950/70 text-gray-400 border-lowveld-800/70 hover:text-gray-200'
+              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/50'
+              : 'bg-slate-100 dark:bg-lowveld-950/70 text-slate-600 dark:text-gray-400 border-slate-200 dark:border-lowveld-800/70 hover:text-slate-900 dark:hover:text-gray-200'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span>{t.caneHarvestReady}</span>
         </button>
       </div>

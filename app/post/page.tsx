@@ -25,8 +25,9 @@ import { useAuth } from '@/context/AuthContext';
 export default function PostListingPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { user, isAuthenticated, openAuthModal } = useAuth();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -34,7 +35,7 @@ export default function PostListingPage() {
   const [currency, setCurrency] = useState<TradeCurrency>('USD');
   const [price, setPrice] = useState<string>('');
   const [barterTerms, setBarterTerms] = useState('');
-  const [locationArea, setLocationArea] = useState<LowveldLocation | string>('Tshovani');
+  const [locationArea, setLocationArea] = useState<LowveldLocation | string>('Harare CBD');
   const [conditionGrade, setConditionGrade] = useState<ConditionGrade>('New');
   const [harvestReady, setHarvestReady] = useState(false);
   const [openToBarter, setOpenToBarter] = useState(true);
@@ -161,6 +162,48 @@ export default function PostListingPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+  };
+
+  const sampleGalleryPhotos = [
+    { title: 'Boer Goats', url: 'https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?w=800&auto=format&fit=crop&q=80' },
+    { title: 'Maize Sacks', url: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&auto=format&fit=crop&q=80' },
+    { title: 'Solar Pump', url: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop&q=80' },
+    { title: 'Welding Machine', url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=800&auto=format&fit=crop&q=80' },
+    { title: 'Cane Truck', url: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=800&auto=format&fit=crop&q=80' },
+  ];
+
+  const handleSelectSamplePhoto = async (sampleUrl: string) => {
+    setImageUrl(sampleUrl);
+    setAnalyzingImage(true);
+    try {
+      const res = await fetch('/api/ai/vision-tag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: sampleUrl,
+          fileName: 'sample.jpg',
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.analysis) {
+        const { suggestedTitle, category: cat, tags, conditionGrade: grade, confidence } = data.analysis;
+        if (suggestedTitle && !title) setTitle(suggestedTitle);
+        if (cat) setCategory(cat);
+        if (Array.isArray(tags) && tags.length > 0) {
+          setAiTags(tags);
+        }
+        if (grade) setConditionGrade(grade);
+        setAiConfidence(confidence);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAnalyzingImage(false);
+    }
   };
 
   const defaultCategoryImages: Record<string, string> = {
@@ -247,49 +290,58 @@ export default function PostListingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070d09] text-gray-100 flex flex-col selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 flex flex-col selection:bg-emerald-500 selection:text-white transition-colors duration-300">
       <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full">
         <div className="mb-8 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
             <span>Lowveld Multi-Currency & Barter Marketplace</span>
           </div>
-          <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-white">
-            {t.postListing} on <span className="text-emerald-400">ChiredziTrade</span>
+          <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-white">
+            {t.postListing} on <span className="text-emerald-600 dark:text-emerald-400">ChiredziTrade</span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-400 mt-2">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mt-2">
             Connect directly with outgrowers, ranchers, artisans, wholesalers, and traders across the Lowveld.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* STEP 1: PHOTO & CAMERA UPLOAD */}
-          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-lowveld-800/80 shadow-xl space-y-5">
+          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-xl space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-display font-bold text-lg text-white flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   <span>1. Real Product Photo</span>
                 </h3>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-slate-600 dark:text-gray-400">
                   Take a photo or upload from your device. Real photos increase buyer trust.
                 </p>
               </div>
 
               {aiConfidence && (
-                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>Quality Verified</span>
                 </span>
               )}
             </div>
 
-            {/* Hidden native camera/file input */}
+            {/* Native file input for gallery / device file picker (NO capture attribute) */}
             <input
               type="file"
               ref={fileInputRef}
+              accept="image/*"
+              onChange={handleImageFileChange}
+              className="hidden"
+            />
+
+            {/* Native file input for live camera capture (WITH capture="environment") */}
+            <input
+              type="file"
+              ref={cameraInputRef}
               accept="image/*"
               capture="environment"
               onChange={handleImageFileChange}
@@ -298,27 +350,61 @@ export default function PostListingPage() {
 
             {/* Photo Upload / Preview Zone */}
             {!imageUrl ? (
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-emerald-500/40 hover:border-emerald-400 bg-lowveld-950/60 hover:bg-lowveld-950/90 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all group"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 group-hover:bg-emerald-500/25 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30 transition-transform group-hover:scale-105">
-                  <Camera className="w-8 h-8" />
+              <div className="border-2 border-dashed border-emerald-500/40 hover:border-emerald-500 bg-slate-100/70 dark:bg-lowveld-950/60 rounded-3xl p-6 sm:p-10 text-center transition-all">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
+                  <ImageIcon className="w-8 h-8" />
                 </div>
-                <h4 className="font-bold text-white text-base sm:text-lg mb-1">
-                  Tap to Take Photo with Camera or Upload
+                <h4 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg mb-1">
+                  Upload Product Photo
                 </h4>
-                <p className="text-xs text-gray-400 max-w-sm mx-auto mb-4">
-                  Select a clear photo from your phone or computer. Images are auto-compressed for Lowveld mobile networks.
+                <p className="text-xs text-slate-600 dark:text-gray-400 max-w-sm mx-auto mb-6">
+                  Choose a photo from your phone photo gallery, camera roll, device files, or snap a live camera photo.
                 </p>
-                <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950 transition-all">
-                  <Upload className="w-4 h-4" />
-                  <span>Choose Photo / Open Camera</span>
-                </span>
+
+                {/* Primary Upload Actions */}
+                <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
+                  >
+                    <ImageIcon className="w-4 h-4 text-white" />
+                    <span>Choose from Gallery / Files</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 dark:hover:bg-lowveld-800 text-slate-800 dark:text-gray-200 font-bold text-xs border border-slate-300 dark:border-lowveld-700 shadow-md transition-all cursor-pointer"
+                  >
+                    <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Take Live Camera Photo</span>
+                  </button>
+                </div>
+
+                {/* Quick Select Sample Gallery Photos */}
+                <div className="pt-4 border-t border-slate-200 dark:border-lowveld-800/80">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-gray-400 mb-3">
+                    Or select a sample Lowveld item photo:
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    {sampleGalleryPhotos.map((sample, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSelectSamplePhoto(sample.url)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-lowveld-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-slate-200 dark:border-lowveld-800 text-slate-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-300 text-xs transition-all shadow-sm"
+                      >
+                        <img src={sample.url} alt={sample.title} className="w-4 h-4 rounded-full object-cover" />
+                        <span>{sample.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-lowveld-950 border border-lowveld-800 group shadow-xl">
+                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 group shadow-xl">
                   <img
                     src={imageUrl}
                     alt="Product Preview"
@@ -355,23 +441,23 @@ export default function PostListingPage() {
                 </div>
 
                 {/* Editable Tags */}
-                <div className="p-4 rounded-2xl bg-lowveld-950/60 border border-lowveld-800/80 space-y-2.5">
+                <div className="p-4 rounded-2xl bg-slate-100 dark:bg-lowveld-950/60 border border-slate-200 dark:border-lowveld-800/80 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-gray-300">Listing Tags (for search & matching):</span>
-                    <span className="text-[11px] text-gray-500">Tap tag to remove</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-gray-300">Listing Tags (for search & matching):</span>
+                    <span className="text-[11px] text-slate-500 dark:text-gray-500">Tap tag to remove</span>
                   </div>
                   
                   <div className="flex flex-wrap gap-1.5 items-center">
                     {aiTags.map((tag) => (
                       <span 
                         key={tag} 
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 text-xs border border-emerald-500/30"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs border border-emerald-500/30"
                       >
                         <span>#{tag}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(tag)}
-                          className="hover:text-red-400 transition-colors ml-0.5"
+                          className="hover:text-red-600 dark:hover:text-red-400 transition-colors ml-0.5"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -391,12 +477,12 @@ export default function PostListingPage() {
                           }
                         }}
                         placeholder="Add tag..."
-                        className="px-2.5 py-1 rounded-lg bg-lowveld-900 text-white placeholder-gray-500 text-xs border border-lowveld-700 focus:outline-none focus:border-emerald-400 w-24 sm:w-32"
+                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-lowveld-900 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 text-xs border border-slate-300 dark:border-lowveld-700 focus:outline-none focus:border-emerald-400 w-24 sm:w-32"
                       />
                       <button
                         type="button"
                         onClick={handleAddTag}
-                        className="p-1 rounded-lg bg-lowveld-800 hover:bg-lowveld-700 text-gray-300 hover:text-white transition-colors"
+                        className="p-1 rounded-lg bg-slate-200 dark:bg-lowveld-800 hover:bg-slate-300 dark:hover:bg-lowveld-700 text-slate-700 dark:text-gray-300 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -408,13 +494,13 @@ export default function PostListingPage() {
           </div>
 
           {/* STEP 2: LISTING CORE DETAILS */}
-          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-lowveld-800/80 shadow-xl space-y-4">
-            <h3 className="font-display font-bold text-lg text-white">
+          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-xl space-y-4">
+            <h3 className="font-display font-bold text-lg text-slate-900 dark:text-white">
               2. Core Listing Details
             </h3>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                 Listing Title *
               </label>
               <input
@@ -423,19 +509,19 @@ export default function PostListingPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. 5 Young Brahman Heifers, 50kg Sugar Wholesale, or Custom Tailored Dresses"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                   Economic Category *
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as SectorCategory)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 >
                   <option value="livestock_agric">Livestock & Agric Produce</option>
                   <option value="grocery_wholesale">Groceries & Food Wholesale (Tuckshops)</option>
@@ -448,29 +534,33 @@ export default function PostListingPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
-                  Lowveld Location Area *
+                <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
+                  Trading Location Hub *
                 </label>
                 <select
                   value={locationArea}
                   onChange={(e) => setLocationArea(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 >
-                  <option value="Tshovani">Tshovani Town</option>
-                  <option value="Chiredzi Light Industry">Chiredzi Light Industry</option>
-                  <option value="Hippo Valley">Hippo Valley Estate</option>
-                  <option value="Triangle Estate">Triangle Sugar Estate</option>
-                  <option value="Mkwasine">Mkwasine Outgrowers</option>
-                  <option value="Buffalo Range">Buffalo Range</option>
-                  <option value="Chipiwa Outgrowers">Chipiwa Outgrowers</option>
-                  <option value="Malipati">Malipati Rural</option>
-                  <option value="Mwenezi / Rutenga">Mwenezi / Rutenga</option>
+                  <option value="Harare CBD">Harare CBD</option>
+                  <option value="Harare - Borrowdale">Harare - Borrowdale</option>
+                  <option value="Bulawayo CBD">Bulawayo CBD</option>
+                  <option value="Mutare">Mutare</option>
+                  <option value="Masvingo">Masvingo</option>
+                  <option value="Gweru">Gweru</option>
+                  <option value="Chiredzi / Triangle">Chiredzi / Triangle</option>
+                  <option value="Kwekwe">Kwekwe</option>
+                  <option value="Chinhoyi">Chinhoyi</option>
+                  <option value="Bindura">Bindura</option>
+                  <option value="Marondera">Marondera</option>
+                  <option value="Victoria Falls">Victoria Falls</option>
+                  <option value="Beitbridge">Beitbridge</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                 Detailed Description *
               </label>
               <textarea
@@ -479,26 +569,26 @@ export default function PostListingPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Specify condition, quantities, delivery terms, or harvest timelines..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
               />
             </div>
           </div>
 
           {/* STEP 3: PRICING & BARTER */}
-          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-lowveld-800/80 shadow-xl space-y-4">
-            <h3 className="font-display font-bold text-lg text-white">
+          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-xl space-y-4">
+            <h3 className="font-display font-bold text-lg text-slate-900 dark:text-white">
               3. Multi-Currency Pricing & Barter Exchange
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                   Currency Type *
                 </label>
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as TradeCurrency)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 >
                   <option value="USD">USD ($ Cash)</option>
                   <option value="ZAR">ZAR (SA Rand)</option>
@@ -509,7 +599,7 @@ export default function PostListingPage() {
 
               {currency !== 'BARTER' && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                     Price Amount ({currency}) *
                   </label>
                   <input
@@ -517,13 +607,13 @@ export default function PostListingPage() {
                     placeholder="e.g. 50"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-amber-500/40 focus:outline-none focus:border-amber-400 text-xs sm:text-sm font-mono font-bold"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-amber-500/40 focus:outline-none focus:border-amber-500 text-xs sm:text-sm font-mono font-bold"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                   Open to Barter Trade?
                 </label>
                 <div className="flex items-center gap-2 pt-2">
@@ -532,9 +622,9 @@ export default function PostListingPage() {
                     id="barterToggle"
                     checked={openToBarter || currency === 'BARTER'}
                     onChange={(e) => setOpenToBarter(e.target.checked)}
-                    className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 bg-lowveld-950"
+                    className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 bg-white dark:bg-lowveld-950"
                   />
-                  <label htmlFor="barterToggle" className="text-xs text-amber-200 cursor-pointer font-medium">
+                  <label htmlFor="barterToggle" className="text-xs text-amber-800 dark:text-amber-200 cursor-pointer font-medium">
                     Accept items / cattle in swap
                   </label>
                 </div>
@@ -543,7 +633,7 @@ export default function PostListingPage() {
 
             {(openToBarter || currency === 'BARTER') && (
               <div className="pt-2">
-                <label className="block text-xs font-semibold text-amber-300 mb-1">
+                <label className="block text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">
                   What goods / services will you accept in barter? *
                 </label>
                 <input
@@ -551,21 +641,21 @@ export default function PostListingPage() {
                   value={barterTerms}
                   onChange={(e) => setBarterTerms(e.target.value)}
                   placeholder="e.g. Will swap for 2 Brahman heifers, 20 bags maize, or borehole repair service"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-amber-500/60 focus:outline-none focus:border-amber-300 text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-amber-500/60 focus:outline-none focus:border-amber-400 text-xs sm:text-sm"
                 />
               </div>
             )}
           </div>
 
           {/* STEP 4: SELLER PROFILE & CONTACT */}
-          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-lowveld-800/80 shadow-xl space-y-4">
+          <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-display font-bold text-lg text-white">
+              <h3 className="font-display font-bold text-lg text-slate-900 dark:text-white">
                 4. Seller Contact & Verification
               </h3>
               {user && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/30">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold border border-emerald-500/30">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                   <span>Linked to {user.fullName}</span>
                 </span>
               )}
@@ -573,7 +663,7 @@ export default function PostListingPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                   Your Full / Business Name *
                 </label>
                 <input
@@ -582,12 +672,12 @@ export default function PostListingPage() {
                   value={sellerName}
                   onChange={(e) => setSellerName(e.target.value)}
                   placeholder="e.g. Prince A. Shumba"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
                   WhatsApp Phone Number *
                 </label>
                 <input
@@ -596,7 +686,7 @@ export default function PostListingPage() {
                   value={sellerPhone}
                   onChange={(e) => setSellerPhone(e.target.value)}
                   placeholder="+263 77..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-lowveld-950 text-white border border-lowveld-800 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 />
               </div>
             </div>

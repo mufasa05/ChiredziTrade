@@ -132,22 +132,22 @@ export default function ListingCard({ listing, onProposeBarter, onBuyCash }: Lis
         <div>
           {/* Title */}
           <Link href={`/listing/${listing.id}`}>
-            <h3 className="font-display font-bold text-base sm:text-lg text-white group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug mb-2">
+            <h3 className="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug mb-2">
               {listing.title}
             </h3>
           </Link>
 
           {/* Description snippet */}
-          <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3">
+          <p className="text-xs text-slate-600 dark:text-gray-400 line-clamp-2 leading-relaxed mb-3">
             {listing.description}
           </p>
 
           {/* Barter Callout Banner */}
           {listing.barterTerms && (
-            <div className="p-2.5 rounded-xl glass-panel-amber border border-amber-500/30 mb-3 text-xs text-amber-200 flex items-start gap-2">
-              <RefreshCw className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+            <div className="p-2.5 rounded-xl glass-panel-amber border border-amber-500/30 mb-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+              <RefreshCw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
               <div className="line-clamp-2">
-                <span className="font-bold text-amber-300">{t.barterTerms}</span>
+                <span className="font-bold text-amber-800 dark:text-amber-300">{t.barterTerms}</span>
                 {listing.barterTerms}
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function ListingCard({ listing, onProposeBarter, onBuyCash }: Lis
               {listing.imageTags.slice(0, 3).map((tag, idx) => (
                 <span
                   key={idx}
-                  className="px-2 py-0.5 rounded-md bg-lowveld-950 text-[10px] text-gray-400 border border-lowveld-800"
+                  className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-lowveld-950 text-[10px] text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-lowveld-800"
                 >
                   #{tag}
                 </span>
@@ -169,18 +169,18 @@ export default function ListingCard({ listing, onProposeBarter, onBuyCash }: Lis
         </div>
 
         {/* Footer: Seller & Explicit Buy / Barter Actions */}
-        <div className="pt-3 border-t border-lowveld-800/40">
+        <div className="pt-3 border-t border-slate-200 dark:border-lowveld-800/40">
           <div className="flex items-center justify-between mb-3 text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-lowveld-800 flex items-center justify-center text-emerald-400 text-xs font-bold border border-lowveld-700">
+              <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-lowveld-800 flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-slate-300 dark:border-lowveld-700">
                 {listing.user.fullName.charAt(0)}
               </div>
               <div className="overflow-hidden">
-                <p className="font-semibold text-gray-200 truncate max-w-[120px] sm:max-w-[140px]">
+                <p className="font-semibold text-slate-800 dark:text-gray-200 truncate max-w-[120px] sm:max-w-[140px]">
                   {listing.user.fullName}
                 </p>
                 {listing.user.verifiedArtisan && (
-                  <p className="text-[10px] text-emerald-400 flex items-center gap-0.5">
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
                     <ShieldCheck className="w-2.5 h-2.5" />
                     <span>Verified</span>
                   </p>
@@ -188,7 +188,7 @@ export default function ListingCard({ listing, onProposeBarter, onBuyCash }: Lis
               </div>
             </div>
 
-            <span className="text-[11px] text-gray-400 font-mono">
+            <span className="text-[11px] text-slate-500 dark:text-gray-400 font-mono">
               ⭐ {listing.user.rating || '5.0'}
             </span>
           </div>

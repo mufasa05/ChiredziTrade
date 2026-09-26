@@ -1,9 +1,9 @@
 import { Listing, BarterProposal, TradeOrder, BotSession, SectorCategory, TradeCurrency, TradeReview } from './types';
 import { INITIAL_LISTINGS } from './mock-data';
 
-// Initialize Supabase Client (with live production fallback)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kuevrcdsqxujcgdwwpup.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_Fp0NtFZZr1qHH4NCW8TTXQ_IzCOvjG7';
+// Initialize Supabase Client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 let supabase: any = null;
 
@@ -25,7 +25,7 @@ let memoryReviews: TradeReview[] = [
     id: 'rev-1',
     sellerId: 'user-1',
     reviewerName: 'Farai Moyo',
-    reviewerLocation: 'Triangle Estate',
+    reviewerLocation: 'Harare CBD',
     rating: 5,
     tradeType: 'Brahman Cattle Swap',
     comment: 'Exceptional heifers. Excellent temperament and condition. Smooth exchange!',
@@ -35,7 +35,7 @@ let memoryReviews: TradeReview[] = [
     id: 'rev-2',
     sellerId: 'user-2',
     reviewerName: 'Simba Chauke',
-    reviewerLocation: 'Tshovani',
+    reviewerLocation: 'Bulawayo - Hillside',
     rating: 5,
     tradeType: 'Sliding Gate Welding',
     comment: 'Tongai welded our farm compound gates in 2 days. Heavy gauge steel, very solid.',
@@ -47,7 +47,7 @@ let memorySessions: Record<string, BotSession> = {};
 // Load saved local listings if in browser environment
 if (typeof window !== 'undefined') {
   try {
-    const savedListings = localStorage.getItem('chiredzi_live_listings');
+    const savedListings = localStorage.getItem('zimbarter_live_listings');
     if (savedListings) {
       const parsed = JSON.parse(savedListings);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -62,7 +62,7 @@ if (typeof window !== 'undefined') {
 const saveLocalListings = () => {
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem('chiredzi_live_listings', JSON.stringify(memoryListings));
+      localStorage.setItem('zimbarter_live_listings', JSON.stringify(memoryListings));
     } catch (e) {
       console.error('Failed to save local listings:', e);
     }

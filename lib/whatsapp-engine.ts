@@ -30,7 +30,7 @@ export async function processWhatsAppMessage(msg: WhatsAppInboundMessage): Promi
     await db.updateBotSession(sender, 'AWAITING_TITLE', {});
     return {
       to: sender,
-      text: `ChiredziTrade Seller Desk\n\nWhat service or good are you offering?\n\nExamples:\n- Borehole pump repair in Tshovani\n- 4 Brahman heifers\n- Welding sliding gates`,
+      text: `Zim Barter Seller Desk\n\nWhat service or good are you offering?\n\nExamples:\n- Solar borehole pump repair in Harare\n- 4 Brahman heifers in Masvingo\n- Welding sliding gates Bulawayo`,
     };
   }
 
@@ -38,7 +38,7 @@ export async function processWhatsAppMessage(msg: WhatsAppInboundMessage): Promi
     await db.updateBotSession(sender, 'IDLE', {});
     return {
       to: sender,
-      text: `Search ChiredziTrade\n\nType what you need in English or Shona.\n\nExamples:\n- Need 30t cane truck to Triangle\n- Nditsvagirewo welder`,
+      text: `Search Zim Barter Marketplace\n\nType what you need in English, Shona, Ndebele, or Shangaan.\n\nExamples:\n- Need 30t truck Harare to Mutare\n- Nditsvagirewo welder muBulawayo`,
     };
   }
 
@@ -46,8 +46,8 @@ export async function processWhatsAppMessage(msg: WhatsAppInboundMessage): Promi
     await db.updateBotSession(sender, 'IDLE', {});
     return {
       to: sender,
-      text: `Welcome to ChiredziTrade\nLowveld Multi-Currency and Barter Marketplace\n\nHow can we help you today?\n\n1. Reply SELL to list goods, livestock, or artisan services.\n2. Reply with what you need to SEARCH (e.g. Need tractor hire in Mkwasine).\n3. Open web catalog: https://chiredzitrade.co.zw`,
-      quickReplies: ['SELL', 'Search Cane Haulage', 'Browse Cattle', 'Find Welder'],
+      text: `Welcome to Zim Barter\nZimbabwe's #1 Barter & Trade Engine\n\nHow can we help you today?\n\n1. Reply SELL to list goods, produce, livestock, or artisan services.\n2. Reply with what you need to SEARCH (e.g. Need solar kit in Harare).\n3. Open web catalog: https://zimbarter.co.zw`,
+      quickReplies: ['SELL', 'Search Haulage', 'Browse Cattle', 'Find Welder'],
     };
   }
 
