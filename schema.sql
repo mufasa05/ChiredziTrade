@@ -136,3 +136,15 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.listings;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.barter_proposals;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.trade_orders;
 
+-- 6. SUPABASE STORAGE BUCKET FOR LISTING PHOTOS (CDN)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('listing-images', 'listing-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Allow public read listing-images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow public insert listing-images" ON storage.objects;
+
+CREATE POLICY "Allow public read listing-images" ON storage.objects FOR SELECT USING (bucket_id = 'listing-images');
+CREATE POLICY "Allow public insert listing-images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'listing-images');
+
+
