@@ -132,9 +132,23 @@ CREATE POLICY "Allow public read trade_orders" ON public.trade_orders FOR SELECT
 CREATE POLICY "Allow public insert trade_orders" ON public.trade_orders FOR INSERT WITH CHECK (true);
 
 -- ENABLE REALTIME BROADCASTING FOR INSTANT 100% LIVE FEED UPDATES
-ALTER PUBLICATION supabase_realtime ADD TABLE public.listings;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.barter_proposals;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.trade_orders;
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.listings;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.barter_proposals;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.trade_orders;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- 6. SUPABASE STORAGE BUCKET FOR LISTING PHOTOS (CDN)
 INSERT INTO storage.buckets (id, name, public)
