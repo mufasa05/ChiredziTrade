@@ -1,5 +1,6 @@
 import { Listing, BarterProposal, TradeOrder, BotSession, SectorCategory, TradeCurrency, TradeReview } from './types';
 import { INITIAL_LISTINGS } from './mock-data';
+import { uploadListingImage } from './storage';
 
 // Initialize Supabase Client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -204,8 +205,14 @@ export const db = {
   },
 
   createListing: async (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>): Promise<Listing> => {
+    // Process imageUrls to upload any raw base64 data to Supabase Storage CDN
+    const processedImageUrls = await Promise.all(
+      (listingData.imageUrls || []).map((url) => uploadListingImage(url))
+    );
+
     const newListing: Listing = {
       ...listingData,
+      imageUrls: processedImageUrls,
       id: `listing-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
