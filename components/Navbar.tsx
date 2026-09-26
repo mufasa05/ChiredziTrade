@@ -156,14 +156,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
             )}
           </div>
 
-          {/* WhatsApp Simulator Launch Button */}
-          <button
-            onClick={onOpenWhatsApp}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#005c4b] hover:bg-[#00705b] text-white border border-emerald-500/30 transition-all shadow-sm"
-          >
-            <MessageCircle className="w-4 h-4 text-emerald-300 animate-pulse shrink-0" />
-            <span className="hidden md:inline">{t.tryWhatsAppBot}</span>
-          </button>
+
 
           {/* USER AUTH ACCOUNT CONTROL */}
           {isAuthenticated && user ? (
@@ -359,17 +352,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           </div>
 
           <div className="pt-2 border-t border-lowveld-800 space-y-2">
-            {/* WhatsApp Simulator Launch */}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                if (onOpenWhatsApp) onOpenWhatsApp();
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#005c4b] text-emerald-100 font-bold text-xs shadow-md"
-            >
-              <MessageCircle className="w-4 h-4 text-emerald-300" />
-              <span>{t.tryWhatsAppBot}</span>
-            </button>
+
 
             {/* Auth Account Button */}
             {isAuthenticated && user ? (

@@ -6,7 +6,6 @@ import { useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
-import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
 import ReviewModal from '@/components/ReviewModal';
 import { Listing, BarterMatch, TradeReview } from '@/lib/types';
 import { 
@@ -452,11 +451,6 @@ function ListingDetailContent() {
         sellerName={listing.user.fullName}
         listingId={listing.id}
         onReviewSubmitted={reloadReviews}
-      />
-
-      <WhatsAppSimulatorModal
-        isOpen={whatsAppOpen}
-        onClose={() => setWhatsAppOpen(false)}
       />
     </main>
   );

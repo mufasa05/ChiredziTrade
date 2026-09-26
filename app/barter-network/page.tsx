@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
-import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
 import { Listing } from '@/lib/types';
 import { 
   RefreshCw, 
@@ -162,11 +161,6 @@ function BarterNetworkContent() {
       <BarterProposalModal
         listing={activeModalListing}
         onClose={() => setActiveModalListing(null)}
-      />
-
-      <WhatsAppSimulatorModal
-        isOpen={whatsAppOpen}
-        onClose={() => setWhatsAppOpen(false)}
       />
     </main>
   );

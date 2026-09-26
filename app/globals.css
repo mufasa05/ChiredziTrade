@@ -16,24 +16,33 @@ html, body {
 }
 
 body {
-  background-color: #070d09;
-  color: #f1f5f3;
   font-family: var(--font-sans);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Theme Root Adjustments */
-html.dark body {
-  background-color: #070d09;
-  color: #f1f5f3;
+/* Theme Root Colors */
+html.dark, html.dark body {
+  background-color: #070d09 !important;
+  color: #f1f5f3 !important;
 }
 
-html.light body {
-  background-color: #f4f8f5;
-  color: #0f1d13;
+html.light, html.light body {
+  background-color: #f8faf9 !important;
+  color: #0f1d13 !important;
 }
 
-/* Glassmorphism effects - Dark Theme Default */
+/* Light Theme Component Overrides for High Contrast */
+html.light input,
+html.light select,
+html.light textarea {
+  color: #0f1d13 !important;
+}
+
+html.light ::placeholder {
+  color: #64748b !important;
+}
+
+/* Glassmorphism effects - Dark Theme */
 .glass-panel {
   background: rgba(14, 25, 18, 0.75);
   backdrop-filter: blur(14px);
@@ -63,33 +72,33 @@ html.light body {
 
 /* Glassmorphism effects - Light Theme */
 html.light .glass-panel {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.1);
 }
 
 html.light .glass-panel-amber {
-  background: rgba(254, 243, 199, 0.75);
+  background: rgba(254, 243, 199, 0.85);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  box-shadow: 0 4px 18px -2px rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 4px 18px -2px rgba(245, 158, 11, 0.15);
 }
 
 html.light .glass-card {
   background: #ffffff;
   backdrop-filter: none;
-  border: 1px solid #d1e7d8;
-  box-shadow: 0 4px 14px rgba(15, 29, 19, 0.05);
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 14px rgba(15, 29, 19, 0.06);
   transition: all 0.25s ease-in-out;
 }
 
 html.light .glass-card:hover {
   border-color: #10b981;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.18);
 }
 
 /* Custom Scrollbars */
@@ -120,23 +129,10 @@ html.light ::-webkit-scrollbar-thumb {
   background: #3e995c;
 }
 
-/* WhatsApp Message Bubble styles */
-.wa-bubble-in {
-  background: #1f2c34;
-  color: #e9edef;
-  border-radius: 8px 8px 8px 0px;
-}
-
-.wa-bubble-out {
-  background: #005c4b;
-  color: #e9edef;
-  border-radius: 8px 8px 0px 8px;
-}
-
 /* Badges and tags */
 .badge-usd {
   background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  color: #047857;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
@@ -146,7 +142,7 @@ html.dark .badge-usd {
 
 .badge-zar {
   background: rgba(59, 130, 246, 0.15);
-  color: #2563eb;
+  color: #1d4ed8;
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
@@ -156,7 +152,7 @@ html.dark .badge-zar {
 
 .badge-barter {
   background: rgba(245, 158, 11, 0.15);
-  color: #d97706;
+  color: #b45309;
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 

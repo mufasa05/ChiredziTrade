@@ -16,13 +16,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark');
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('chiredzi_theme') as Theme | null;
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      setThemeState(savedTheme);
-      applyTheme(savedTheme);
-    } else {
-      applyTheme('dark');
-    }
+    const savedTheme = localStorage.getItem('zimbarter_theme') as Theme | null;
+    const initialTheme = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
+    setThemeState(initialTheme);
+    applyTheme(initialTheme);
   }, []);
 
   const applyTheme = (newTheme: Theme) => {
@@ -30,15 +27,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (newTheme === 'dark') {
       root.classList.add('dark');
       root.classList.remove('light');
+      document.body.style.backgroundColor = '#070d09';
+      document.body.style.color = '#f1f5f3';
     } else {
       root.classList.add('light');
       root.classList.remove('dark');
+      document.body.style.backgroundColor = '#f4f8f5';
+      document.body.style.color = '#0f1d13';
     }
   };
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('chiredzi_theme', newTheme);
+    localStorage.setItem('zimbarter_theme', newTheme);
     applyTheme(newTheme);
   };
 
