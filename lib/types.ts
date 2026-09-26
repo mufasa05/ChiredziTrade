@@ -53,6 +53,16 @@ export interface ListingUser {
   verifiedArtisan?: boolean;
   rating?: number;
   tradeCount?: number;
+  isAdmin?: boolean;
+}
+
+export interface AdminPlatformStats {
+  totalUsers: number;
+  totalListings: number;
+  totalProposals: number;
+  totalOrders: number;
+  totalReviews: number;
+  grossOrderVolumeUSD: number;
 }
 
 export interface Listing {

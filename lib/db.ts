@@ -591,4 +591,157 @@ export const db = {
     };
     return memorySessions[phoneNumber];
   },
+
+  // ====================================================================
+  // ADMIN COMMAND CENTRE METHODS
+  // ====================================================================
+  deleteListing: async (id: string): Promise<boolean> => {
+    if (supabase) {
+      try {
+        await supabase.from('listings').delete().eq('id', id);
+      } catch (e) {
+        console.warn('Supabase delete listing error:', e);
+      }
+    }
+    memoryListings = memoryListings.filter((l) => l.id !== id);
+    saveLocalListings();
+    return true;
+  },
+
+  deleteProposal: async (id: string): Promise<boolean> => {
+    if (supabase) {
+      try {
+        await supabase.from('barter_proposals').delete().eq('id', id);
+      } catch (e) {
+        console.warn('Supabase delete proposal error:', e);
+      }
+    }
+    memoryProposals = memoryProposals.filter((p) => p.id !== id);
+    return true;
+  },
+
+  getAllProposals: async (): Promise<BarterProposal[]> => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('barter_proposals').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+          return data.map((r: any) => ({
+            id: r.id,
+            listingId: r.listing_id,
+            proposerName: r.proposer_name,
+            proposerPhone: r.proposer_phone,
+            proposerLocation: r.proposer_location || 'Harare CBD',
+            offeredItemTitle: r.offered_item_title,
+            offeredDescription: r.offered_item_description || '',
+            cashTopUp: r.cash_top_up ? String(r.cash_top_up) : undefined,
+            status: r.status || 'pending',
+            createdAt: r.created_at,
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase fetch proposals error:', e);
+      }
+    }
+    return memoryProposals;
+  },
+
+  deleteOrder: async (id: string): Promise<boolean> => {
+    if (supabase) {
+      try {
+        await supabase.from('trade_orders').delete().eq('id', id);
+      } catch (e) {
+        console.warn('Supabase delete order error:', e);
+      }
+    }
+    memoryOrders = memoryOrders.filter((o) => o.id !== id);
+    return true;
+  },
+
+  getAllOrders: async (): Promise<TradeOrder[]> => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('trade_orders').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+          return data.map((r: any) => ({
+            id: r.id,
+            listingId: r.listing_id,
+            buyerName: r.buyer_name,
+            buyerPhone: r.buyer_phone,
+            pickupLocation: r.pickup_location || 'Harare CBD',
+            currencyChoice: r.currency || 'USD',
+            quantity: r.quantity || 1,
+            totalPrice: Number(r.agreed_price) || 0,
+            notes: r.notes || '',
+            status: r.status || 'pending',
+            createdAt: r.created_at,
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase fetch orders error:', e);
+      }
+    }
+    return memoryOrders;
+  },
+
+  deleteReview: async (id: string): Promise<boolean> => {
+    if (supabase) {
+      try {
+        await supabase.from('trade_reviews').delete().eq('id', id);
+      } catch (e) {
+        console.warn('Supabase delete review error:', e);
+      }
+    }
+    memoryReviews = memoryReviews.filter((r) => r.id !== id);
+    return true;
+  },
+
+  getAllUsers: async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) {
+          return data.map((u: any) => ({
+            id: u.id,
+            phoneNumber: u.phone_number,
+            fullName: u.full_name,
+            locationArea: u.location_area || 'Harare CBD',
+            avatarUrl: u.avatar_url,
+            verifiedArtisan: u.verified_artisan,
+            rating: Number(u.rating) || 5.0,
+            tradeCount: u.trade_count || 0,
+            createdAt: u.created_at,
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase fetch users error:', e);
+      }
+    }
+    // Fallback users from memory listings
+    const userMap = new Map();
+    memoryListings.forEach((l) => {
+      if (l.user && l.user.id && !userMap.has(l.user.id)) {
+        userMap.set(l.user.id, l.user);
+      }
+    });
+    return Array.from(userMap.values());
+  },
+
+  getAdminStats: async () => {
+    const listings = await db.getListings({ category: 'all' });
+    const proposals = await db.getAllProposals();
+    const orders = await db.getAllOrders();
+    const users = await db.getAllUsers();
+    const reviews = memoryReviews;
+
+    const grossOrderVolumeUSD = orders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
+    return {
+      totalUsers: users.length,
+      totalListings: listings.length,
+      totalProposals: proposals.length,
+      totalOrders: orders.length,
+      totalReviews: reviews.length,
+      grossOrderVolumeUSD: Number(grossOrderVolumeUSD.toFixed(2)),
+    };
+  },
 };
