@@ -468,8 +468,8 @@ export default function AuthModal() {
           </form>
         )}
 
-        {/* Guest Disclaimer */}
-        <div className="mt-5 text-center border-t border-slate-200 dark:border-lowveld-900 pt-4">
+        {/* Guest Disclaimer & Admin Option */}
+        <div className="mt-5 text-center border-t border-slate-200 dark:border-lowveld-900 pt-4 flex flex-col items-center justify-center gap-2">
           <button
             type="button"
             onClick={closeAuthModal}
@@ -477,6 +477,15 @@ export default function AuthModal() {
           >
             Continue as Guest (Browse Marketplace Only)
           </button>
+
+          <a
+            href="/admin"
+            onClick={closeAuthModal}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-[11px] font-bold transition-all mt-1"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span>Sign In as Administrator (/admin)</span>
+          </a>
         </div>
 
         {/* Custom Google Email Drawer */}

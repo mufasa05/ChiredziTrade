@@ -18,7 +18,8 @@ import {
   ShoppingBag,
   Sun,
   Moon,
-  Package
+  Package,
+  ShieldCheck
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -100,6 +101,18 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           >
             <RefreshCw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
             <span>{t.smartBarterHub}</span>
+          </Link>
+
+          <Link
+            href="/admin"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+              pathname === '/admin'
+                ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40'
+                : 'text-slate-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-purple-500/10'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span>Admin Console</span>
           </Link>
         </nav>
 
@@ -186,6 +199,14 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                   >
                     <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Seller Dashboard</span>
+                  </Link>
+                  <Link
+                    href="/admin"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 mt-0.5 rounded-xl text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-500/10 font-bold transition-colors"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span>Admin Command Centre</span>
                   </Link>
                   <button
                     onClick={() => {

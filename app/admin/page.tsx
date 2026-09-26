@@ -122,7 +122,7 @@ export default function AdminPage() {
               Admin Command Centre
             </h2>
             <p className="text-xs text-slate-600 dark:text-gray-400 mt-1 mb-6">
-              Enter Platform Administrator Master PIN to manage users, moderation & platform activity across Zimbabwe.
+              Enter Platform Administrator Master Password (<strong className="text-emerald-600 dark:text-emerald-400 font-mono">Mufasa05</strong>) to manage users, moderation & platform activity across Zimbabwe.
             </p>
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
@@ -131,7 +131,7 @@ export default function AdminPage() {
                 <input
                   type="password"
                   required
-                  placeholder="Master Admin PIN (Default: 2026)"
+                  placeholder="Master Admin Password (e.g. Mufasa05)"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-lowveld-950 border border-slate-300 dark:border-lowveld-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 font-mono tracking-widest text-center"
