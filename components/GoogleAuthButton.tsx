@@ -45,7 +45,11 @@ export default function GoogleAuthButton({ onSuccess, className = '' }: GoogleAu
   const [showInlineEmail, setShowInlineEmail] = useState(false);
   const [customEmail, setCustomEmail] = useState('');
 
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+  const rawClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+  const clientId =
+    rawClientId && !rawClientId.includes('your_google_oauth')
+      ? rawClientId.trim()
+      : '958601671484-rroigsbk2memmmbihn6o9kfldqu8smu7.apps.googleusercontent.com';
 
   useEffect(() => {
     const existingScript = document.getElementById('google-gsi-client');
