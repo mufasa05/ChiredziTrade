@@ -63,12 +63,20 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-slate-200 dark:border-lowveld-900/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-gray-400">
           <p>© {new Date().getFullYear()} Zim Barter. Founded & Engineered by Prince A. Shumba.</p>
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
             <Link href="/barter-network" className="hover:text-amber-600 dark:hover:text-amber-300 transition-colors font-medium">
               Smart Barter Hub
             </Link>
             <span>•</span>
-            <span>USD / ZWG / ZAR / Barter</span>
+            <Link href="/privacy" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">
+              Terms of Service
+            </Link>
+            <span>•</span>
+            <span>USD / ZWG / ZAR</span>
           </div>
         </div>
       </div>
