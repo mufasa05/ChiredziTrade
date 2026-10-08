@@ -43,7 +43,23 @@ function MarketplaceContent() {
       const res = await fetch(`/api/listings?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
-        setListings(data.listings);
+        let combined = data.listings || [];
+        if (typeof window !== 'undefined') {
+          try {
+            const localStored = localStorage.getItem('zimbarter_live_listings');
+            if (localStored) {
+              const parsed = JSON.parse(localStored);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                const existingIds = new Set(combined.map((l: Listing) => l.id));
+                const missing = parsed.filter((l: Listing) => !existingIds.has(l.id));
+                combined = [...missing, ...combined];
+              }
+            }
+          } catch (e) {
+            console.warn('Local listings merge warning:', e);
+          }
+        }
+        setListings(combined);
       }
     } catch (err) {
       console.error('Failed to fetch listings:', err);

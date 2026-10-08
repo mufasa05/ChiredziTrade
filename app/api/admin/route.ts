@@ -4,17 +4,13 @@ import { checkRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
-const ADMIN_PIN = process.env.ADMIN_SECRET_PIN || 'Mufasa05';
+const ADMIN_PIN = process.env.ADMIN_SECRET_PIN || process.env.ADMIN_PIN || 'Mufasa05';
 
 function isAuthorizedAdmin(req: NextRequest): boolean {
   const pinHeader = req.headers.get('x-admin-pin') || new URL(req.url).searchParams.get('pin');
   if (!pinHeader) return false;
   const clean = pinHeader.trim();
-  return (
-    clean === ADMIN_PIN ||
-    clean.toLowerCase() === 'mufasa05' ||
-    clean === '2026'
-  );
+  return clean === ADMIN_PIN;
 }
 
 export async function GET(req: NextRequest) {

@@ -269,6 +269,14 @@ export default function PostListingPage() {
 
       const data = await res.json();
       if (res.ok && data.success && data.listing) {
+        try {
+          const stored = localStorage.getItem('zimbarter_live_listings');
+          const currentListings = stored ? JSON.parse(stored) : [];
+          localStorage.setItem('zimbarter_live_listings', JSON.stringify([data.listing, ...currentListings]));
+        } catch (e) {
+          console.warn('Local listing cache write failed:', e);
+        }
+
         confetti({
           particleCount: 100,
           spread: 80,

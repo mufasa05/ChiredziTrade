@@ -11,6 +11,7 @@ export interface UserProfile {
   avatarUrl?: string;
   createdAt?: string;
   isGoogleUser?: boolean;
+  isAdmin?: boolean;
 }
 
 // Initial Seed Registered Users (Includes ZimBarter demo traders)
@@ -52,7 +53,7 @@ interface AuthContextType {
   login: (data: { fullName: string; phoneNumber: string; email?: string; locationArea?: string }) => void;
   attemptSignIn: (identifier: string) => { success: boolean; user?: UserProfile; message?: string };
   registerUser: (data: { fullName: string; phoneNumber: string; email?: string; locationArea?: string; avatarUrl?: string; isGoogleUser?: boolean }) => { success: boolean; user?: UserProfile; message?: string };
-  signInWithGoogle: (googleProfile: { email: string; name: string; avatarUrl?: string }) => { isRegistered: boolean; user?: UserProfile; message?: string };
+  signInWithGoogle: (googleProfile: { email: string; name: string; avatarUrl?: string }) => { success: boolean; user?: UserProfile; message?: string };
   logout: () => void;
   isAuthModalOpen: boolean;
   authModalPrompt: string;
@@ -69,7 +70,7 @@ const AuthContext = createContext<AuthContextType>({
   login: () => {},
   attemptSignIn: () => ({ success: false, message: 'Auth context not initialized' }),
   registerUser: () => ({ success: false, message: 'Auth context not initialized' }),
-  signInWithGoogle: () => ({ isRegistered: false, message: 'Auth context not initialized' }),
+  signInWithGoogle: () => ({ success: false, message: 'Auth context not initialized' }),
   logout: () => {},
   isAuthModalOpen: false,
   authModalPrompt: '',
@@ -239,31 +240,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   };
 
-  // Sign In with Google
+  // Sign In with Google SSO (Authenticates verified Google profile directly)
   const signInWithGoogle = (googleProfile: {
     email: string;
     name: string;
     avatarUrl?: string;
-  }): { isRegistered: boolean; user?: UserProfile; message?: string } => {
-    const existing = findRegisteredUser(googleProfile.email);
+  }): { success: boolean; user?: UserProfile; message?: string } => {
+    const cleanEmail = googleProfile.email.trim().toLowerCase();
+    let existing = findRegisteredUser(cleanEmail);
 
-    if (existing) {
-      // Existing user registered with this Google email -> Log in directly!
-      setUser(existing);
-      localStorage.setItem('zimbarter_current_user', JSON.stringify(existing));
-      localStorage.setItem('chiredzi_user', JSON.stringify(existing));
-      setIsAuthModalOpen(false);
-      return {
-        isRegistered: true,
-        user: existing,
-        message: `Welcome back, ${existing.fullName}! Signed in via Google.`,
+    if (!existing) {
+      // Auto-register verified Google user
+      const newUser: UserProfile = {
+        id: `user-google-${cleanEmail.replace(/[^a-z0-9]/g, '')}`,
+        fullName: googleProfile.name.trim() || cleanEmail.split('@')[0],
+        email: cleanEmail,
+        phoneNumber: '',
+        locationArea: 'Harare CBD',
+        avatarUrl: googleProfile.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(googleProfile.name)}`,
+        createdAt: new Date().toISOString(),
+        isGoogleUser: true,
       };
+
+      const updated = [newUser, ...registeredUsers];
+      setRegisteredUsers(updated);
+      saveRegistryToStorage(updated);
+      existing = newUser;
     }
 
-    // Google user not registered yet -> Need registration step (asks for Zim location & phone)
+    setUser(existing);
+    localStorage.setItem('zimbarter_current_user', JSON.stringify(existing));
+    localStorage.setItem('chiredzi_user', JSON.stringify(existing));
+    setIsAuthModalOpen(false);
+
     return {
-      isRegistered: false,
-      message: `Google Account (${googleProfile.email}) verified! Please complete your ZimBarter profile details below to finalize registration.`,
+      success: true,
+      user: existing,
+      message: `Signed in successfully via Google SSO as ${existing.fullName}!`,
     };
   };
 

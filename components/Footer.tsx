@@ -68,10 +68,6 @@ export default function Footer() {
               Smart Barter Hub
             </Link>
             <span>•</span>
-            <Link href="/admin" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-semibold flex items-center gap-1">
-              <span>Admin Console</span>
-            </Link>
-            <span>•</span>
             <span>USD / ZWG / ZAR / Barter</span>
           </div>
         </div>

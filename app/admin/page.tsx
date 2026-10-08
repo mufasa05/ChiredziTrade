@@ -14,6 +14,7 @@ import {
   AlertTriangle, 
   Search,
   Eye,
+  EyeOff,
   Archive,
   Star,
   Activity,
@@ -25,6 +26,7 @@ import { useLanguage } from '@/context/LanguageContext';
 export default function AdminPage() {
   const { t } = useLanguage();
   const [adminPin, setAdminPin] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -122,20 +124,29 @@ export default function AdminPage() {
               Admin Command Centre
             </h2>
             <p className="text-xs text-slate-600 dark:text-gray-400 mt-1 mb-6">
-              Enter Platform Administrator Master Password (<strong className="text-emerald-600 dark:text-emerald-400 font-mono">Mufasa05</strong>) to manage users, moderation & platform activity across Zimbabwe.
+              Enter Platform Administrator Master Password to manage users, moderation & platform activity across Zimbabwe.
             </p>
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div className="relative">
                 <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  placeholder="Master Admin Password (e.g. Mufasa05)"
+                  placeholder="••••••••••••"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-lowveld-950 border border-slate-300 dark:border-lowveld-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 font-mono tracking-widest text-center"
+                  autoComplete="current-password"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 dark:bg-lowveld-950 border border-slate-300 dark:border-lowveld-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 font-mono tracking-widest text-center"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
 
               {authError && (
