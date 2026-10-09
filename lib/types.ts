@@ -99,6 +99,7 @@ export interface BarterMatch {
 export interface BarterProposal {
   id: string;
   listingId: string;
+  proposerId?: string;
   proposerName: string;
   proposerPhone: string;
   proposerLocation: string;

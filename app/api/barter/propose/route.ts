@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { getAuthUser } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const ProposeBarterSchema = z.object({
@@ -20,11 +21,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded. Try again later.' }, { status: 429 });
     }
 
+    const { user } = await getAuthUser();
+
     const rawBody = await req.json();
     const validatedData = ProposeBarterSchema.parse(rawBody);
 
     const proposal = await db.createProposal({
       listingId: validatedData.listingId,
+      proposerId: user?.id,
       proposerName: validatedData.proposerName,
       proposerPhone: validatedData.proposerPhone,
       proposerLocation: validatedData.proposerLocation,

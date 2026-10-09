@@ -18,41 +18,25 @@ if (supabaseUrl && supabaseAnonKey) {
 }
 
 // In-Memory Fallback State (with localStorage sync when in browser)
-let memoryListings: Listing[] = [...INITIAL_LISTINGS];
+let memoryListings: Listing[] = [];
 let memoryProposals: BarterProposal[] = [];
 let memoryOrders: TradeOrder[] = [];
-let memoryReviews: TradeReview[] = [
-  {
-    id: 'rev-1',
-    sellerId: 'user-1',
-    reviewerName: 'Farai Moyo',
-    reviewerLocation: 'Harare CBD',
-    rating: 5,
-    tradeType: 'Brahman Cattle Swap',
-    comment: 'Exceptional heifers. Excellent temperament and condition. Smooth exchange!',
-    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-  },
-  {
-    id: 'rev-2',
-    sellerId: 'user-2',
-    reviewerName: 'Simba Chauke',
-    reviewerLocation: 'Bulawayo - Hillside',
-    rating: 5,
-    tradeType: 'Sliding Gate Welding',
-    comment: 'Tongai welded our farm compound gates in 2 days. Heavy gauge steel, very solid.',
-    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-  }
-];
+let memoryReviews: TradeReview[] = [];
 let memorySessions: Record<string, BotSession> = {};
 
-// Load saved local listings if in browser environment
+// Load saved local listings if in browser environment & purge legacy mock data
 if (typeof window !== 'undefined') {
   try {
     const savedListings = localStorage.getItem('zimbarter_live_listings');
     if (savedListings) {
       const parsed = JSON.parse(savedListings);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        memoryListings = parsed;
+      if (Array.isArray(parsed)) {
+        // Discard any legacy mock items
+        const realOnly = parsed.filter(
+          (l) => l && l.id && !l.id.startsWith('listing-00') && !l.id.startsWith('mock-')
+        );
+        memoryListings = realOnly;
+        localStorage.setItem('zimbarter_live_listings', JSON.stringify(realOnly));
       }
     }
   } catch (e) {
@@ -98,7 +82,7 @@ export const db = {
         }
 
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && Array.isArray(data)) {
           return data.map((row: any) => ({
             id: row.id,
             userId: row.user_id,
@@ -330,6 +314,7 @@ export const db = {
         const { error } = await supabase.from('barter_proposals').insert({
           id: newProposal.id,
           listing_id: newProposal.listingId,
+          proposer_id: newProposal.proposerId || null,
           proposer_name: newProposal.proposerName,
           proposer_phone: newProposal.proposerPhone,
           offered_item_title: newProposal.offeredItemTitle,
@@ -362,6 +347,11 @@ export const db = {
 
     if (supabase) {
       try {
+        const formattedNotes = [
+          newOrder.pickupLocation ? `Pickup Hub: ${newOrder.pickupLocation}` : '',
+          newOrder.notes ? `Buyer Notes: ${newOrder.notes}` : '',
+        ].filter(Boolean).join(' | ');
+
         const { error } = await supabase.from('trade_orders').insert({
           id: newOrder.id,
           listing_id: newOrder.listingId,
@@ -372,7 +362,7 @@ export const db = {
           currency: newOrder.currencyChoice || 'USD',
           status: newOrder.status,
           payment_method: 'CASH_ON_DELIVERY',
-          notes: newOrder.pickupLocation || newOrder.notes || '',
+          notes: formattedNotes,
           created_at: newOrder.createdAt,
         });
 

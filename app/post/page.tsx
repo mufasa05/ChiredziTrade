@@ -40,7 +40,7 @@ export default function PostListingPage() {
   const [harvestReady, setHarvestReady] = useState(false);
   const [openToBarter, setOpenToBarter] = useState(true);
   const [sellerName, setSellerName] = useState('');
-  const [sellerPhone, setSellerPhone] = useState('+263783237918');
+  const [sellerPhone, setSellerPhone] = useState('');
 
   // Photo & Camera State - Clean empty initial state (no preloaded image)
   const [imageUrl, setImageUrl] = useState('');

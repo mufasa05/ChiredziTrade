@@ -1,6 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export interface UserProfile {
   id: string;
@@ -14,295 +16,192 @@ export interface UserProfile {
   isAdmin?: boolean;
 }
 
-// Initial Seed Registered Users (Includes ZimBarter demo traders)
-const SEED_REGISTERED_USERS: UserProfile[] = [
-  {
-    id: 'user-263783237918',
-    fullName: 'Sekuru Chauke Livestock & Grain',
-    phoneNumber: '+263783237918',
-    email: 'sekuru@zimbarter.co.zw',
-    locationArea: 'Chiredzi / Triangle',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'user-263772000000',
-    fullName: 'Harare Wholesalers Direct',
-    phoneNumber: '+263772000000',
-    email: 'harare@zimbarter.co.zw',
-    locationArea: 'Harare CBD',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'user-google-demo',
-    fullName: 'Tendai Moyo',
-    phoneNumber: '+263771987654',
-    email: 'tendai.moyo@gmail.com',
-    locationArea: 'Bulawayo CBD',
-    avatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Tendai%20Moyo',
-    createdAt: new Date().toISOString(),
-    isGoogleUser: true,
-  }
-];
+type AuthResult = { success: boolean; message?: string };
 
 interface AuthContextType {
+  /** Merged auth user + marketplace profile. Null when signed out. */
   user: UserProfile | null;
   isAuthenticated: boolean;
-  registeredUsers: UserProfile[];
-  login: (data: { fullName: string; phoneNumber: string; email?: string; locationArea?: string }) => void;
-  attemptSignIn: (identifier: string) => { success: boolean; user?: UserProfile; message?: string };
-  registerUser: (data: { fullName: string; phoneNumber: string; email?: string; locationArea?: string; avatarUrl?: string; isGoogleUser?: boolean }) => { success: boolean; user?: UserProfile; message?: string };
-  signInWithGoogle: (googleProfile: { email: string; name: string; avatarUrl?: string }) => { success: boolean; user?: UserProfile; message?: string };
-  logout: () => void;
+  /** True while the initial session is being restored. */
+  authLoading: boolean;
+  /** Signed in, but has not yet saved name / WhatsApp number / location. */
+  needsProfile: boolean;
+
+  signInWithGoogle: (redirectPath?: string) => Promise<AuthResult>;
+  sendEmailOtp: (email: string, redirectPath?: string) => Promise<AuthResult>;
+  verifyEmailOtp: (email: string, token: string) => Promise<AuthResult>;
+  saveProfile: (data: { fullName: string; phoneNumber: string; locationArea: string }) => Promise<AuthResult>;
+  logout: () => Promise<void>;
+
   isAuthModalOpen: boolean;
   authModalPrompt: string;
-  authModalTab: 'login' | 'signup';
-  setAuthModalTab: (tab: 'login' | 'signup') => void;
-  openAuthModal: (promptMsg?: string, initialTab?: 'login' | 'signup') => void;
+  openAuthModal: (promptMsg?: string) => void;
   closeAuthModal: () => void;
 }
+
+const notReady = async (): Promise<AuthResult> => ({ success: false, message: 'Auth not initialized' });
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
-  registeredUsers: SEED_REGISTERED_USERS,
-  login: () => {},
-  attemptSignIn: () => ({ success: false, message: 'Auth context not initialized' }),
-  registerUser: () => ({ success: false, message: 'Auth context not initialized' }),
-  signInWithGoogle: () => ({ success: false, message: 'Auth context not initialized' }),
-  logout: () => {},
+  authLoading: true,
+  needsProfile: false,
+  signInWithGoogle: notReady,
+  sendEmailOtp: notReady,
+  verifyEmailOtp: notReady,
+  saveProfile: notReady,
+  logout: async () => {},
   isAuthModalOpen: false,
   authModalPrompt: '',
-  authModalTab: 'login',
-  setAuthModalTab: () => {},
   openAuthModal: () => {},
   closeAuthModal: () => {},
 });
 
+// Legacy keys from the old client-side mock auth — purged on load.
+const LEGACY_KEYS = ['zimbarter_registered_users', 'zimbarter_current_user', 'chiredzi_user'];
+
+function buildUser(authUser: User, profile: Partial<UserProfile> | null): UserProfile {
+  const meta = authUser.user_metadata || {};
+  const fallbackName = meta.full_name || meta.name || (authUser.email ? authUser.email.split('@')[0] : 'Trader');
+  return {
+    id: authUser.id,
+    email: authUser.email || '',
+    fullName: profile?.fullName || fallbackName,
+    phoneNumber: profile?.phoneNumber || '',
+    locationArea: profile?.locationArea || 'Harare CBD',
+    avatarUrl:
+      profile?.avatarUrl ||
+      meta.avatar_url ||
+      meta.picture ||
+      `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fallbackName)}`,
+    createdAt: profile?.createdAt || authUser.created_at,
+    isGoogleUser: authUser.app_metadata?.provider === 'google',
+    isAdmin: false, // Granted server-side via role claims in a later step
+  };
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>(SEED_REGISTERED_USERS);
+  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Partial<UserProfile> | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalPrompt, setAuthModalPrompt] = useState('');
-  const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('login');
 
-  useEffect(() => {
-    // Load registered users registry from local storage
-    const savedRegistry = localStorage.getItem('zimbarter_registered_users');
-    if (savedRegistry) {
-      try {
-        const parsedRegistry: UserProfile[] = JSON.parse(savedRegistry);
-        if (Array.isArray(parsedRegistry) && parsedRegistry.length > 0) {
-          // Merge seed users with saved registered users
-          const merged = [...SEED_REGISTERED_USERS];
-          parsedRegistry.forEach((saved) => {
-            if (!merged.some((m) => m.id === saved.id || (saved.phoneNumber && m.phoneNumber === saved.phoneNumber))) {
-              merged.push(saved);
-            }
-          });
-          setRegisteredUsers(merged);
-        }
-      } catch (e) {
-        console.error('Error parsing stored registered users:', e);
-      }
-    }
-
-    // Load active logged-in user state
-    const savedUser = localStorage.getItem('zimbarter_current_user') || localStorage.getItem('chiredzi_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error('Error parsing stored user state:', e);
-      }
+  const loadProfile = useCallback(async () => {
+    try {
+      const res = await fetch('/api/profile', { cache: 'no-store' });
+      const data = await res.json();
+      setProfile(data.success ? data.profile : null);
+    } catch (e) {
+      console.error('Failed to load profile:', e);
+      setProfile(null);
+    } finally {
+      setProfileLoaded(true);
     }
   }, []);
 
-  const saveRegistryToStorage = (usersList: UserProfile[]) => {
+  useEffect(() => {
+    LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
+
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthUser(data.user ?? null);
+      if (data.user) loadProfile();
+      else setProfileLoaded(true);
+      setAuthLoading(false);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      const next = session?.user ?? null;
+      setAuthUser(next);
+      if (event === 'SIGNED_IN' && next) {
+        setProfileLoaded(false);
+        loadProfile();
+      }
+      if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        setProfileLoaded(true);
+      }
+    });
+
+    return () => sub.subscription.unsubscribe();
+  }, [supabase, loadProfile]);
+
+  const user = authUser ? buildUser(authUser, profile) : null;
+  const needsProfile = !!authUser && profileLoaded && !profile?.phoneNumber;
+
+  // Force profile completion: keep the modal open until WhatsApp number is saved
+  useEffect(() => {
+    if (needsProfile) setIsAuthModalOpen(true);
+  }, [needsProfile]);
+
+  const callbackUrl = (redirectPath?: string) => {
+    const path = redirectPath || (typeof window !== 'undefined' ? window.location.pathname : '/');
+    return `${window.location.origin}/auth/callback?next=${encodeURIComponent(path)}`;
+  };
+
+  const signInWithGoogle = async (redirectPath?: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: callbackUrl(redirectPath) },
+    });
+    return error ? { success: false, message: error.message } : { success: true };
+  };
+
+  const sendEmailOtp = async (email: string, redirectPath?: string): Promise<AuthResult> => {
+    const clean = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+      return { success: false, message: 'Please enter a valid email address.' };
+    }
+    const { error } = await supabase.auth.signInWithOtp({
+      email: clean,
+      options: { shouldCreateUser: true, emailRedirectTo: callbackUrl(redirectPath) },
+    });
+    if (error) return { success: false, message: error.message };
+    return { success: true, message: `We sent a sign-in code to ${clean}. Check your inbox (and spam).` };
+  };
+
+  const verifyEmailOtp = async (email: string, token: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: token.trim(),
+      type: 'email',
+    });
+    if (error) return { success: false, message: 'That code is invalid or has expired. Request a new one.' };
+    return { success: true, message: 'Signed in successfully!' };
+  };
+
+  const saveProfile = async (data: { fullName: string; phoneNumber: string; locationArea: string }): Promise<AuthResult> => {
     try {
-      localStorage.setItem('zimbarter_registered_users', JSON.stringify(usersList));
-    } catch (e) {
-      console.error('Failed to save user registry to localStorage:', e);
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!json.success) return { success: false, message: json.error || 'Could not save profile.' };
+      setProfile(json.profile);
+      return { success: true, message: 'Profile saved. Welcome to ZimBarter!' };
+    } catch {
+      return { success: false, message: 'Network error while saving profile.' };
     }
   };
 
-  // Helper to search user by Phone, Email, or ID
-  const findRegisteredUser = (identifier: string): UserProfile | undefined => {
-    const clean = identifier.trim().toLowerCase();
-    const cleanDigits = clean.replace(/\D/g, '');
-
-    return registeredUsers.find((u) => {
-      // Direct Email match
-      if (u.email && u.email.trim().toLowerCase() === clean) return true;
-      // Phone number match
-      if (cleanDigits && cleanDigits.length >= 6 && u.phoneNumber) {
-        const uDigits = u.phoneNumber.replace(/\D/g, '');
-        if (uDigits === cleanDigits || uDigits.endsWith(cleanDigits) || cleanDigits.endsWith(uDigits)) return true;
-      }
-      // ID match
-      if (u.id === clean) return true;
-      return false;
-    });
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setAuthUser(null);
+    setProfile(null);
   };
 
-  // Standard Login (Attempts to sign in an existing user)
-  const attemptSignIn = (identifier: string): { success: boolean; user?: UserProfile; message?: string } => {
-    if (!identifier.trim()) {
-      return { success: false, message: 'Please enter your phone number or email address.' };
-    }
-
-    const existing = findRegisteredUser(identifier);
-
-    if (!existing) {
-      return {
-        success: false,
-        message: `Account not found for "${identifier}". You have not registered yet — please create an account first.`,
-      };
-    }
-
-    // Account found: Log in user
-    setUser(existing);
-    localStorage.setItem('zimbarter_current_user', JSON.stringify(existing));
-    localStorage.setItem('chiredzi_user', JSON.stringify(existing));
-    setIsAuthModalOpen(false);
-
-    return {
-      success: true,
-      user: existing,
-      message: `Welcome back, ${existing.fullName}! Signed in successfully.`,
-    };
-  };
-
-  // Create/Register New User Account
-  const registerUser = (data: {
-    fullName: string;
-    phoneNumber: string;
-    email?: string;
-    locationArea?: string;
-    avatarUrl?: string;
-    isGoogleUser?: boolean;
-  }): { success: boolean; user?: UserProfile; message?: string } => {
-    const cleanPhone = data.phoneNumber ? data.phoneNumber.replace(/\D/g, '') : '';
-    const cleanEmail = data.email ? data.email.trim().toLowerCase() : '';
-
-    // Check if phone or email is ALREADY registered
-    if (data.phoneNumber && cleanPhone.length >= 6) {
-      const existingPhoneUser = findRegisteredUser(data.phoneNumber);
-      if (existingPhoneUser) {
-        return {
-          success: false,
-          user: existingPhoneUser,
-          message: `Phone number "${data.phoneNumber}" is already registered. Please sign in instead.`,
-        };
-      }
-    }
-
-    if (cleanEmail) {
-      const existingEmailUser = findRegisteredUser(cleanEmail);
-      if (existingEmailUser) {
-        return {
-          success: false,
-          user: existingEmailUser,
-          message: `Email address "${cleanEmail}" is already registered. Please sign in instead.`,
-        };
-      }
-    }
-
-    const deterministicId = cleanPhone
-      ? `user-phone-${cleanPhone}`
-      : (cleanEmail ? `user-email-${cleanEmail.replace(/[^a-z0-9]/g, '')}` : `user-${Date.now()}`);
-
-    const newUser: UserProfile = {
-      id: deterministicId,
-      fullName: data.fullName.trim(),
-      phoneNumber: data.phoneNumber.trim(),
-      email: data.email?.trim() || '',
-      locationArea: data.locationArea || 'Harare CBD',
-      avatarUrl: data.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.fullName)}`,
-      createdAt: new Date().toISOString(),
-      isGoogleUser: data.isGoogleUser || false,
-    };
-
-    const updatedRegistry = [newUser, ...registeredUsers];
-    setRegisteredUsers(updatedRegistry);
-    saveRegistryToStorage(updatedRegistry);
-
-    setUser(newUser);
-    localStorage.setItem('zimbarter_current_user', JSON.stringify(newUser));
-    localStorage.setItem('chiredzi_user', JSON.stringify(newUser));
-    setIsAuthModalOpen(false);
-
-    return {
-      success: true,
-      user: newUser,
-      message: `Account created successfully! Welcome to ZimBarter, ${newUser.fullName}.`,
-    };
-  };
-
-  // Sign In with Google SSO (Authenticates verified Google profile directly)
-  const signInWithGoogle = (googleProfile: {
-    email: string;
-    name: string;
-    avatarUrl?: string;
-  }): { success: boolean; user?: UserProfile; message?: string } => {
-    const cleanEmail = googleProfile.email.trim().toLowerCase();
-    let existing = findRegisteredUser(cleanEmail);
-
-    if (!existing) {
-      // Auto-register verified Google user
-      const newUser: UserProfile = {
-        id: `user-google-${cleanEmail.replace(/[^a-z0-9]/g, '')}`,
-        fullName: googleProfile.name.trim() || cleanEmail.split('@')[0],
-        email: cleanEmail,
-        phoneNumber: '',
-        locationArea: 'Harare CBD',
-        avatarUrl: googleProfile.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(googleProfile.name)}`,
-        createdAt: new Date().toISOString(),
-        isGoogleUser: true,
-      };
-
-      const updated = [newUser, ...registeredUsers];
-      setRegisteredUsers(updated);
-      saveRegistryToStorage(updated);
-      existing = newUser;
-    }
-
-    setUser(existing);
-    localStorage.setItem('zimbarter_current_user', JSON.stringify(existing));
-    localStorage.setItem('chiredzi_user', JSON.stringify(existing));
-    setIsAuthModalOpen(false);
-
-    return {
-      success: true,
-      user: existing,
-      message: `Signed in successfully via Google SSO as ${existing.fullName}!`,
-    };
-  };
-
-  // Backward compatible alias
-  const login = (data: { fullName: string; phoneNumber: string; email?: string; locationArea?: string }) => {
-    registerUser({
-      fullName: data.fullName,
-      phoneNumber: data.phoneNumber,
-      email: data.email,
-      locationArea: data.locationArea || 'Harare CBD',
-    });
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('zimbarter_current_user');
-    localStorage.removeItem('chiredzi_user');
-  };
-
-  const openAuthModal = (promptMsg: string = '', initialTab: 'login' | 'signup' = 'login') => {
+  const openAuthModal = (promptMsg: string = '') => {
     setAuthModalPrompt(promptMsg);
-    setAuthModalTab(initialTab);
     setIsAuthModalOpen(true);
   };
 
   const closeAuthModal = () => {
+    if (needsProfile) return; // must finish profile first
     setIsAuthModalOpen(false);
   };
 
@@ -310,17 +209,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
-        registeredUsers,
-        login,
-        attemptSignIn,
-        registerUser,
+        isAuthenticated: !!authUser,
+        authLoading,
+        needsProfile,
         signInWithGoogle,
+        sendEmailOtp,
+        verifyEmailOtp,
+        saveProfile,
         logout,
         isAuthModalOpen,
         authModalPrompt,
-        authModalTab,
-        setAuthModalTab,
         openAuthModal,
         closeAuthModal,
       }}
@@ -331,4 +229,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const useAuth = () => useContext(AuthContext);
-

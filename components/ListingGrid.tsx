@@ -42,23 +42,31 @@ export default function ListingGrid({
 
   if (listings.length === 0) {
     return (
-      <div className="py-16 text-center glass-panel rounded-3xl p-8 max-w-lg mx-auto border border-slate-200 dark:border-lowveld-800">
-        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-lowveld-900/80 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-4 border border-slate-200 dark:border-lowveld-700">
+      <div className="py-16 text-center glass-panel rounded-3xl p-8 max-w-lg mx-auto border border-slate-200 dark:border-lowveld-800 shadow-xl">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-lowveld-700/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-4 border border-emerald-500/30 shadow-md">
           <Tractor className="w-8 h-8" />
         </div>
-        <h3 className="font-display font-bold text-xl text-slate-900 dark:text-white mb-2">
-          No Lowveld Trade Matches Found
+        <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
+          Ready for Your First Zimbabwe Trade Offer
         </h3>
-        <p className="text-sm text-slate-600 dark:text-gray-400 mb-6">
-          Try loosening your sector, location, or search keywords. You can also post what you need directly on our WhatsApp bot.
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mb-6 max-w-sm mx-auto leading-relaxed">
+          Be the first to post livestock, farm produce, building materials, solar hardware, or artisan services in your area.
         </p>
-        <button
-          onClick={onResetFilters}
-          className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md transition-all inline-flex items-center gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>Show All Listings</span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href="/post"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all inline-flex items-center justify-center gap-2"
+          >
+            <span>+ Post a Trade Listing</span>
+          </a>
+          <button
+            onClick={onResetFilters}
+            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 font-semibold text-xs sm:text-sm border border-slate-300 dark:border-lowveld-700 transition-all inline-flex items-center justify-center gap-2"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Reset Filters</span>
+          </button>
+        </div>
       </div>
     );
   }

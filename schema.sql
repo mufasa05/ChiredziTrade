@@ -1,13 +1,12 @@
 -- ====================================================================
--- CHIREDZI TRADE - SUPABASE PERSISTENT DATABASE SCHEMA
--- Execute this SQL script in your Supabase SQL Editor (https://supabase.com)
--- to enable 100% live database sync across ALL users and devices worldwide.
+-- CHIREDZI TRADE / ZIMBARTER - IDEMPOTENT DATABASE INITIALIZATION
 -- ====================================================================
 
 -- 1. USERS TABLE
 CREATE TABLE IF NOT EXISTS public.users (
-  id VARCHAR(255) PRIMARY KEY,
-  phone_number VARCHAR(50) NOT NULL UNIQUE,
+  id VARCHAR(255) PRIMARY KEY, -- auth.users.id (auth.uid()::text) for web sign-ups
+  phone_number VARCHAR(50) UNIQUE, -- nullable until user completes profile
+  email VARCHAR(255),
   full_name VARCHAR(255) NOT NULL,
   location_area VARCHAR(255) DEFAULT 'Chiredzi Town',
   avatar_url TEXT,
@@ -22,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 CREATE TABLE IF NOT EXISTS public.listings (
   id VARCHAR(255) PRIMARY KEY,
   user_id VARCHAR(255) REFERENCES public.users(id) ON DELETE CASCADE,
-  user_data JSONB NOT NULL, -- Store seller Snapshot for ultra-fast queries
+  user_data JSONB NOT NULL,
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
   category VARCHAR(100) NOT NULL,
@@ -56,7 +55,7 @@ CREATE TABLE IF NOT EXISTS public.barter_proposals (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. TRADE ORDERS TABLE (CASH ORDERS)
+-- 4. TRADE ORDERS TABLE
 CREATE TABLE IF NOT EXISTS public.trade_orders (
   id VARCHAR(255) PRIMARY KEY,
   listing_id VARCHAR(255) REFERENCES public.listings(id) ON DELETE CASCADE,
@@ -71,7 +70,7 @@ CREATE TABLE IF NOT EXISTS public.trade_orders (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. TRADE REVIEWS TABLE (RATINGS & VERIFIED REVIEWS)
+-- 5. TRADE REVIEWS TABLE
 CREATE TABLE IF NOT EXISTS public.trade_reviews (
   id VARCHAR(255) PRIMARY KEY,
   seller_id VARCHAR(255) NOT NULL,
@@ -84,81 +83,72 @@ CREATE TABLE IF NOT EXISTS public.trade_reviews (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ====================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES - PRODUCTION HARDENED
--- ====================================================================
+-- 6. ENABLE ROW LEVEL SECURITY
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.barter_proposals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.trade_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.trade_reviews ENABLE ROW LEVEL SECURITY;
 
+-- Trade Reviews Policies
+DROP POLICY IF EXISTS "Allow public read trade_reviews" ON public.trade_reviews;
+DROP POLICY IF EXISTS "Allow public insert trade_reviews" ON public.trade_reviews;
 CREATE POLICY "Allow public read trade_reviews" ON public.trade_reviews FOR SELECT USING (true);
 CREATE POLICY "Allow public insert trade_reviews" ON public.trade_reviews FOR INSERT WITH CHECK (true);
 
-
--- 1. USERS POLICIES
+-- Users Policies
 DROP POLICY IF EXISTS "Allow public read users" ON public.users;
 DROP POLICY IF EXISTS "Allow public insert users" ON public.users;
 DROP POLICY IF EXISTS "Allow public update users" ON public.users;
+DROP POLICY IF EXISTS "Allow user self update" ON public.users;
+DROP POLICY IF EXISTS "Allow authenticated self insert" ON public.users;
 
 CREATE POLICY "Allow public read users" ON public.users FOR SELECT USING (true);
 CREATE POLICY "Allow public insert users" ON public.users FOR INSERT WITH CHECK (true);
--- Restricted: Only allow updates if caller owns the record or via authenticated service role
 CREATE POLICY "Allow user self update" ON public.users FOR UPDATE USING (id = auth.uid()::text OR auth.uid() IS NULL);
+CREATE POLICY "Allow authenticated self insert" ON public.users FOR INSERT TO authenticated WITH CHECK (id = auth.uid()::text);
 
--- 2. LISTINGS POLICIES
+-- Listings Policies
 DROP POLICY IF EXISTS "Allow public read listings" ON public.listings;
 DROP POLICY IF EXISTS "Allow public insert listings" ON public.listings;
 DROP POLICY IF EXISTS "Allow public update listings" ON public.listings;
+DROP POLICY IF EXISTS "Allow listing owner update" ON public.listings;
 
 CREATE POLICY "Allow public read listings" ON public.listings FOR SELECT USING (status != 'archived');
 CREATE POLICY "Allow public insert listings" ON public.listings FOR INSERT WITH CHECK (true);
--- Restricted: Block unauthorized users from modifying or tampering with another user's listings
 CREATE POLICY "Allow listing owner update" ON public.listings FOR UPDATE USING (user_id = auth.uid()::text OR auth.uid() IS NULL);
 
--- 3. BARTER PROPOSALS POLICIES
+-- Barter Proposals Policies
 DROP POLICY IF EXISTS "Allow public read barter_proposals" ON public.barter_proposals;
 DROP POLICY IF EXISTS "Allow public insert barter_proposals" ON public.barter_proposals;
-
 CREATE POLICY "Allow public read barter_proposals" ON public.barter_proposals FOR SELECT USING (true);
 CREATE POLICY "Allow public insert barter_proposals" ON public.barter_proposals FOR INSERT WITH CHECK (true);
 
--- 4. TRADE ORDERS POLICIES
+-- Trade Orders Policies
 DROP POLICY IF EXISTS "Allow public read trade_orders" ON public.trade_orders;
 DROP POLICY IF EXISTS "Allow public insert trade_orders" ON public.trade_orders;
-
 CREATE POLICY "Allow public read trade_orders" ON public.trade_orders FOR SELECT USING (true);
 CREATE POLICY "Allow public insert trade_orders" ON public.trade_orders FOR INSERT WITH CHECK (true);
 
--- ENABLE REALTIME BROADCASTING FOR INSTANT 100% LIVE FEED UPDATES
-DO $$
-BEGIN
+-- Realtime Broadcasting
+DO $$ BEGIN
   ALTER PUBLICATION supabase_realtime ADD TABLE public.listings;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$
-BEGIN
+DO $$ BEGIN
   ALTER PUBLICATION supabase_realtime ADD TABLE public.barter_proposals;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-DO $$
-BEGIN
+DO $$ BEGIN
   ALTER PUBLICATION supabase_realtime ADD TABLE public.trade_orders;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- 6. SUPABASE STORAGE BUCKET FOR LISTING PHOTOS (CDN)
+-- Storage Bucket for Listing Images
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('listing-images', 'listing-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 DROP POLICY IF EXISTS "Allow public read listing-images" ON storage.objects;
 DROP POLICY IF EXISTS "Allow public insert listing-images" ON storage.objects;
-
 CREATE POLICY "Allow public read listing-images" ON storage.objects FOR SELECT USING (bucket_id = 'listing-images');
 CREATE POLICY "Allow public insert listing-images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'listing-images');
-
-

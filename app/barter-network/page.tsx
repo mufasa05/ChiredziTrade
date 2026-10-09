@@ -55,8 +55,28 @@ function BarterNetworkContent() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {listings.map((item) => (
+        {listings.length === 0 ? (
+          <div className="py-16 text-center glass-panel-amber rounded-3xl p-8 max-w-lg mx-auto border border-amber-500/30 shadow-xl mb-12">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 border border-amber-500/40 shadow-md">
+              <RefreshCw className="w-8 h-8" />
+            </div>
+            <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
+              No Barter Offers Posted Yet
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mb-6 max-w-sm mx-auto leading-relaxed">
+              Have livestock, grain, solar equipment, or skilled artisan labor you wish to swap? Post a trade to start bilateral matching.
+            </p>
+            <a
+              href="/post"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-md transition-all inline-flex items-center gap-2"
+            >
+              <span>+ Post a Barter Trade</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {listings.map((item) => (
             <div
               key={item.id}
               className="rounded-3xl glass-panel-amber border border-amber-500/30 p-5 flex flex-col justify-between hover:border-amber-400 transition-all duration-300 hover:scale-[1.01] shadow-xl"
@@ -122,6 +142,7 @@ function BarterNetworkContent() {
             </div>
           ))}
         </div>
+        )}
 
         <div className="p-8 rounded-3xl glass-panel border border-slate-200 dark:border-lowveld-800/80 max-w-4xl mx-auto shadow-sm">
           <div className="flex items-center gap-2.5 mb-4 text-emerald-600 dark:text-emerald-400">

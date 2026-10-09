@@ -50,9 +50,13 @@ function MarketplaceContent() {
             if (localStored) {
               const parsed = JSON.parse(localStored);
               if (Array.isArray(parsed) && parsed.length > 0) {
+                const realOnly = parsed.filter(
+                  (l: Listing) => l && l.id && !l.id.startsWith('listing-00') && !l.id.startsWith('mock-')
+                );
                 const existingIds = new Set(combined.map((l: Listing) => l.id));
-                const missing = parsed.filter((l: Listing) => !existingIds.has(l.id));
+                const missing = realOnly.filter((l: Listing) => !existingIds.has(l.id));
                 combined = [...missing, ...combined];
+                localStorage.setItem('zimbarter_live_listings', JSON.stringify(realOnly));
               }
             }
           } catch (e) {

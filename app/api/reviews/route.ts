@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { getAuthUser } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -8,7 +9,6 @@ export const dynamic = 'force-dynamic';
 const CreateReviewSchema = z.object({
   sellerId: z.string().min(1, 'Seller ID is required').max(100),
   listingId: z.string().max(100).optional(),
-  reviewerName: z.string().min(2, 'Name too short').max(100),
   reviewerLocation: z.string().min(2).max(100).default('Chiredzi'),
   rating: z.number().int().min(1).max(5),
   tradeType: z.string().min(2).max(100).default('General Trade'),
@@ -43,15 +43,28 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { allowed } = checkRateLimit(req, 10, 60 * 1000); // 10 reviews per minute per IP
+    const { allowed } = checkRateLimit(req, 10, 60 * 1000);
     if (!allowed) {
       return NextResponse.json({ success: false, error: 'Too many reviews submitted. Please wait.' }, { status: 429 });
     }
 
+    // Require session authentication to post seller reviews
+    const { user, supabase } = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Sign-in required to submit trader reviews' }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase.from('users').select('full_name').eq('id', user.id).maybeSingle();
+    const reviewerName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Verified Trader';
+
     const rawBody = await req.json();
     const validatedData = CreateReviewSchema.parse(rawBody);
 
-    const review = await db.createReview(validatedData);
+    const review = await db.createReview({
+      ...validatedData,
+      reviewerName,
+    });
+
     return NextResponse.json({ success: true, review }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

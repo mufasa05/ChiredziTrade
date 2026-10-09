@@ -53,7 +53,10 @@ export default function AdminPage() {
         setUsers(data.users);
         setProposals(data.proposals);
         setOrders(data.orders);
-        localStorage.setItem('zimbarter_admin_pin', pin);
+        // Explicit security rule: NEVER persist admin password in localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('zimbarter_admin_pin');
+        }
       } else {
         setAuthError(data.error || 'Invalid Admin Security PIN');
       }
@@ -65,11 +68,12 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const savedPin = localStorage.getItem('zimbarter_admin_pin');
-    if (savedPin) {
-      setAdminPin(savedPin);
-      fetchAdminData(savedPin);
+    // Ensure any previously saved PIN is purged on component mount
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('zimbarter_admin_pin');
     }
+    setAdminPin('');
+    setIsAuthorized(false);
   }, []);
 
   const handleLoginSubmit = (e: React.FormEvent) => {
@@ -136,7 +140,7 @@ export default function AdminPage() {
                   placeholder="••••••••••••"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-50 dark:bg-lowveld-950 border border-slate-300 dark:border-lowveld-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 font-mono tracking-widest text-center"
                 />
                 <button
@@ -184,7 +188,16 @@ export default function AdminPage() {
               <button
                 onClick={() => {
                   setIsAuthorized(false);
-                  localStorage.removeItem('zimbarter_admin_pin');
+                  setAdminPin('');
+                  setShowPassword(false);
+                  setStats(null);
+                  setListings([]);
+                  setUsers([]);
+                  setProposals([]);
+                  setOrders([]);
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('zimbarter_admin_pin');
+                  }
                 }}
                 className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-lowveld-900 hover:bg-red-500/20 text-slate-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all border border-slate-300 dark:border-lowveld-800"
               >
@@ -306,40 +319,48 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-lowveld-800/60">
-                      {filteredListings.map((l) => (
-                        <tr key={l.id} className="hover:bg-slate-50 dark:hover:bg-lowveld-900/50 transition-colors">
-                          <td className="p-3.5">
-                            <p className="font-bold text-slate-900 dark:text-white line-clamp-1">{l.title}</p>
-                            <p className="text-[11px] text-emerald-600 dark:text-emerald-400">{l.user.fullName} • {l.user.phoneNumber}</p>
-                          </td>
-                          <td className="p-3.5 uppercase text-[10px] font-mono">{l.category}</td>
-                          <td className="p-3.5">{l.locationArea}</td>
-                          <td className="p-3.5 font-bold">
-                            {l.currency === 'BARTER' ? 'BARTER ONLY' : `${l.currency} ${l.price || 0}`}
-                          </td>
-                          <td className="p-3.5">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                              l.status === 'active' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-red-500/20 text-red-700 dark:text-red-300'
-                            }`}>
-                              {l.status}
-                            </span>
-                          </td>
-                          <td className="p-3.5 text-right space-x-2">
-                            <button
-                              onClick={() => handleExecuteAction('update_listing_status', l.id, { status: l.status === 'active' ? 'archived' : 'active' })}
-                              className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 dark:hover:bg-lowveld-800 text-xs font-semibold"
-                            >
-                              {l.status === 'active' ? 'Archive' : 'Activate'}
-                            </button>
-                            <button
-                              onClick={() => handleExecuteAction('delete_listing', l.id)}
-                              className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30 text-xs font-bold"
-                            >
-                              Delete
-                            </button>
+                      {filteredListings.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-slate-500 dark:text-gray-400">
+                            No listings found on the platform yet.
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        filteredListings.map((l) => (
+                          <tr key={l.id} className="hover:bg-slate-50 dark:hover:bg-lowveld-900/50 transition-colors">
+                            <td className="p-3.5">
+                              <p className="font-bold text-slate-900 dark:text-white line-clamp-1">{l.title}</p>
+                              <p className="text-[11px] text-emerald-600 dark:text-emerald-400">{l.user.fullName} • {l.user.phoneNumber}</p>
+                            </td>
+                            <td className="p-3.5 uppercase text-[10px] font-mono">{l.category}</td>
+                            <td className="p-3.5">{l.locationArea}</td>
+                            <td className="p-3.5 font-bold">
+                              {l.currency === 'BARTER' ? 'BARTER ONLY' : `${l.currency} ${l.price || 0}`}
+                            </td>
+                            <td className="p-3.5">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                l.status === 'active' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-red-500/20 text-red-700 dark:text-red-300'
+                              }`}>
+                                {l.status}
+                              </span>
+                            </td>
+                            <td className="p-3.5 text-right space-x-2">
+                              <button
+                                onClick={() => handleExecuteAction('update_listing_status', l.id, { status: l.status === 'active' ? 'archived' : 'active' })}
+                                className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 dark:hover:bg-lowveld-800 text-xs font-semibold"
+                              >
+                                {l.status === 'active' ? 'Archive' : 'Activate'}
+                              </button>
+                              <button
+                                onClick={() => handleExecuteAction('delete_listing', l.id)}
+                                className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30 text-xs font-bold"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -360,21 +381,29 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-lowveld-800/60">
-                    {users.map((u) => (
-                      <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-lowveld-900/50">
-                        <td className="p-3.5 font-bold text-slate-900 dark:text-white">{u.fullName}</td>
-                        <td className="p-3.5 font-mono text-emerald-600 dark:text-emerald-400">{u.phoneNumber}</td>
-                        <td className="p-3.5">{u.locationArea}</td>
-                        <td className="p-3.5">⭐ {u.rating || 5.0} ({u.tradeCount || 0} trades)</td>
-                        <td className="p-3.5">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            u.verifiedArtisan ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 text-slate-600'
-                          }`}>
-                            {u.verifiedArtisan ? 'Verified' : 'Standard'}
-                          </span>
+                    {users.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-gray-400">
+                          No registered users on the platform yet.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      users.map((u) => (
+                        <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-lowveld-900/50">
+                          <td className="p-3.5 font-bold text-slate-900 dark:text-white">{u.fullName}</td>
+                          <td className="p-3.5 font-mono text-emerald-600 dark:text-emerald-400">{u.phoneNumber}</td>
+                          <td className="p-3.5">{u.locationArea}</td>
+                          <td className="p-3.5">⭐ {u.rating || 5.0} ({u.tradeCount || 0} trades)</td>
+                          <td className="p-3.5">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              u.verifiedArtisan ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 text-slate-600'
+                            }`}>
+                              {u.verifiedArtisan ? 'Verified' : 'Standard'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -390,21 +419,27 @@ export default function AdminPage() {
                     <span>Barter Proposals ({proposals.length})</span>
                   </h3>
                   <div className="space-y-2">
-                    {proposals.map((p) => (
-                      <div key={p.id} className="p-3.5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-xs space-y-1">
-                        <div className="flex items-center justify-between">
-                          <p className="font-bold text-slate-900 dark:text-white">{p.proposerName} ({p.proposerPhone})</p>
-                          <button
-                            onClick={() => handleExecuteAction('delete_proposal', p.id)}
-                            className="text-red-500 hover:text-red-400 font-bold"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                        <p className="text-amber-600 dark:text-amber-400 font-semibold">Offered: {p.offeredItemTitle}</p>
-                        <p className="text-slate-500 dark:text-gray-400">{p.offeredDescription}</p>
+                    {proposals.length === 0 ? (
+                      <div className="p-6 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-center text-xs text-slate-500 dark:text-gray-400">
+                        No barter proposals recorded yet.
                       </div>
-                    ))}
+                    ) : (
+                      proposals.map((p) => (
+                        <div key={p.id} className="p-3.5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-slate-900 dark:text-white">{p.proposerName} ({p.proposerPhone})</p>
+                            <button
+                              onClick={() => handleExecuteAction('delete_proposal', p.id)}
+                              className="text-red-500 hover:text-red-400 font-bold"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                          <p className="text-amber-600 dark:text-amber-400 font-semibold">Offered: {p.offeredItemTitle}</p>
+                          <p className="text-slate-500 dark:text-gray-400">{p.offeredDescription}</p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -415,21 +450,27 @@ export default function AdminPage() {
                     <span>Cash Purchase Orders ({orders.length})</span>
                   </h3>
                   <div className="space-y-2">
-                    {orders.map((o) => (
-                      <div key={o.id} className="p-3.5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-xs space-y-1">
-                        <div className="flex items-center justify-between">
-                          <p className="font-bold text-slate-900 dark:text-white">{o.buyerName} ({o.buyerPhone})</p>
-                          <button
-                            onClick={() => handleExecuteAction('delete_order', o.id)}
-                            className="text-red-500 hover:text-red-400 font-bold"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                        <p className="text-emerald-600 dark:text-emerald-400 font-semibold">Total: {o.currencyChoice} ${o.totalPrice} ({o.quantity} qty)</p>
-                        <p className="text-slate-500 dark:text-gray-400">Pickup: {o.pickupLocation}</p>
+                    {orders.length === 0 ? (
+                      <div className="p-6 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-center text-xs text-slate-500 dark:text-gray-400">
+                        No cash purchase orders placed yet.
                       </div>
-                    ))}
+                    ) : (
+                      orders.map((o) => (
+                        <div key={o.id} className="p-3.5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-slate-900 dark:text-white">{o.buyerName} ({o.buyerPhone})</p>
+                            <button
+                              onClick={() => handleExecuteAction('delete_order', o.id)}
+                              className="text-red-500 hover:text-red-400 font-bold"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                          <p className="text-emerald-600 dark:text-emerald-400 font-semibold">Total: {o.currencyChoice} ${o.totalPrice} ({o.quantity} qty)</p>
+                          <p className="text-slate-500 dark:text-gray-400">Pickup: {o.pickupLocation}</p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
