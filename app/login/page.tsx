@@ -31,9 +31,22 @@ function LoginContent() {
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-500" />
 
           {callbackError && (
-            <div className="mb-5 p-3 rounded-xl text-xs flex items-center gap-2.5 border bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span className="font-semibold">Sign-in link was invalid or expired. Please try again.</span>
+            <div className="mb-5 p-3 rounded-xl text-xs flex items-center justify-between gap-2.5 border bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400">
+              <div className="flex items-center gap-2.5">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span className="font-semibold">
+                  {callbackError === 'auth_callback_failed'
+                    ? 'Previous sign-in session expired. Please tap the button below to sign in.'
+                    : decodeURIComponent(callbackError)}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.replace('/login')}
+                className="text-xs font-bold hover:underline opacity-80 hover:opacity-100"
+              >
+                Dismiss
+              </button>
             </div>
           )}
 
