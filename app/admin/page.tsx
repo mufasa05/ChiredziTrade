@@ -39,6 +39,7 @@ export default function AdminPage() {
   const [proposals, setProposals] = useState<BarterProposal[]>([]);
   const [orders, setOrders] = useState<TradeOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const fetchAdminData = async (pin: string) => {
     setLoading(true);
@@ -53,7 +54,6 @@ export default function AdminPage() {
         setUsers(data.users);
         setProposals(data.proposals);
         setOrders(data.orders);
-        // Explicit security rule: NEVER persist admin password in localStorage
         if (typeof window !== 'undefined') {
           localStorage.removeItem('zimbarter_admin_pin');
         }
@@ -68,7 +68,6 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    // Ensure any previously saved PIN is purged on component mount
     if (typeof window !== 'undefined') {
       localStorage.removeItem('zimbarter_admin_pin');
     }
@@ -111,6 +110,15 @@ export default function AdminPage() {
       l.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       l.user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       l.locationArea.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Filter users based on search term
+  const filteredUsers = users.filter(
+    (u) =>
+      (u.fullName || '').toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+      (u.email || '').toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+      (u.phoneNumber || '').toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+      (u.locationArea || '').toLowerCase().includes(userSearchTerm.toLowerCase())
   );
 
   return (
@@ -185,24 +193,35 @@ export default function AdminPage() {
                 </h1>
               </div>
 
-              <button
-                onClick={() => {
-                  setIsAuthorized(false);
-                  setAdminPin('');
-                  setShowPassword(false);
-                  setStats(null);
-                  setListings([]);
-                  setUsers([]);
-                  setProposals([]);
-                  setOrders([]);
-                  if (typeof window !== 'undefined') {
-                    localStorage.removeItem('zimbarter_admin_pin');
-                  }
-                }}
-                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-lowveld-900 hover:bg-red-500/20 text-slate-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all border border-slate-300 dark:border-lowveld-800"
-              >
-                Lock Admin Console
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => fetchAdminData(adminPin)}
+                  disabled={loading}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition-all border border-emerald-500/30 flex items-center gap-1.5"
+                  title="Refresh live activity feed"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  <span>{loading ? 'Refreshing...' : 'Refresh Live Data'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsAuthorized(false);
+                    setAdminPin('');
+                    setShowPassword(false);
+                    setStats(null);
+                    setListings([]);
+                    setUsers([]);
+                    setProposals([]);
+                    setOrders([]);
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('zimbarter_admin_pin');
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-lowveld-900 hover:bg-red-500/20 text-slate-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition-all border border-slate-300 dark:border-lowveld-800"
+                >
+                  Lock Admin Console
+                </button>
+              </div>
             </div>
 
             {/* KPI Metrics Cards */}
@@ -369,43 +388,82 @@ export default function AdminPage() {
 
             {/* TAB 2: REGISTERED USERS CONSOLE */}
             {activeTab === 'users' && (
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-lowveld-800 bg-white dark:bg-lowveld-950 shadow-sm">
-                <table className="w-full text-left text-xs text-slate-700 dark:text-gray-300">
-                  <thead className="bg-slate-100 dark:bg-lowveld-900 border-b border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white font-bold">
-                    <tr>
-                      <th className="p-3.5">Full Name / Business</th>
-                      <th className="p-3.5">WhatsApp Phone</th>
-                      <th className="p-3.5">Location Hub</th>
-                      <th className="p-3.5">Rating & Trades</th>
-                      <th className="p-3.5">Artisan Badge</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-lowveld-800/60">
-                    {users.length === 0 ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search users by name, email, WhatsApp, or location..."
+                      value={userSearchTerm}
+                      onChange={(e) => setUserSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 rounded-xl bg-white dark:bg-lowveld-950 border border-slate-300 dark:border-lowveld-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <span className="text-xs text-slate-500 dark:text-gray-400 font-mono">
+                    {filteredUsers.length} traders registered
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-lowveld-800 bg-white dark:bg-lowveld-950 shadow-sm">
+                  <table className="w-full text-left text-xs text-slate-700 dark:text-gray-300">
+                    <thead className="bg-slate-100 dark:bg-lowveld-900 border-b border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white font-bold">
                       <tr>
-                        <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-gray-400">
-                          No registered users on the platform yet.
-                        </td>
+                        <th className="p-3.5">Trader / Business</th>
+                        <th className="p-3.5">Email Address</th>
+                        <th className="p-3.5">WhatsApp Phone</th>
+                        <th className="p-3.5">Location Hub</th>
+                        <th className="p-3.5">Rating & Trades</th>
+                        <th className="p-3.5">Joined Date</th>
+                        <th className="p-3.5">Status</th>
                       </tr>
-                    ) : (
-                      users.map((u) => (
-                        <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-lowveld-900/50">
-                          <td className="p-3.5 font-bold text-slate-900 dark:text-white">{u.fullName}</td>
-                          <td className="p-3.5 font-mono text-emerald-600 dark:text-emerald-400">{u.phoneNumber}</td>
-                          <td className="p-3.5">{u.locationArea}</td>
-                          <td className="p-3.5">⭐ {u.rating || 5.0} ({u.tradeCount || 0} trades)</td>
-                          <td className="p-3.5">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              u.verifiedArtisan ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 text-slate-600'
-                            }`}>
-                              {u.verifiedArtisan ? 'Verified' : 'Standard'}
-                            </span>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-lowveld-800/60">
+                      {filteredUsers.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-slate-500 dark:text-gray-400">
+                            No registered users found on the platform yet.
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : (
+                        filteredUsers.map((u) => (
+                          <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-lowveld-900/50">
+                            <td className="p-3.5">
+                              <div className="flex items-center gap-2">
+                                {u.avatarUrl ? (
+                                  <img src={u.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                                ) : (
+                                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-[10px]">
+                                    {(u.fullName || 'T').charAt(0)}
+                                  </div>
+                                )}
+                                <span className="font-bold text-slate-900 dark:text-white">{u.fullName}</span>
+                              </div>
+                            </td>
+                            <td className="p-3.5 font-mono text-slate-600 dark:text-gray-300">
+                              {u.email || <span className="text-slate-400 italic">No email</span>}
+                            </td>
+                            <td className="p-3.5 font-mono text-emerald-600 dark:text-emerald-400">
+                              {u.phoneNumber}
+                            </td>
+                            <td className="p-3.5">{u.locationArea}</td>
+                            <td className="p-3.5">⭐ {u.rating || 5.0} ({u.tradeCount || 0} trades)</td>
+                            <td className="p-3.5 text-slate-500 dark:text-gray-400 font-mono text-[11px]">
+                              {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Active'}
+                            </td>
+                            <td className="p-3.5">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                u.verifiedArtisan ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-lowveld-900 text-slate-600 dark:text-gray-300'
+                              }`}>
+                                {u.verifiedArtisan ? 'Verified' : 'Active Trader'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

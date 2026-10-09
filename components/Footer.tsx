@@ -68,6 +68,15 @@ export default function Footer() {
               Smart Barter Hub
             </Link>
             <span>•</span>
+            <Link href="/login" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">
+              Sign In / Register
+            </Link>
+            <span>•</span>
+            <Link href="/admin" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Admin Console</span>
+            </Link>
+            <span>•</span>
             <Link href="/privacy" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">
               Privacy Policy
             </Link>
@@ -75,8 +84,6 @@ export default function Footer() {
             <Link href="/terms" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">
               Terms of Service
             </Link>
-            <span>•</span>
-            <span>USD / ZWG / ZAR</span>
           </div>
         </div>
       </div>

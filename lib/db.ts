@@ -690,8 +690,9 @@ export const db = {
         if (!error && data && data.length > 0) {
           return data.map((u: any) => ({
             id: u.id,
-            phoneNumber: u.phone_number,
-            fullName: u.full_name,
+            email: u.email || '',
+            phoneNumber: u.phone_number || 'Pending WhatsApp',
+            fullName: u.full_name || 'Anonymous Trader',
             locationArea: u.location_area || 'Harare CBD',
             avatarUrl: u.avatar_url,
             verifiedArtisan: u.verified_artisan,

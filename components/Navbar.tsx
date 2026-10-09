@@ -188,6 +188,14 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                     <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Seller Dashboard</span>
                   </Link>
+                  <Link
+                    href="/admin"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 mt-0.5 rounded-xl text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900 font-bold transition-colors"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Admin Console</span>
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
@@ -202,13 +210,22 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
               )}
             </div>
           ) : (
-            <button
-              onClick={() => openAuthModal()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 text-xs font-bold transition-all shadow-sm"
-            >
-              <LogIn className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Sign In</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <Link
+                href="/admin"
+                className="p-2 rounded-xl bg-slate-100 dark:bg-lowveld-950/80 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all shadow-sm"
+                title="Admin Console"
+              >
+                <ShieldCheck className="w-4 h-4" />
+              </Link>
+              <button
+                onClick={() => openAuthModal()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 text-xs font-bold transition-all shadow-sm"
+              >
+                <LogIn className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>Sign In / Register</span>
+              </button>
+            </div>
           )}
 
           {/* Post Listing CTA */}
@@ -350,9 +367,22 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                 <span>Seller Dashboard</span>
               </Link>
             )}
+
+            <Link
+              href="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                pathname === '/admin'
+                  ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                  : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Admin Console</span>
+            </Link>
           </div>
 
-          <div className="pt-2 border-t border-lowveld-800 space-y-2">
+          <div className="pt-2 border-t border-slate-200 dark:border-lowveld-800 space-y-2">
 
 
             {/* Auth Account Button */}
