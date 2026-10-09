@@ -14,9 +14,11 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
 
 function BarterNetworkContent() {
   const { t } = useLanguage();
+  const { requireAuth } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [activeModalListing, setActiveModalListing] = useState<Listing | null>(null);
   const [activeBuyListing, setActiveBuyListing] = useState<Listing | null>(null);
@@ -123,7 +125,7 @@ function BarterNetworkContent() {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setActiveBuyListing(item)}
+                    onClick={() => requireAuth('Sign in to place a cash order.') && setActiveBuyListing(item)}
                     className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm"
                   >
                     <ShoppingBag className="w-3 h-3" />
@@ -131,7 +133,7 @@ function BarterNetworkContent() {
                   </button>
 
                   <button
-                    onClick={() => setActiveModalListing(item)}
+                    onClick={() => requireAuth('Sign in to propose a barter swap.') && setActiveModalListing(item)}
                     className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1 shadow-md"
                   >
                     <span>Swap</span>

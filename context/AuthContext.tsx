@@ -36,6 +36,8 @@ interface AuthContextType {
   isAuthModalOpen: boolean;
   authModalPrompt: string;
   openAuthModal: (promptMsg?: string) => void;
+  /** Returns true if the user may proceed; otherwise opens the sign-in modal and returns false. */
+  requireAuth: (promptMsg?: string) => boolean;
   closeAuthModal: () => void;
 }
 
@@ -54,6 +56,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthModalOpen: false,
   authModalPrompt: '',
   openAuthModal: () => {},
+  requireAuth: () => false,
   closeAuthModal: () => {},
 });
 
@@ -200,6 +203,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthModalOpen(true);
   };
 
+  const requireAuth = (promptMsg: string = 'Please sign in to continue.') => {
+    if (authUser && !needsProfile) return true;
+    openAuthModal(authUser ? 'Please complete your profile with a WhatsApp number to continue.' : promptMsg);
+    return false;
+  };
+
   const closeAuthModal = () => {
     if (needsProfile) return; // must finish profile first
     setIsAuthModalOpen(false);
@@ -220,6 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthModalOpen,
         authModalPrompt,
         openAuthModal,
+        requireAuth,
         closeAuthModal,
       }}
     >

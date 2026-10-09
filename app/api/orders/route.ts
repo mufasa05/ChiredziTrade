@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { getAuthUser } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const CreateOrderSchema = z.object({
@@ -19,6 +20,12 @@ export async function POST(req: NextRequest) {
     const { allowed } = checkRateLimit(req, 15, 60 * 1000);
     if (!allowed) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded. Try again later.' }, { status: 429 });
+    }
+
+    // 2. Verify Auth User
+    const { user } = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Please sign in to place an order.' }, { status: 401 });
     }
 
     // 2. Validate input schema

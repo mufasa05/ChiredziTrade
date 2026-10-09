@@ -22,6 +22,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { user } = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Please sign in to propose a barter swap.' }, { status: 401 });
+    }
 
     const rawBody = await req.json();
     const validatedData = ProposeBarterSchema.parse(rawBody);

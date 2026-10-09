@@ -25,7 +25,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function PostListingPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, isAuthenticated, authLoading, needsProfile, openAuthModal } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -221,13 +221,23 @@ export default function PostListingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const finalSellerName = sellerName.trim() || user?.fullName || 'Prince A. Shumba';
-    const finalSellerPhone = sellerPhone.trim() || user?.phoneNumber || '+263 783237918';
+    const finalSellerName = sellerName.trim() || user?.fullName || '';
+    const finalSellerPhone = sellerPhone.trim() || user?.phoneNumber || '';
     const finalImageUrl = imageUrl || defaultCategoryImages[category] || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800';
-    const finalDescription = description.trim() || 'Available for cash purchase or barter exchange in Chiredzi.';
+    const finalDescription = description.trim();
+
+    if (!user) {
+      openAuthModal('Please sign in to post a listing.');
+      return;
+    }
 
     if (title.trim().length < 2) {
       alert('Please enter a descriptive listing title.');
+      return;
+    }
+
+    if (finalDescription.length < 10) {
+      alert('Please add a short description (at least 10 characters).');
       return;
     }
 
@@ -235,15 +245,15 @@ export default function PostListingPage() {
 
     try {
       const payload = {
-        userId: user?.id || `user-web-${Date.now().toString().slice(-4)}`,
+        userId: user.id,
         user: {
-          id: user?.id || `user-web-${Date.now().toString().slice(-4)}`,
+          id: user.id,
           phoneNumber: finalSellerPhone,
           fullName: finalSellerName,
           locationArea,
-          verifiedArtisan: true,
-          rating: 5.0,
-          tradeCount: 1,
+          verifiedArtisan: false,
+          rating: 0,
+          tradeCount: 0,
         },
         title: title.trim(),
         description: finalDescription,
@@ -296,6 +306,55 @@ export default function PostListingPage() {
       setSubmitting(false);
     }
   };
+
+  // Page-level gate: visitors can browse freely, but only signed-in traders with a
+  // completed profile can open the listing form.
+  if (authLoading) {
+    return (
+      <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09]">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <RefreshCw className="w-6 h-6 animate-spin text-emerald-500" />
+        </div>
+      </main>
+    );
+  }
+
+  if (!isAuthenticated || needsProfile) {
+    return (
+      <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4 py-16">
+          <div className="max-w-md w-full text-center glass-panel rounded-3xl p-8 border border-slate-200 dark:border-lowveld-800 shadow-xl">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck className="w-7 h-7" />
+            </div>
+            <h1 className="font-display font-black text-2xl text-slate-900 dark:text-white mb-2">
+              {needsProfile ? 'Complete Your Trader Profile' : 'Sign In to Post a Listing'}
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-gray-400 mb-6 leading-relaxed">
+              {needsProfile
+                ? 'Add your WhatsApp number and location so buyers can reach you.'
+                : 'Browsing is free for everyone. To protect buyers, only verified traders can post listings, place orders, or propose swaps.'}
+            </p>
+            <button
+              onClick={() => openAuthModal(needsProfile ? '' : 'Please sign in to post a listing.')}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-black text-sm shadow-md transition-all inline-flex items-center justify-center gap-2"
+            >
+              <span>{needsProfile ? 'Complete Profile' : 'Sign In / Create Account'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="mt-3 text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+            >
+              Continue browsing the marketplace
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 flex flex-col selection:bg-emerald-500 selection:text-white transition-colors duration-300">

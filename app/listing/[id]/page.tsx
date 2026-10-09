@@ -23,11 +23,13 @@ import {
   Clock
 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
 
 function ListingDetailContent() {
   const params = useParams();
   const id = params?.id as string;
   const { t } = useLanguage();
+  const { requireAuth } = useAuth();
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [barterMatches, setBarterMatches] = useState<BarterMatch[]>([]);
@@ -290,7 +292,7 @@ function ListingDetailContent() {
                 {listing.currency !== 'BARTER' && (
                   <button
                     disabled={listing.status === 'sold'}
-                    onClick={() => setBuyModalOpen(true)}
+                    onClick={() => requireAuth('Sign in to place a cash order.') && setBuyModalOpen(true)}
                     className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-black text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ShoppingBag className="w-4 h-4 text-white" />
@@ -303,6 +305,9 @@ function ListingDetailContent() {
                   href={directWhatsAppUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (!requireAuth('Sign in to contact this seller on WhatsApp.')) e.preventDefault();
+                  }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-[#005c4b] hover:bg-[#00735e] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
                 >
                   <MessageCircle className="w-4 h-4 text-emerald-300" />
@@ -312,7 +317,7 @@ function ListingDetailContent() {
                 {/* Propose Barter Swap */}
                 <button
                   disabled={listing.status === 'sold'}
-                  onClick={() => setBarterModalOpen(true)}
+                  onClick={() => requireAuth('Sign in to propose a barter swap.') && setBarterModalOpen(true)}
                   className="w-full py-3.5 px-6 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/50 font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <RefreshCw className="w-4 h-4 text-amber-600 dark:text-amber-400" />
@@ -342,7 +347,7 @@ function ListingDetailContent() {
                 </div>
 
                 <div className="mt-3 flex items-center justify-between text-xs text-slate-600 dark:text-gray-400 px-3 py-2 rounded-xl bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800">
-                  <span>{t.completedTrades}: <b className="text-slate-900 dark:text-white">{listing.user.tradeCount || 12}</b></span>
+                  <span>{t.completedTrades}: <b className="text-slate-900 dark:text-white">{listing.user.tradeCount || 0}</b></span>
                   <span>{t.rating}: <b className="text-amber-600 dark:text-amber-400">⭐ {avgRating} ({reviews.length} reviews)</b></span>
                 </div>
               </div>
@@ -358,7 +363,7 @@ function ListingDetailContent() {
                     <p className="text-[11px] text-slate-500 dark:text-gray-400">Verified trade feedback from Lowveld buyers & ranchers.</p>
                   </div>
                   <button
-                    onClick={() => setReviewModalOpen(true)}
+                    onClick={() => requireAuth('Sign in to write a review.') && setReviewModalOpen(true)}
                     className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 text-xs font-bold transition-all"
                   >
                     Write Review

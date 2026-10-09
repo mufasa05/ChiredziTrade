@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadListingImage } from '@/lib/storage';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { getAuthUser } from '@/lib/supabase/server';
 
 export const maxDuration = 30;
 
@@ -9,6 +10,11 @@ export async function POST(req: NextRequest) {
     const { allowed } = checkRateLimit(req, 15, 60 * 1000);
     if (!allowed) {
       return NextResponse.json({ success: false, error: 'Upload rate limit exceeded. Try again later.' }, { status: 429 });
+    }
+
+    const { user } = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Please sign in to upload images.' }, { status: 401 });
     }
 
     const body = await req.json();
