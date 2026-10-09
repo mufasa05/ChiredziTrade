@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/config';
 
 /**
  * Refreshes the Supabase auth session cookie on each request so that
@@ -8,11 +9,7 @@ import { createServerClient } from '@supabase/ssr';
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return response;
-
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

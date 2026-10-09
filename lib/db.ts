@@ -1,17 +1,15 @@
 import { Listing, BarterProposal, TradeOrder, BotSession, SectorCategory, TradeCurrency, TradeReview } from './types';
 import { INITIAL_LISTINGS } from './mock-data';
 import { uploadListingImage } from './storage';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase/config';
 
 // Initialize Supabase Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
 let supabase: any = null;
 
-if (supabaseUrl && supabaseAnonKey) {
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
   try {
     const { createClient } = require('@supabase/supabase-js');
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
     console.warn('Supabase package not initialized:', e);
   }

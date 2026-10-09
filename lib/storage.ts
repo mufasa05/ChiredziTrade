@@ -1,12 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase/config';
 
 let supabase: any = null;
-if (supabaseUrl && supabaseAnonKey) {
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
   try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (e) {
     console.warn('Supabase client failed to initialize in storage service:', e);
   }
