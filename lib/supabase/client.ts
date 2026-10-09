@@ -22,3 +22,4 @@ export function getSupabaseBrowserClient(): SupabaseClient {
   browserClient = createBrowserClient(url, anonKey);
   return browserClient;
 }
+
