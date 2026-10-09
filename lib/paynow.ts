@@ -1,119 +1,164 @@
-import crypto from 'crypto';
+// @ts-ignore
+import { Paynow } from 'paynow';
 
 /**
- * PAYNOW ZIMBABWE PAYMENT INTEGRATION ENGINE
- * Supports: EcoCash, OneMoney, Visa/Mastercard, Zimswitch V-Payment.
- * Docs: https://www.paynow.co.zw/KnowledgeBase/Index
+ * PAYNOW ZIMBABWE OFFICIAL PAYMENT ENGINE
+ * Supports:
+ * 1. EcoCash & OneMoney Mobile Money (USSD push prompt sent directly to buyer's phone)
+ * 2. InnBucks, Zimswitch & Visa/Mastercard (Paynow Web Checkout)
+ * 3. Fallback Sandbox / Dev Simulator when live keys are unconfigured
  */
 
-export interface PaynowInitiateParams {
+export interface PaynowPaymentParams {
   reference: string;
   amount: number;
-  additionalInfo?: string;
+  title: string;
+  authEmail: string;
+  phone?: string;
+  paymentMethod: 'ecocash' | 'onemoney' | 'paynow_web';
   returnUrl: string;
   resultUrl: string;
-  authEmail?: string;
-  authPhone?: string;
 }
 
-export interface PaynowInitiateResult {
+export interface PaynowPaymentResponse {
   success: boolean;
+  status: 'sent_prompt' | 'redirect_ready' | 'simulated_success' | 'failed';
   redirectUrl?: string;
   pollUrl?: string;
-  reference?: string;
+  instructions?: string;
+  orderReference: string;
   error?: string;
   isSimulated?: boolean;
 }
 
-const INTEGRATION_ID = process.env.PAYNOW_INTEGRATION_ID || '';
-const INTEGRATION_KEY = process.env.PAYNOW_INTEGRATION_KEY || '';
+const INTEGRATION_ID = (process.env.PAYNOW_INTEGRATION_ID || '').trim();
+const INTEGRATION_KEY = (process.env.PAYNOW_INTEGRATION_KEY || '').trim();
 
 /**
- * Generates Paynow SHA512 hash from message values + integration key
+ * Initiates payment with Paynow Zimbabwe using the official Paynow SDK
  */
-function generatePaynowHash(values: Record<string, string>, integrationKey: string): string {
-  let stringToHash = '';
-  Object.keys(values).forEach((key) => {
-    if (key.toLowerCase() !== 'hash') {
-      stringToHash += values[key];
-    }
-  });
-  stringToHash += integrationKey;
+export async function initiatePaynowTransaction(params: PaynowPaymentParams): Promise<PaynowPaymentResponse> {
+  const {
+    reference,
+    amount,
+    title,
+    authEmail,
+    phone,
+    paymentMethod,
+    returnUrl,
+    resultUrl,
+  } = params;
 
-  return crypto.createHash('sha512').update(stringToHash, 'utf8').digest('hex').toUpperCase();
-}
+  const cleanPhone = (phone || '').replace(/[^\d+]/g, '');
+  const validEmail = (authEmail && authEmail.includes('@')) 
+    ? authEmail 
+    : `buyer.${reference.toLowerCase().replace(/[^a-z0-9]/g, '')}@zimbarter.co.zw`;
 
-/**
- * Initiates a payment session with Paynow Zimbabwe.
- * Falls back to an interactive sandbox / demo payment session if API keys are not yet configured.
- */
-export async function initiatePaynowPayment(params: PaynowInitiateParams): Promise<PaynowInitiateResult> {
-  const { reference, amount, additionalInfo, returnUrl, resultUrl, authEmail, authPhone } = params;
-
-  // If live Paynow credentials are configured in environment variables
+  // 1. LIVE PRODUCTION MODE (When live Paynow credentials are configured)
   if (INTEGRATION_ID && INTEGRATION_KEY) {
     try {
-      const payload: Record<string, string> = {
-        resulturl: resultUrl,
-        returnurl: returnUrl,
-        reference: reference,
-        amount: amount.toFixed(2),
-        id: INTEGRATION_ID,
-        additionalinfo: additionalInfo || 'ZimBarter Marketplace Order',
-        status: 'Message',
-      };
+      const paynow = new Paynow(INTEGRATION_ID, INTEGRATION_KEY, resultUrl, returnUrl);
+      const payment = paynow.createPayment(reference, validEmail);
+      payment.add(title || 'Marketplace Item', Number(amount.toFixed(2)));
 
-      if (authEmail) payload.authemail = authEmail;
+      if (paymentMethod === 'ecocash' || paymentMethod === 'onemoney') {
+        // Mobile Money Express Checkout: pushes USSD prompt to buyer's phone
+        const normalizedPhone = cleanPhone.startsWith('+263') 
+          ? '0' + cleanPhone.slice(4) 
+          : cleanPhone.startsWith('263') 
+          ? '0' + cleanPhone.slice(3) 
+          : cleanPhone;
 
-      const hash = generatePaynowHash(payload, INTEGRATION_KEY);
-      payload.hash = hash;
+        const response = await paynow.sendMobile(payment, normalizedPhone, paymentMethod);
 
-      const body = new URLSearchParams(payload).toString();
-
-      const response = await fetch('https://www.paynow.co.zw/interface/initiatetransaction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body,
-      });
-
-      const responseText = await response.text();
-      const params = new URLSearchParams(responseText);
-      const status = params.get('status')?.toLowerCase();
-
-      if (status === 'ok') {
-        const browserUrl = params.get('browserurl') || '';
-        const pollUrl = params.get('pollurl') || '';
-        return {
-          success: true,
-          redirectUrl: browserUrl,
-          pollUrl,
-          reference,
-          isSimulated: false,
-        };
+        if (response && response.success) {
+          return {
+            success: true,
+            status: 'sent_prompt',
+            pollUrl: response.pollUrl,
+            instructions: response.instructions || `USSD prompt pushed to ${normalizedPhone}. Check your phone to enter your PIN.`,
+            orderReference: reference,
+            isSimulated: false,
+          };
+        } else {
+          return {
+            success: false,
+            status: 'failed',
+            error: response?.error || 'Paynow EcoCash prompt failed to initiate',
+            orderReference: reference,
+          };
+        }
       } else {
-        const errorMsg = params.get('error') || 'Paynow returned an error';
-        console.warn('Paynow API error:', errorMsg);
-        return {
-          success: false,
-          error: errorMsg,
-        };
+        // Web Checkout (Cards / Zimswitch / InnBucks)
+        const response = await paynow.send(payment);
+        if (response && response.success) {
+          return {
+            success: true,
+            status: 'redirect_ready',
+            redirectUrl: response.redirectUrl,
+            pollUrl: response.pollUrl,
+            orderReference: reference,
+            isSimulated: false,
+          };
+        } else {
+          return {
+            success: false,
+            status: 'failed',
+            error: response?.error || 'Paynow web checkout failed to initiate',
+            orderReference: reference,
+          };
+        }
       }
     } catch (err: any) {
-      console.error('Paynow initiation network error:', err);
+      console.error('Paynow live API error:', err);
       return {
         success: false,
-        error: err.message || 'Payment gateway connection failed',
+        status: 'failed',
+        error: err.message || 'Payment gateway connection error',
+        orderReference: reference,
       };
     }
   }
 
-  // Seamless Sandbox / Instant Simulated Checkout for development & immediate user testing
-  const simulatedRedirectUrl = `${returnUrl}?paynow_ref=${encodeURIComponent(reference)}&status=simulated_paid`;
+  // 2. SIMULATED / SANDBOX MODE (For local development or before keys are set)
+  if (paymentMethod === 'ecocash' || paymentMethod === 'onemoney') {
+    return {
+      success: true,
+      status: 'sent_prompt',
+      instructions: `[SANDBOX] EcoCash USSD prompt simulated for ${cleanPhone || '077...'}. Enter PIN on your phone to complete $${amount.toFixed(2)} payment.`,
+      orderReference: reference,
+      pollUrl: '',
+      isSimulated: true,
+    };
+  }
+
   return {
     success: true,
-    redirectUrl: simulatedRedirectUrl,
+    status: 'redirect_ready',
+    redirectUrl: `${returnUrl}?status=simulated_paid&ref=${encodeURIComponent(reference)}`,
+    instructions: `[SANDBOX] Paynow Card Checkout session generated.`,
+    orderReference: reference,
     pollUrl: '',
-    reference,
     isSimulated: true,
   };
+}
+
+/**
+ * Polls Paynow transaction status
+ */
+export async function checkPaynowStatus(pollUrl: string): Promise<{ paid: boolean; status: string }> {
+  if (!pollUrl || !INTEGRATION_ID || !INTEGRATION_KEY) {
+    return { paid: true, status: 'Paid' };
+  }
+
+  try {
+    const paynow = new Paynow(INTEGRATION_ID, INTEGRATION_KEY, '', '');
+    const status = await paynow.pollTransaction(pollUrl);
+    return {
+      paid: status && status.paid ? true : false,
+      status: status?.status || 'Pending',
+    };
+  } catch (e) {
+    return { paid: false, status: 'Unknown' };
+  }
 }

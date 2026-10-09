@@ -683,6 +683,21 @@ export const db = {
     return true;
   },
 
+  deleteUser: async (id: string): Promise<boolean> => {
+    if (supabase) {
+      try {
+        await supabase.from('listings').delete().eq('user_id', id);
+        await supabase.from('trade_reviews').delete().or(`reviewer_id.eq."${id}",target_user_id.eq."${id}"`);
+        await supabase.from('users').delete().eq('id', id);
+      } catch (e) {
+        console.warn('Supabase delete user error:', e);
+      }
+    }
+    memoryListings = memoryListings.filter((l) => l.user?.id !== id && l.userId !== id);
+    memoryProposals = memoryProposals.filter((p) => p.proposerId !== id);
+    return true;
+  },
+
   getAllUsers: async () => {
     if (supabase) {
       try {

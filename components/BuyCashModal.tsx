@@ -15,8 +15,11 @@ import {
   MapPin, 
   ShieldCheck, 
   ExternalLink,
-  ChevronRight,
-  Loader2
+  Loader2,
+  Copy,
+  Check,
+  Send,
+  AlertCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
@@ -27,29 +30,42 @@ interface BuyCashModalProps {
   onClose: () => void;
 }
 
-type PaymentMethod = 'paynow' | 'cash_handover' | 'direct_ecocash';
+export type PaymentOption = 'ecocash' | 'direct_transfer' | 'cash_handover' | 'paynow_web';
 
 export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCashModalProps) {
   const router = useRouter();
   const { user } = useAuth();
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paynow');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentOption>('ecocash');
   const [buyerName, setBuyerName] = useState(user?.fullName || '');
   const [buyerPhone, setBuyerPhone] = useState(user?.phoneNumber || '');
+  const [buyerEmail, setBuyerEmail] = useState(user?.email || '');
+  const [ecoCashNumber, setEcoCashNumber] = useState(user?.phoneNumber || '');
+  const [transactionCode, setTransactionCode] = useState('');
   const [selectedHub, setSelectedHub] = useState<string>('Chiredzi Town');
   const [customHub, setCustomHub] = useState<string>('');
   const [isCustomHub, setIsCustomHub] = useState(false);
   const [quantity, setQuantity] = useState('1');
   const [notes, setNotes] = useState('');
+  
+  // Submission & Post-Order States
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [paynowUrl, setPaynowUrl] = useState<string | null>(null);
   const [orderReference, setOrderReference] = useState<string>('');
+  const [orderStatus, setOrderStatus] = useState<string>('');
+  const [instructions, setInstructions] = useState<string>('');
+  const [paynowUrl, setPaynowUrl] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const [pinConfirmed, setPinConfirmed] = useState(false);
 
   useEffect(() => {
     if (user) {
       if (user.fullName) setBuyerName(user.fullName);
-      if (user.phoneNumber) setBuyerPhone(user.phoneNumber);
+      if (user.phoneNumber) {
+        setBuyerPhone(user.phoneNumber);
+        setEcoCashNumber(user.phoneNumber);
+      }
+      if (user.email) setBuyerEmail(user.email);
       if (user.locationArea) {
         if (ZIMBABWE_TRADE_HUBS.includes(user.locationArea as any)) {
           setSelectedHub(user.locationArea);
@@ -78,6 +94,7 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
   const handleDismiss = () => {
     setSubmitted(false);
     setPaynowUrl(null);
+    setPinConfirmed(false);
     onClose();
   };
 
@@ -90,64 +107,58 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
   const calculatedPrice = (listing.price || 0) * qty;
   const effectiveHub = isCustomHub ? (customHub.trim() || 'Custom Trade Hub') : selectedHub;
 
+  const handleCopySellerPhone = () => {
+    navigator.clipboard.writeText(listing.user.phoneNumber);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (paymentMethod === 'direct_transfer' && !transactionCode.trim()) {
+      alert('Please enter your EcoCash / InnBucks Transaction ID from your confirmation SMS to complete direct transfer.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      if (paymentMethod === 'paynow') {
-        // Initiate Paynow Zimbabwe transaction
-        const res = await fetch('/api/payments/paynow', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            listingId: listing.id,
-            amount: calculatedPrice,
-            quantity: qty,
-            buyerName,
-            buyerPhone,
-            pickupLocation: effectiveHub,
-            currencyChoice: listing.currency === 'BARTER' ? 'USD' : listing.currency,
-            notes,
-          }),
-        });
+      const res = await fetch('/api/payments/paynow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listingId: listing.id,
+          amount: calculatedPrice,
+          quantity: qty,
+          buyerName: buyerName.trim() || 'Lowveld Trader',
+          buyerPhone: buyerPhone.trim(),
+          buyerEmail: buyerEmail.trim(),
+          pickupLocation: effectiveHub,
+          currencyChoice: listing.currency === 'BARTER' ? 'USD' : listing.currency,
+          paymentMethod,
+          mobileNumber: (paymentMethod === 'ecocash' ? ecoCashNumber : buyerPhone).trim(),
+          transactionRef: transactionCode.trim(),
+          notes: notes.trim(),
+        }),
+      });
 
-        const data = await res.json();
-        if (data.success) {
-          setOrderReference(data.orderReference || '');
-          if (data.redirectUrl) {
-            setPaynowUrl(data.redirectUrl);
-          }
-          setSubmitted(true);
-          confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
-        } else {
-          alert(`Payment Error: ${data.error || 'Failed to initialize Paynow'}`);
+      const data = await res.json();
+      if (data.success) {
+        setOrderReference(data.orderReference || '');
+        setOrderStatus(data.status || 'confirmed');
+        setInstructions(data.instructions || '');
+        if (data.redirectUrl) {
+          setPaynowUrl(data.redirectUrl);
         }
+        setSubmitted(true);
+        confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
       } else {
-        // Standard Cash on Handover or Direct EcoCash Order
-        const res = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            listingId: listing.id,
-            buyerName,
-            buyerPhone,
-            pickupLocation: effectiveHub,
-            currencyChoice: listing.currency === 'BARTER' ? 'USD' : listing.currency,
-            quantity: qty,
-            totalPrice: calculatedPrice,
-            notes: `[PAYMENT: ${paymentMethod.toUpperCase()}] ${notes}`.trim(),
-          }),
-        });
-
-        if (res.ok) {
-          setSubmitted(true);
-          confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
-        }
+        alert(`Order Error: ${data.error || 'Failed to process order'}`);
       }
     } catch (err) {
       console.error(err);
-      alert('Network error while processing order');
+      alert('Network error while connecting to payment gateway.');
     } finally {
       setSubmitting(false);
     }
@@ -155,7 +166,14 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
 
   const cleanPhone = listing.user.phoneNumber.replace(/\D/g, '');
   const encodedWhatsApp = encodeURIComponent(
-    `ORDER INQUIRY: Hi ${listing.user.fullName}, I want to order "${listing.title}". Quantity: ${qty}. Total: ${calculatedPrice > 0 ? `${calculatedPrice} ${listing.currency}` : 'Cash'}. Payment: ${paymentMethod === 'paynow' ? 'Paynow (EcoCash/Card)' : paymentMethod === 'direct_ecocash' ? 'Direct EcoCash' : 'Cash on Handover'}. Collection Hub: ${effectiveHub}. Buyer: ${buyerName} (${buyerPhone}). Please confirm.`
+    `ORDER INQUIRY: Hi ${listing.user.fullName}, I have placed an order for "${listing.title}".\n\n` +
+    `• Quantity: ${qty}\n` +
+    `• Total: $${calculatedPrice} ${listing.currency}\n` +
+    `• Payment Method: ${paymentMethod === 'ecocash' ? 'EcoCash USSD Push' : paymentMethod === 'direct_transfer' ? `Direct Transfer (TX: ${transactionCode || 'Pending'})` : paymentMethod === 'cash_handover' ? 'Cash on Handover' : 'Paynow Online Card'}\n` +
+    `• Order Ref: ${orderReference || 'New Order'}\n` +
+    `• Collection Trade Hub: ${effectiveHub}\n` +
+    `• Buyer: ${buyerName} (${buyerPhone})\n\n` +
+    `Please confirm collection time!`
   );
   const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodedWhatsApp}`;
 
@@ -188,11 +206,11 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
             {/* Header */}
             <div className="flex items-center gap-3 mb-5 pr-8">
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shrink-0">
-                <CreditCard className="w-5 h-5" />
+                <Smartphone className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-display font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white">
-                  Checkout &amp; Order
+                  Order &amp; Payment Options
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-gray-400">
                   Seller: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{listing.user.fullName}</span> ({listing.locationArea})
@@ -203,29 +221,30 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
             {/* Target Item Pill */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-emerald-950/20 border border-slate-200 dark:border-emerald-500/20 mb-5 flex items-center justify-between">
               <div className="min-w-0 pr-3">
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Item</p>
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Target Item</p>
                 <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{listing.title}</p>
               </div>
               <div className="text-right shrink-0">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Price</span>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Total Amount</span>
                 <span className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
-                  {listing.currency === 'BARTER' ? 'Barter Trade' : `${listing.currency} $${(listing.price || 0).toLocaleString()}`}
+                  {listing.currency === 'BARTER' ? 'Barter Trade' : `${listing.currency} $${calculatedPrice.toLocaleString()}`}
                 </span>
               </div>
             </div>
 
-            {/* Payment Method Selector */}
+            {/* Payment Method Selector Grid */}
             <div className="mb-5">
               <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 mb-2">
-                Choose Payment Method
+                Select How You Want to Pay:
               </label>
+
               <div className="grid grid-cols-1 gap-2.5">
-                {/* Method 1: Paynow (EcoCash / OneMoney / Cards) */}
+                {/* Method 1: EcoCash (USSD Push via Paynow) */}
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod('paynow')}
+                  onClick={() => setPaymentMethod('ecocash')}
                   className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                    paymentMethod === 'paynow'
+                    paymentMethod === 'ecocash'
                       ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-1 ring-emerald-500/40'
                       : 'bg-slate-50 dark:bg-emerald-950/10 border-slate-200 dark:border-emerald-500/20 hover:border-slate-300'
                   }`}
@@ -234,19 +253,45 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                        Paynow Zimbabwe
+                        EcoCash (Mobile PIN Prompt)
                       </span>
                       <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                        Instant
+                        Paynow Instant
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
-                      EcoCash, OneMoney, Visa, Mastercard &amp; Zimswitch
+                      Pushes a prompt to your EcoCash handset. Enter PIN to approve payment.
                     </p>
                   </div>
                 </button>
 
-                {/* Method 2: Cash on Collection */}
+                {/* Method 2: Direct EcoCash / InnBucks Transfer */}
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('direct_transfer')}
+                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
+                    paymentMethod === 'direct_transfer'
+                      ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-1 ring-emerald-500/40'
+                      : 'bg-slate-50 dark:bg-emerald-950/10 border-slate-200 dark:border-emerald-500/20 hover:border-slate-300'
+                  }`}
+                >
+                  <Send className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                        Direct Transfer (EcoCash / InnBucks to Seller)
+                      </span>
+                      <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">
+                        P2P Mobile
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
+                      Transfer directly to seller ({listing.user.phoneNumber}) and enter approval code.
+                    </p>
+                  </div>
+                </button>
+
+                {/* Method 3: Cash on Handover / Collection */}
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('cash_handover')}
@@ -267,33 +312,33 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
-                      Pay physical cash upon meeting and inspecting goods
+                      Pay physical cash upon meeting and inspecting goods at trade hub.
                     </p>
                   </div>
                 </button>
 
-                {/* Method 3: Direct EcoCash / InnBucks */}
+                {/* Method 4: Cards & Zimswitch */}
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod('direct_ecocash')}
+                  onClick={() => setPaymentMethod('paynow_web')}
                   className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                    paymentMethod === 'direct_ecocash'
+                    paymentMethod === 'paynow_web'
                       ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-1 ring-emerald-500/40'
                       : 'bg-slate-50 dark:bg-emerald-950/10 border-slate-200 dark:border-emerald-500/20 hover:border-slate-300'
                   }`}
                 >
-                  <CreditCard className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" />
+                  <CreditCard className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                        Direct Transfer (EcoCash / InnBucks)
+                        Visa / Mastercard / Zimswitch
                       </span>
-                      <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">
-                        P2P
+                      <span className="text-[10px] font-bold text-indigo-500">
+                        Online Card
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
-                      Send directly to seller&apos;s phone number: {listing.user.phoneNumber}
+                      Online 3D Secure checkout via Paynow payment gateway.
                     </p>
                   </div>
                 </button>
@@ -302,6 +347,72 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
 
             {/* Order Form */}
             <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
+              {/* Method Specific Fields */}
+              {paymentMethod === 'ecocash' && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      <Smartphone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>EcoCash Number to Charge *</span>
+                    </label>
+                    <span className="text-[10px] text-emerald-600 font-mono">077... / 078...</span>
+                  </div>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="0771234567 or 078..."
+                    value={ecoCashNumber}
+                    onChange={(e) => setEcoCashNumber(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-emerald-950/40 border border-emerald-500/30 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-[11px] text-slate-600 dark:text-gray-300">
+                    A USSD prompt will be sent to this number to authorize <strong>${calculatedPrice} USD</strong>.
+                  </p>
+                </div>
+              )}
+
+              {paymentMethod === 'direct_transfer' && (
+                <div className="p-3.5 rounded-2xl bg-teal-500/10 border border-teal-500/30 space-y-3">
+                  <div>
+                    <span className="text-xs font-bold text-teal-800 dark:text-teal-300 block mb-1">
+                      Seller&apos;s Mobile Money Details:
+                    </span>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-teal-950/40 border border-teal-500/20 font-mono text-xs">
+                      <div>
+                        <span className="text-slate-500 dark:text-gray-400 text-[10px] block">Transfer to:</span>
+                        <strong className="text-slate-900 dark:text-white">{listing.user.fullName} ({listing.user.phoneNumber})</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCopySellerPhone}
+                        className="p-1.5 rounded-lg bg-teal-500/20 text-teal-700 dark:text-teal-300 hover:bg-teal-500/30 text-[11px] flex items-center gap-1"
+                      >
+                        {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-teal-800 dark:text-teal-300 mb-1">
+                      EcoCash / InnBucks Transaction ID / Reference *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. MP261009.1420.H12345 or InnBucks approval code"
+                      value={transactionCode}
+                      onChange={(e) => setTransactionCode(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-teal-950/40 border border-teal-500/30 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-teal-500 text-xs sm:text-sm"
+                    />
+                    <p className="text-[11px] text-slate-600 dark:text-gray-300 mt-1">
+                      Found in your EcoCash confirmation SMS after dialing *151#.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Buyer Contact Details */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
@@ -319,10 +430,10 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
 
                 <div>
                   <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
-                    Your WhatsApp Phone *
+                    WhatsApp Phone *
                   </label>
                   <input
-                    type="text"
+                    type="tel"
                     required
                     placeholder="+263 77..."
                     value={buyerPhone}
@@ -382,6 +493,7 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                 )}
               </div>
 
+              {/* Quantity and Total Display */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
@@ -425,27 +537,32 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Connecting Payment Gateway...</span>
+                      <span>Processing Payment...</span>
                     </>
-                  ) : paymentMethod === 'paynow' ? (
+                  ) : paymentMethod === 'ecocash' ? (
                     <>
                       <Smartphone className="w-4 h-4" />
-                      <span>Pay with Paynow (EcoCash / Card) • ${calculatedPrice}</span>
+                      <span>Trigger EcoCash PIN Prompt • ${calculatedPrice} USD</span>
                     </>
-                  ) : paymentMethod === 'direct_ecocash' ? (
+                  ) : paymentMethod === 'direct_transfer' ? (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Confirm Direct Transfer Order • ${calculatedPrice} USD</span>
+                    </>
+                  ) : paymentMethod === 'paynow_web' ? (
                     <>
                       <CreditCard className="w-4 h-4" />
-                      <span>Confirm Direct Transfer Order • ${calculatedPrice}</span>
+                      <span>Pay Online via Paynow Card • ${calculatedPrice} USD</span>
                     </>
                   ) : (
                     <>
                       <Banknote className="w-4 h-4" />
-                      <span>Place Cash Handover Order • ${calculatedPrice}</span>
+                      <span>Place Cash Handover Order • ${calculatedPrice} USD</span>
                     </>
                   )}
                 </button>
@@ -453,48 +570,81 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
             </form>
           </div>
         ) : (
-          /* Confirmation Screen */
-          <div className="text-center py-5">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-3 border border-emerald-500/30">
-              <CheckCircle2 className="w-7 h-7" />
+          /* Confirmation & Payment Verification Screen */
+          <div className="text-center py-4 space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30 shadow-md">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="font-display font-extrabold text-xl text-slate-900 dark:text-white mb-1">
-              Order Confirmed!
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-gray-400 mb-5 max-w-sm mx-auto">
-              {paymentMethod === 'paynow'
-                ? 'Your Paynow payment session has been generated. Proceed below to complete EcoCash/Card payment:'
-                : `Order recorded for ${listing.user.fullName}. Contact seller on WhatsApp to finalize collection:`}
-            </p>
+
+            <div>
+              <h3 className="font-display font-extrabold text-xl text-slate-900 dark:text-white">
+                {paymentMethod === 'ecocash' ? 'EcoCash USSD Prompt Sent!' : 'Order Successfully Placed!'}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">
+                {paymentMethod === 'ecocash' 
+                  ? `A mobile money USSD prompt was sent to ${ecoCashNumber || buyerPhone}. Please check your phone now and enter your EcoCash PIN to approve $${calculatedPrice} USD.`
+                  : `Your order has been recorded for ${listing.user.fullName}. Notify the seller on WhatsApp to finalize collection at ${effectiveHub}.`}
+              </p>
+            </div>
 
             {orderReference && (
-              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950/30 border border-slate-200 dark:border-emerald-500/20 font-mono text-xs text-emerald-600 dark:text-emerald-400 mb-4 inline-block px-4">
-                Ref: {orderReference}
+              <div className="p-3 rounded-2xl bg-slate-100 dark:bg-emerald-950/30 border border-slate-200 dark:border-emerald-500/20 font-mono text-xs text-emerald-600 dark:text-emerald-400 inline-block px-5">
+                Order Reference: <strong>{orderReference}</strong>
               </div>
             )}
 
-            <div className="space-y-3">
-              {paynowUrl && (
-                <a
-                  href={paynowUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>Open Paynow (EcoCash / Card)</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              )}
+            {/* If EcoCash was used, interactive PIN prompt confirmation */}
+            {paymentMethod === 'ecocash' && (
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-left space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                  <Smartphone className="w-4 h-4 text-emerald-500 animate-pulse" />
+                  <span>Mobile Handset Verification</span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">
+                  {instructions || `Please enter your EcoCash PIN on ${ecoCashNumber || buyerPhone} to confirm the deduction of $${calculatedPrice} USD.`}
+                </p>
+                {!pinConfirmed ? (
+                  <button
+                    type="button"
+                    onClick={() => setPinConfirmed(true)}
+                    className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>I Have Entered My PIN on My Phone</span>
+                  </button>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span>PIN Authorization Confirmed!</span>
+                  </div>
+                )}
+              </div>
+            )}
 
+            {/* Paynow Card Web link if paynow_web selected */}
+            {paynowUrl && paymentMethod === 'paynow_web' && (
+              <a
+                href={paynowUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Open Secure Paynow Card Gateway</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
+
+            {/* WhatsApp Notification Link to Seller */}
+            <div className="space-y-2.5 pt-2">
               <a
                 href={directWhatsAppUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3 px-4 rounded-xl bg-[#005c4b] hover:bg-[#00705b] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                className="w-full py-3.5 px-4 rounded-xl bg-[#005c4b] hover:bg-[#00705b] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-300" />
-                <span>Notify Seller on WhatsApp</span>
+                <span>Notify Seller ({listing.user.fullName}) on WhatsApp</span>
               </a>
 
               <button

@@ -83,6 +83,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: `Review ${id} deleted` });
     }
 
+    if (action === 'delete_user' && id) {
+      await db.deleteUser(id);
+      return NextResponse.json({ success: true, message: `User ${id} deleted successfully` });
+    }
+
     return NextResponse.json({ success: false, error: 'Invalid admin action' }, { status: 400 });
   } catch (err) {
     console.error('API Error in POST /api/admin:', err);

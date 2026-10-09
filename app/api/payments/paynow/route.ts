@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initiatePaynowPayment } from '@/lib/paynow';
+import { initiatePaynowTransaction } from '@/lib/paynow';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getAuthUser } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
@@ -14,58 +14,107 @@ export async function POST(req: NextRequest) {
     }
 
     const { user } = await getAuthUser();
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Please sign in to make a payment' }, { status: 401 });
-    }
-
     const body = await req.json();
-    const { listingId, amount, quantity, buyerName, buyerPhone, pickupLocation, currencyChoice, notes } = body;
+    const { 
+      listingId, 
+      amount, 
+      quantity, 
+      buyerName, 
+      buyerPhone, 
+      buyerEmail,
+      pickupLocation, 
+      currencyChoice, 
+      paymentMethod = 'ecocash',
+      mobileNumber,
+      transactionRef,
+      notes 
+    } = body;
 
     if (!listingId || !amount || amount <= 0) {
       return NextResponse.json({ success: false, error: 'Invalid order amount' }, { status: 400 });
     }
 
+    const listing = await db.getListingById(listingId);
+    if (!listing) {
+      return NextResponse.json({ success: false, error: 'Listing not found or expired' }, { status: 404 });
+    }
+
+    const finalBuyerName = (buyerName || user?.user_metadata?.full_name || 'Lowveld Trader').trim();
+    const finalBuyerPhone = (buyerPhone || mobileNumber || user?.user_metadata?.phone_number || '').trim();
+    const finalEmail = (buyerEmail || user?.email || `${finalBuyerPhone.replace(/\D/g, '') || 'trader'}@zimbarter.co.zw`).trim();
+
     const orderReference = `ZT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
-    // Create the order in database
+    let orderNotes = `[PAYMENT: ${paymentMethod.toUpperCase()}] [REF: ${orderReference}]`;
+    if (transactionRef) {
+      orderNotes += ` [TX_CODE: ${transactionRef.trim()}]`;
+    }
+    if (notes) {
+      orderNotes += ` ${notes.trim()}`;
+    }
+
+    // Record order in database
     const order = await db.createOrder({
       listingId,
-      buyerName: buyerName || user.user_metadata?.full_name || 'Trader',
-      buyerPhone: buyerPhone || '',
-      pickupLocation: pickupLocation || 'Harare CBD',
-      currencyChoice: currencyChoice || 'USD',
+      buyerName: finalBuyerName,
+      buyerPhone: finalBuyerPhone,
+      pickupLocation: pickupLocation || 'Chiredzi Town',
+      currencyChoice: currencyChoice || listing.currency || 'USD',
       quantity: quantity || 1,
-      totalPrice: amount,
-      notes: notes ? `[PAYNOW REF: ${orderReference}] ${notes}` : `[PAYNOW REF: ${orderReference}]`,
+      totalPrice: Number(amount.toFixed(2)),
+      notes: orderNotes,
     });
 
+    // 1. Direct Transfer to Seller or Cash Handover
+    if (paymentMethod === 'direct_transfer' || paymentMethod === 'cash_handover') {
+      return NextResponse.json({
+        success: true,
+        orderId: order.id,
+        orderReference,
+        status: 'order_recorded',
+        instructions: paymentMethod === 'direct_transfer' 
+          ? `Direct transfer of $${amount} recorded. Reference code: ${transactionRef || orderReference}.`
+          : `Cash handover of $${amount} recorded for collection at ${pickupLocation}.`,
+      });
+    }
+
+    // 2. Paynow Integration (EcoCash / OneMoney USSD Push or Card Web Checkout)
     const origin = req.nextUrl.origin;
     const returnUrl = `${origin}/listing/${listingId}?orderId=${order.id}&paid=true`;
     const resultUrl = `${origin}/api/payments/paynow/webhook`;
 
-    const paynowResult = await initiatePaynowPayment({
+    const paynowResult = await initiatePaynowTransaction({
       reference: orderReference,
       amount,
-      additionalInfo: `ZimBarter Order ${orderReference}`,
+      title: listing.title,
+      authEmail: finalEmail,
+      phone: mobileNumber || finalBuyerPhone,
+      paymentMethod: paymentMethod === 'onemoney' ? 'onemoney' : paymentMethod === 'paynow_web' ? 'paynow_web' : 'ecocash',
       returnUrl,
       resultUrl,
-      authEmail: user.email,
-      authPhone: buyerPhone,
     });
 
     if (!paynowResult.success) {
-      return NextResponse.json({ success: false, error: paynowResult.error || 'Failed to initiate Paynow transaction' }, { status: 500 });
+      return NextResponse.json({
+        success: false,
+        error: paynowResult.error || 'Failed to initiate payment',
+        orderId: order.id,
+        orderReference,
+      }, { status: 400 });
     }
 
     return NextResponse.json({
       success: true,
       orderId: order.id,
       orderReference,
+      status: paynowResult.status,
+      instructions: paynowResult.instructions,
       redirectUrl: paynowResult.redirectUrl,
+      pollUrl: paynowResult.pollUrl,
       isSimulated: paynowResult.isSimulated,
     });
   } catch (err: any) {
     console.error('API Error in /api/payments/paynow:', err);
-    return NextResponse.json({ success: false, error: 'Internal payment error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal payment processing error' }, { status: 500 });
   }
 }

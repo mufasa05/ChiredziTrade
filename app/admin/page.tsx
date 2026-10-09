@@ -416,12 +416,13 @@ export default function AdminPage() {
                         <th className="p-3.5">Rating & Trades</th>
                         <th className="p-3.5">Joined Date</th>
                         <th className="p-3.5">Status</th>
+                        <th className="p-3.5 text-right">Moderation Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-lowveld-800/60">
                       {filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-8 text-center text-slate-500 dark:text-gray-400">
+                          <td colSpan={8} className="p-8 text-center text-slate-500 dark:text-gray-400">
                             No registered users found on the platform yet.
                           </td>
                         </tr>
@@ -457,6 +458,16 @@ export default function AdminPage() {
                               }`}>
                                 {u.verifiedArtisan ? 'Verified' : 'Active Trader'}
                               </span>
+                            </td>
+                            <td className="p-3.5 text-right">
+                              <button
+                                onClick={() => handleExecuteAction('delete_user', u.id)}
+                                className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30 text-xs font-bold inline-flex items-center gap-1 transition-colors"
+                                title="Permanently delete user and their listings"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete Trader</span>
+                              </button>
                             </td>
                           </tr>
                         ))
