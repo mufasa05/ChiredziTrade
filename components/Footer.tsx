@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Tractor, MessageCircle, RefreshCw, ShieldCheck, User, Code, Info } from 'lucide-react';
+import { Store, MessageCircle, RefreshCw, ShieldCheck, User, Code, Info } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="space-y-3 md:col-span-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-lowveld-700 flex items-center justify-center text-white shadow-md">
-                <Tractor className="w-4 h-4 text-white" />
+                <Store className="w-4 h-4 text-white" />
               </div>
               <span className="font-display font-extrabold text-lg text-slate-900 dark:text-white">
                 Zim<span className="text-emerald-600 dark:text-emerald-400">Barter</span>

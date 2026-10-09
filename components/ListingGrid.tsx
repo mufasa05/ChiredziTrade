@@ -3,7 +3,7 @@
 import React from 'react';
 import { Listing } from '@/lib/types';
 import ListingCard from './ListingCard';
-import { Tractor, RefreshCw } from 'lucide-react';
+import { Store, RefreshCw } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface ListingGridProps {
@@ -44,7 +44,7 @@ export default function ListingGrid({
     return (
       <div className="py-16 text-center glass-panel rounded-3xl p-8 max-w-lg mx-auto border border-slate-200 dark:border-lowveld-800 shadow-xl">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-lowveld-700/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-4 border border-emerald-500/30 shadow-md">
-          <Tractor className="w-8 h-8" />
+          <Store className="w-8 h-8" />
         </div>
         <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
           Ready for Your First Zimbabwe Trade Offer

@@ -6,7 +6,7 @@ import {
   X, 
   Send, 
   Sparkles, 
-  Tractor, 
+  Store, 
   Phone, 
   Video, 
   MoreVertical, 
@@ -130,7 +130,7 @@ export default function WhatsAppSimulatorModal({
         <div className="bg-[#202c33] px-3.5 py-3 flex items-center justify-between text-white border-b border-[#2a3942]">
           <div className="flex items-center gap-2.5">
             <div className="relative w-9 h-9 rounded-full bg-emerald-700 flex items-center justify-center text-white font-bold text-sm shadow-md">
-              <Tractor className="w-5 h-5 text-white" />
+              <Store className="w-5 h-5 text-white" />
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#202c33]" />
             </div>
             <div>

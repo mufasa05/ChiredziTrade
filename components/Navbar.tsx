@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  Tractor, 
+  Store, 
   MessageCircle, 
   PlusCircle, 
   RefreshCw, 
@@ -19,7 +19,9 @@ import {
   Sun,
   Moon,
   Package,
-  ShieldCheck
+  ShieldCheck,
+  MapPin,
+  Coins
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -55,11 +57,20 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             {t.liveMarket}
           </span>
-          <span className="text-slate-600 dark:text-gray-400">📍 Harare • Bulawayo • Mutare • Masvingo • Chiredzi • Nationwide</span>
+          <span className="flex items-center gap-1 text-slate-600 dark:text-gray-400">
+            <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+            Harare • Bulawayo • Mutare • Masvingo • Chiredzi • Nationwide
+          </span>
         </div>
         <div className="flex items-center gap-4 font-mono text-slate-700 dark:text-gray-300">
-          <span>💵 {t.multiCurrencyHeader}</span>
-          <span className="text-emerald-600 dark:text-emerald-400/80 font-medium">Nationwide Barter Active 🇿🇼</span>
+          <span className="flex items-center gap-1">
+            <Coins className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+            {t.multiCurrencyHeader}
+          </span>
+          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400/80 font-medium">
+            <ShieldCheck className="w-3 h-3 text-emerald-500" />
+            Nationwide Barter & Trade Active
+          </span>
         </div>
       </div>
 
@@ -67,7 +78,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group shrink-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-lowveld-700 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30 group-hover:scale-105 transition-transform">
-            <Tractor className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <Store className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="flex items-center gap-1">
             <span className="font-display font-extrabold text-base sm:text-2xl tracking-tight text-slate-900 dark:text-white">
@@ -178,7 +189,10 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                   <div className="px-3 py-2 border-b border-slate-100 dark:border-lowveld-800 text-slate-700 dark:text-gray-300">
                     <p className="font-bold text-slate-900 dark:text-white truncate">{user.fullName}</p>
                     <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 pr-1">{user.phoneNumber}</p>
-                    <p className="text-[10px] text-slate-500 dark:text-gray-400">📍 {user.locationArea}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate">{user.locationArea}</span>
+                    </p>
                   </div>
                   <Link
                     href="/dashboard"

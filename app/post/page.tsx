@@ -5,18 +5,21 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
 import { SectorCategory, TradeCurrency, ConditionGrade, LowveldLocation } from '@/lib/types';
+import { ZIMBABWE_TRADE_HUBS } from '@/lib/constants';
 import { 
   Sparkles, 
   Camera, 
   RefreshCw, 
   ShieldCheck, 
-  ArrowRight,
-  Upload,
-  CheckCircle2,
-  Image as ImageIcon,
-  X,
-  Plus,
-  Trash2
+  ArrowRight, 
+  Upload, 
+  CheckCircle2, 
+  Image as ImageIcon, 
+  X, 
+  Plus, 
+  Trash2,
+  MapPin,
+  Star
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '@/context/LanguageContext';
@@ -35,15 +38,18 @@ export default function PostListingPage() {
   const [currency, setCurrency] = useState<TradeCurrency>('USD');
   const [price, setPrice] = useState<string>('');
   const [barterTerms, setBarterTerms] = useState('');
-  const [locationArea, setLocationArea] = useState<LowveldLocation | string>('Harare CBD');
+  const [locationArea, setLocationArea] = useState<string>('Chiredzi Town');
+  const [isCustomLocation, setIsCustomLocation] = useState(false);
+  const [customLocation, setCustomLocation] = useState('');
   const [conditionGrade, setConditionGrade] = useState<ConditionGrade>('New');
   const [harvestReady, setHarvestReady] = useState(false);
   const [openToBarter, setOpenToBarter] = useState(true);
   const [sellerName, setSellerName] = useState('');
   const [sellerPhone, setSellerPhone] = useState('');
 
-  // Photo & Camera State - Clean empty initial state (no preloaded image)
-  const [imageUrl, setImageUrl] = useState('');
+  // Multi-Photo State: support at least 5 photos (up to 8)
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
   const [analyzingImage, setAnalyzingImage] = useState(false);
   const [aiTags, setAiTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -57,7 +63,15 @@ export default function PostListingPage() {
     if (user) {
       if (user.fullName) setSellerName(user.fullName);
       if (user.phoneNumber) setSellerPhone(user.phoneNumber);
-      if (user.locationArea) setLocationArea(user.locationArea);
+      if (user.locationArea) {
+        if (ZIMBABWE_TRADE_HUBS.includes(user.locationArea as any)) {
+          setLocationArea(user.locationArea);
+          setIsCustomLocation(false);
+        } else {
+          setIsCustomLocation(true);
+          setCustomLocation(user.locationArea);
+        }
+      }
     }
   }, [user]);
 
@@ -93,7 +107,6 @@ export default function PostListingPage() {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            // 70% quality JPEG provides lightweight, fast photos at ~40-80KB
             const dataUrl = canvas.toDataURL('image/jpeg', 0.70);
             resolve(dataUrl);
           } else {
@@ -106,40 +119,49 @@ export default function PostListingPage() {
     });
   };
 
-  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleImageFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     setAnalyzingImage(true);
     try {
-      const compressedBase64 = await compressImage(file);
-      setImageUrl(compressedBase64);
-
-      // Intelligent AI Vision Appraisal
-      const res = await fetch('/api/ai/vision-tag', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageBase64: compressedBase64,
-          fileName: file.name,
-        }),
+      const compressedList = await Promise.all(files.map((file) => compressImage(file)));
+      setImageUrls((prev) => {
+        const combined = [...prev, ...compressedList].slice(0, 8);
+        return combined;
       });
 
-      const data = await res.json();
-      if (data.success && data.analysis) {
-        const { suggestedTitle, category: cat, tags, conditionGrade: grade, confidence } = data.analysis;
-        if (suggestedTitle && !title) setTitle(suggestedTitle);
-        if (cat) setCategory(cat);
-        if (Array.isArray(tags) && tags.length > 0) {
-          setAiTags(tags);
+      // Intelligent AI Vision Appraisal on first photo if title is empty
+      if (files[0] && !title) {
+        try {
+          const res = await fetch('/api/ai/vision-tag', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageBase64: compressedList[0],
+              fileName: files[0].name,
+            }),
+          });
+
+          const data = await res.json();
+          if (data.success && data.analysis) {
+            const { suggestedTitle, category: cat, tags, conditionGrade: grade, confidence } = data.analysis;
+            if (suggestedTitle && !title) setTitle(suggestedTitle);
+            if (cat) setCategory(cat);
+            if (Array.isArray(tags) && tags.length > 0) setAiTags(tags);
+            if (grade) setConditionGrade(grade);
+            setAiConfidence(confidence);
+          }
+        } catch (aiErr) {
+          console.warn('AI Vision tagging non-fatal:', aiErr);
         }
-        if (grade) setConditionGrade(grade);
-        setAiConfidence(confidence);
       }
     } catch (err) {
       console.error('Error handling image upload:', err);
     } finally {
       setAnalyzingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
     }
   };
 
@@ -153,18 +175,24 @@ export default function PostListingPage() {
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setAiTags(aiTags.filter(t => t !== tagToRemove));
+    setAiTags(aiTags.filter((t) => t !== tagToRemove));
   };
 
-  const handleRemovePhoto = () => {
-    setImageUrl('');
-    setAiConfidence(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleRemovePhoto = (index: number) => {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
+    if (activeImageIdx >= index && activeImageIdx > 0) {
+      setActiveImageIdx((prev) => prev - 1);
     }
-    if (cameraInputRef.current) {
-      cameraInputRef.current.value = '';
-    }
+  };
+
+  const handleSetCoverPhoto = (index: number) => {
+    if (index === 0) return;
+    setImageUrls((prev) => {
+      const target = prev[index];
+      const rest = prev.filter((_, i) => i !== index);
+      return [target, ...rest];
+    });
+    setActiveImageIdx(0);
   };
 
   const sampleGalleryPhotos = [
@@ -176,7 +204,7 @@ export default function PostListingPage() {
   ];
 
   const handleSelectSamplePhoto = async (sampleUrl: string) => {
-    setImageUrl(sampleUrl);
+    setImageUrls((prev) => [...prev, sampleUrl].slice(0, 8));
     setAnalyzingImage(true);
     try {
       const res = await fetch('/api/ai/vision-tag', {
@@ -193,9 +221,7 @@ export default function PostListingPage() {
         const { suggestedTitle, category: cat, tags, conditionGrade: grade, confidence } = data.analysis;
         if (suggestedTitle && !title) setTitle(suggestedTitle);
         if (cat) setCategory(cat);
-        if (Array.isArray(tags) && tags.length > 0) {
-          setAiTags(tags);
-        }
+        if (Array.isArray(tags) && tags.length > 0) setAiTags(tags);
         if (grade) setConditionGrade(grade);
         setAiConfidence(confidence);
       }
@@ -223,7 +249,8 @@ export default function PostListingPage() {
 
     const finalSellerName = sellerName.trim() || user?.fullName || '';
     const finalSellerPhone = sellerPhone.trim() || user?.phoneNumber || '';
-    const finalImageUrl = imageUrl || defaultCategoryImages[category] || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800';
+    const effectiveLocation = isCustomLocation ? (customLocation.trim() || 'Chiredzi Town') : locationArea;
+    const finalImages = imageUrls.length > 0 ? imageUrls : [defaultCategoryImages[category] || 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800'];
     const finalDescription = description.trim();
 
     if (!user) {
@@ -250,7 +277,7 @@ export default function PostListingPage() {
           id: user.id,
           phoneNumber: finalSellerPhone,
           fullName: finalSellerName,
-          locationArea,
+          locationArea: effectiveLocation,
           verifiedArtisan: false,
           rating: 0,
           tradeCount: 0,
@@ -261,8 +288,8 @@ export default function PostListingPage() {
         currency,
         price: currency === 'BARTER' ? null : (parseFloat(price) || 0),
         barterTerms: (openToBarter || currency === 'BARTER') ? barterTerms.trim() : null,
-        locationArea,
-        imageUrls: [finalImageUrl],
+        locationArea: effectiveLocation,
+        imageUrls: finalImages,
         imageTags: aiTags.length > 0 ? aiTags : [category.replace('_', ' ')],
         conditionGrade,
         status: 'active',
@@ -375,57 +402,75 @@ export default function PostListingPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* STEP 1: PHOTO & CAMERA UPLOAD */}
+          {/* STEP 1: PHOTO & CAMERA UPLOAD (AT LEAST 5 PHOTOS) */}
           <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-xl space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                   <Camera className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <span>1. Real Product Photo</span>
+                  <span>1. Product Photos & Media</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                    At least 5 recommended
+                  </span>
                 </h3>
-                <p className="text-xs text-slate-600 dark:text-gray-400">
-                  Take a photo or upload from your device. Real photos increase buyer trust.
+                <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
+                  Upload 5 or more photos showing multiple angles, details, tags, and condition to build buyer trust.
                 </p>
               </div>
 
-              {aiConfidence && (
-                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Quality Verified</span>
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                  imageUrls.length >= 5 
+                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40' 
+                    : imageUrls.length > 0 
+                    ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40' 
+                    : 'bg-slate-200 dark:bg-lowveld-900 text-slate-700 dark:text-gray-400 border-slate-300 dark:border-lowveld-800'
+                }`}>
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>{imageUrls.length} / 8 photos</span>
+                  {imageUrls.length >= 5 && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
                 </span>
-              )}
+
+                {aiConfidence && (
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Quality Verified</span>
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Native file input for gallery / device file picker (NO capture attribute) */}
+            {/* Native file input for gallery / device file picker (supports multiple selection) */}
             <input
               type="file"
               ref={fileInputRef}
               accept="image/*"
-              onChange={handleImageFileChange}
+              multiple
+              onChange={handleImageFilesChange}
               className="hidden"
             />
 
-            {/* Native file input for live camera capture (WITH capture="environment") */}
+            {/* Native file input for live camera capture */}
             <input
               type="file"
               ref={cameraInputRef}
               accept="image/*"
               capture="environment"
-              onChange={handleImageFileChange}
+              onChange={handleImageFilesChange}
               className="hidden"
             />
 
             {/* Photo Upload / Preview Zone */}
-            {!imageUrl ? (
+            {imageUrls.length === 0 ? (
               <div className="border-2 border-dashed border-emerald-500/40 hover:border-emerald-500 bg-slate-100/70 dark:bg-lowveld-950/60 rounded-3xl p-6 sm:p-10 text-center transition-all">
                 <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
                   <ImageIcon className="w-8 h-8" />
                 </div>
                 <h4 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg mb-1">
-                  Upload Product Photo
+                  Upload Product Photos (At least 5 recommended)
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-gray-400 max-w-sm mx-auto mb-6">
-                  Choose a photo from your phone photo gallery, camera roll, device files, or snap a live camera photo.
+                  Select multiple photos from your device gallery, camera roll, files, or snap live camera shots.
                 </p>
 
                 {/* Primary Upload Actions */}
@@ -435,8 +480,8 @@ export default function PostListingPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
                   >
-                    <ImageIcon className="w-4 h-4 text-white" />
-                    <span>Choose from Gallery / Files</span>
+                    <Upload className="w-4 h-4 text-white" />
+                    <span>Choose Photos (Select Multiple)</span>
                   </button>
 
                   <button
@@ -452,7 +497,7 @@ export default function PostListingPage() {
                 {/* Quick Select Sample Gallery Photos */}
                 <div className="pt-4 border-t border-slate-200 dark:border-lowveld-800/80">
                   <p className="text-[11px] font-semibold text-slate-500 dark:text-gray-400 mb-3">
-                    Or select a sample Lowveld item photo:
+                    Or select sample item photos to test:
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     {sampleGalleryPhotos.map((sample, idx) => (
@@ -471,39 +516,159 @@ export default function PostListingPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 group shadow-xl">
+                {/* Main Active Photo View */}
+                <div className="relative h-64 sm:h-96 rounded-2xl overflow-hidden bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 group shadow-xl">
                   <img
-                    src={imageUrl}
-                    alt="Product Preview"
+                    src={imageUrls[activeImageIdx] || imageUrls[0]}
+                    alt={`Product Preview ${activeImageIdx + 1}`}
                     className="w-full h-full object-cover"
                   />
+
                   {analyzingImage && (
                     <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-emerald-400 gap-2">
                       <RefreshCw className="w-6 h-6 animate-spin text-emerald-400" />
-                      <span className="text-xs font-bold font-mono">Analyzing Photo...</span>
+                      <span className="text-xs font-bold font-mono">Analyzing Photo with AI Vision...</span>
                     </div>
                   )}
+
+                  {/* Badges on main image */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    {activeImageIdx === 0 ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600/90 text-white text-xs font-bold shadow-md backdrop-blur-md">
+                        <Star className="w-3.5 h-3.5 fill-current" />
+                        <span>Cover Photo (Listing Thumbnail)</span>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSetCoverPhoto(activeImageIdx)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 hover:bg-emerald-600 text-white text-xs font-semibold shadow-md backdrop-blur-md transition-colors"
+                      >
+                        <Star className="w-3.5 h-3.5" />
+                        <span>Set as Cover Photo</span>
+                      </button>
+                    )}
+                  </div>
+
                   <div className="absolute top-3 right-3 flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-xl bg-black/70 hover:bg-black text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all"
+                      onClick={() => handleRemovePhoto(activeImageIdx)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-950/80 hover:bg-red-900 text-red-300 backdrop-blur-md border border-red-500/40 text-xs font-semibold transition-all"
                     >
-                      Change Photo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleRemovePhoto}
-                      className="p-1.5 rounded-xl bg-red-950/80 hover:bg-red-900 text-red-300 backdrop-blur-md border border-red-500/40 transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
                     </button>
                   </div>
+
                   <div className="absolute bottom-3 left-3">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-300 text-xs font-bold border border-emerald-500/40 backdrop-blur-md">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Custom Photo Ready</span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 text-gray-200 text-xs font-mono backdrop-blur-md">
+                      Photo {activeImageIdx + 1} of {imageUrls.length}
                     </span>
+                  </div>
+                </div>
+
+                {/* Thumbnails Gallery Grid / Strip */}
+                <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-lowveld-950/60 border border-slate-200 dark:border-lowveld-800/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800 dark:text-gray-200 flex items-center gap-1.5">
+                      <span>Listing Gallery ({imageUrls.length}/8)</span>
+                      {imageUrls.length < 5 && (
+                        <span className="text-[11px] text-amber-600 dark:text-amber-400 font-normal">
+                          (Add {5 - imageUrls.length} more to reach 5 photos)
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-gray-400">
+                      Tap photo to view or set as cover
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {imageUrls.map((url, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setActiveImageIdx(idx)}
+                        className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all group ${
+                          activeImageIdx === idx 
+                            ? 'border-emerald-500 ring-2 ring-emerald-500/30 scale-105 shadow-md' 
+                            : 'border-slate-300 dark:border-lowveld-800 opacity-80 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={url} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                        {idx === 0 && (
+                          <div className="absolute top-1 left-1 bg-emerald-600 text-white rounded p-0.5 shadow">
+                            <Star className="w-2.5 h-2.5 fill-current" />
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemovePhoto(idx);
+                          }}
+                          className="absolute top-1 right-1 p-0.5 rounded-full bg-black/70 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <span className="absolute bottom-1 right-1 px-1 rounded bg-black/60 text-[9px] font-mono text-white">
+                          #{idx + 1}
+                        </span>
+                      </div>
+                    ))}
+
+                    {/* Add More Photos Slot */}
+                    {imageUrls.length < 8 && (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="aspect-square rounded-xl border-2 border-dashed border-emerald-500/50 hover:border-emerald-500 bg-emerald-500/5 hover:bg-emerald-500/10 flex flex-col items-center justify-center text-emerald-600 dark:text-emerald-400 transition-all gap-1 cursor-pointer"
+                      >
+                        <Plus className="w-5 h-5" />
+                        <span className="text-[10px] font-bold">Add</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Actions Bar for Photo Management */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-lowveld-800/80">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={imageUrls.length >= 8}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Photos ({imageUrls.length}/8)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => cameraInputRef.current?.click()}
+                        disabled={imageUrls.length >= 8}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 dark:hover:bg-lowveld-800 disabled:opacity-50 text-slate-800 dark:text-gray-200 text-xs font-semibold transition-all border border-slate-300 dark:border-lowveld-700"
+                      >
+                        <Camera className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span>Camera</span>
+                      </button>
+                    </div>
+
+                    {imageUrls.length < 8 && (
+                      <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-gray-400">
+                        <span>Quick add:</span>
+                        {sampleGalleryPhotos.slice(0, 3).map((sample, sIdx) => (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            onClick={() => handleSelectSamplePhoto(sample.url)}
+                            className="px-2 py-0.5 rounded-lg bg-white dark:bg-lowveld-900 border border-slate-200 dark:border-lowveld-800 text-[10px] hover:text-emerald-500 transition-colors"
+                          >
+                            +{sample.title}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -601,28 +766,52 @@ export default function PostListingPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-gray-300 mb-1">
-                  Trading Location Hub *
-                </label>
-                <select
-                  value={locationArea}
-                  onChange={(e) => setLocationArea(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
-                >
-                  <option value="Harare CBD">Harare CBD</option>
-                  <option value="Harare - Borrowdale">Harare - Borrowdale</option>
-                  <option value="Bulawayo CBD">Bulawayo CBD</option>
-                  <option value="Mutare">Mutare</option>
-                  <option value="Masvingo">Masvingo</option>
-                  <option value="Gweru">Gweru</option>
-                  <option value="Chiredzi / Triangle">Chiredzi / Triangle</option>
-                  <option value="Kwekwe">Kwekwe</option>
-                  <option value="Chinhoyi">Chinhoyi</option>
-                  <option value="Bindura">Bindura</option>
-                  <option value="Marondera">Marondera</option>
-                  <option value="Victoria Falls">Victoria Falls</option>
-                  <option value="Beitbridge">Beitbridge</option>
-                </select>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-gray-300 flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Trading Location Hub *</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomLocation(!isCustomLocation)}
+                    className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+                  >
+                    {isCustomLocation ? 'Choose from suggested hubs' : '+ Enter custom town / location'}
+                  </button>
+                </div>
+
+                {isCustomLocation ? (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Type town, growth point or street (e.g. Checheche Growth Point, Jerera, Stand 14 Hippo Valley)..."
+                    value={customLocation}
+                    onChange={(e) => setCustomLocation(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-emerald-500 dark:border-emerald-400 focus:outline-none text-xs sm:text-sm"
+                    autoFocus
+                  />
+                ) : (
+                  <select
+                    value={locationArea}
+                    onChange={(e) => {
+                      if (e.target.value === '__custom__') {
+                        setIsCustomLocation(true);
+                      } else {
+                        setLocationArea(e.target.value);
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
+                  >
+                    {ZIMBABWE_TRADE_HUBS.map((hub) => (
+                      <option key={hub} value={hub}>
+                        {hub}
+                      </option>
+                    ))}
+                    <option value="__custom__" className="text-emerald-600 font-bold">
+                      + Enter Custom Location / Growth Point...
+                    </option>
+                  </select>
+                )}
               </div>
             </div>
 
