@@ -28,3 +28,4 @@ yarn-error.log*
 # Vercel & Dart
 .vercel
 .dart_tool/
+*.tsbuildinfo
