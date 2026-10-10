@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Listing } from '@/lib/types';
 import { ZIMBABWE_TRADE_HUBS, calculateTotalWithFee } from '@/lib/constants';
@@ -21,10 +21,32 @@ import {
   Send,
   AlertCircle,
   FileText,
-  Phone
+  Phone,
+  ChevronDown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
+
+function EcoCashBadge({ className = '' }: { className?: string }) {
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#002b7f] text-white shadow-sm shrink-0 border border-[#001f5c] ${className}`}>
+      <span className="w-1.5 h-1.5 rounded-full bg-[#e31b23] animate-pulse" />
+      <span className="font-extrabold text-xs tracking-tight select-none">
+        <span className="text-white">Eco</span>
+        <span className="text-[#e31b23]">Cash</span>
+      </span>
+    </div>
+  );
+}
+
+function CashBadge({ className = '' }: { className?: string }) {
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-sm shrink-0 ${className}`}>
+      <Banknote className="w-3.5 h-3.5 text-amber-500" />
+      <span className="font-extrabold text-xs tracking-tight select-none">CASH</span>
+    </div>
+  );
+}
 
 interface BuyCashModalProps {
   listing: Listing | null;
@@ -59,6 +81,21 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
   const [paynowUrl, setPaynowUrl] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [pinConfirmed, setPinConfirmed] = useState(false);
+  const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
+  const paymentDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close payment dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (paymentDropdownRef.current && !paymentDropdownRef.current.contains(e.target as Node)) {
+        setPaymentDropdownOpen(false);
+      }
+    };
+    if (paymentDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [paymentDropdownOpen]);
 
   useEffect(() => {
     if (user) {
@@ -97,6 +134,7 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
     setSubmitted(false);
     setPaynowUrl(null);
     setPinConfirmed(false);
+    setPaymentDropdownOpen(false);
     onClose();
   };
 
@@ -172,9 +210,8 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
     `ORDER INQUIRY: Hi ${listing.user.fullName}, I have placed an order for "${listing.title}".\n\n` +
     `• Quantity: ${qty}\n` +
     `• Item Subtotal: $${subtotal.toFixed(2)} ${listing.currency}\n` +
-    `• Platform Fee (5%): $${platformFee.toFixed(2)} ${listing.currency}\n` +
-    `• Total Charged: $${calculatedPrice.toFixed(2)} ${listing.currency}\n` +
-    `• Payment Method: ${paymentMethod === 'ecocash' ? 'EcoCash USSD Push' : paymentMethod === 'direct_transfer' ? `Direct Transfer (TX: ${transactionCode || 'Pending'})` : paymentMethod === 'cash_handover' ? 'Cash on Handover' : 'Paynow Online Card'}\n` +
+    `• Total Amount: $${calculatedPrice.toFixed(2)} ${listing.currency}\n` +
+    `• Payment Method: ${paymentMethod === 'ecocash' ? 'EcoCash USSD Push' : 'Cash on Handover'}\n` +
     `• Order Ref: ${orderReference || 'New Order'}\n` +
     `• Collection Trade Hub: ${effectiveHub}\n` +
     `• Buyer: ${buyerName} (${buyerPhone})\n\n` +
@@ -237,117 +274,120 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
               </div>
             </div>
 
-            {/* Payment Method Selector Grid */}
-            <div className="mb-5">
+            {/* Payment Method Selector Dropdown */}
+            <div className="relative mb-5" ref={paymentDropdownRef}>
               <label className="block text-xs font-bold text-slate-700 dark:text-gray-300 mb-2">
-                Select How You Want to Pay:
+                Select Payment Method:
               </label>
 
-              <div className="grid grid-cols-1 gap-2.5">
-                {/* Method 1: EcoCash (USSD Push via Paynow) */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('ecocash')}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                    paymentMethod === 'ecocash'
-                      ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-1 ring-emerald-500/40'
-                      : 'bg-slate-50 dark:bg-emerald-950/10 border-slate-200 dark:border-emerald-500/20 hover:border-slate-300'
-                  }`}
-                >
-                  <Smartphone className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                        EcoCash (Mobile PIN Prompt)
-                      </span>
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                        Paynow Instant
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
-                      Pushes a prompt to your EcoCash handset. Enter PIN to approve payment.
-                    </p>
-                  </div>
-                </button>
+              <button
+                type="button"
+                onClick={() => setPaymentDropdownOpen(!paymentDropdownOpen)}
+                className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/20 border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500/60 transition-all flex items-center justify-between shadow-sm cursor-pointer text-left"
+                aria-expanded={paymentDropdownOpen}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {paymentMethod === 'ecocash' ? (
+                    <>
+                      <EcoCashBadge />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                            EcoCash (Mobile USSD Push)
+                          </span>
+                          <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                            Instant PIN
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate">
+                          Automatic prompt sent to your EcoCash handset
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <CashBadge />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                            Cash on Handover / Collection
+                          </span>
+                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                            In-Person
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate">
+                          Inspect goods first, pay cash at agreed Trade Hub
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2 ${paymentDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-                {/* Method 2: Direct EcoCash / InnBucks Transfer */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('direct_transfer')}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                    paymentMethod === 'direct_transfer'
-                      ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-1 ring-emerald-500/40'
-                      : 'bg-slate-50 dark:bg-emerald-950/10 border-slate-200 dark:border-emerald-500/20 hover:border-slate-300'
-                  }`}
-                >
-                  <Send className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                        Direct Transfer (EcoCash / InnBucks to Seller)
-                      </span>
-                      <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">
-                        P2P Mobile
-                      </span>
+              {/* Dropdown Options Menu */}
+              {paymentDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl bg-white dark:bg-[#0c1611] border border-slate-200 dark:border-emerald-500/40 p-1.5 shadow-2xl z-30 space-y-1 animate-in fade-in-50 zoom-in-95">
+                  {/* Option 1: EcoCash */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod('ecocash');
+                      setPaymentDropdownOpen(false);
+                    }}
+                    className={`w-full p-2.5 rounded-xl transition-all flex items-center justify-between text-left cursor-pointer ${
+                      paymentMethod === 'ecocash'
+                        ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30'
+                        : 'hover:bg-slate-100 dark:hover:bg-emerald-950/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <EcoCashBadge />
+                      <div className="min-w-0">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white block">
+                          EcoCash (Mobile USSD Push)
+                        </span>
+                        <span className="text-[10px] text-slate-500 dark:text-gray-400 block">
+                          Instant USSD PIN prompt to your 077... / 078... phone
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
-                      Transfer directly to seller ({listing.user.phoneNumber}) and enter approval code.
-                    </p>
-                  </div>
-                </button>
+                    {paymentMethod === 'ecocash' && (
+                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 ml-2" />
+                    )}
+                  </button>
 
-                {/* Method 3: Cash on Handover / Collection */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('cash_handover')}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                    paymentMethod === 'cash_handover'
-                      ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-1 ring-emerald-500/40'
-                      : 'bg-slate-50 dark:bg-emerald-950/10 border-slate-200 dark:border-emerald-500/20 hover:border-slate-300'
-                  }`}
-                >
-                  <Banknote className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                        Cash on Handover / Collection
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-500">
-                        USD / ZWG / ZAR
-                      </span>
+                  {/* Option 2: Cash Handover */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod('cash_handover');
+                      setPaymentDropdownOpen(false);
+                    }}
+                    className={`w-full p-2.5 rounded-xl transition-all flex items-center justify-between text-left cursor-pointer ${
+                      paymentMethod === 'cash_handover'
+                        ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30'
+                        : 'hover:bg-slate-100 dark:hover:bg-emerald-950/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <CashBadge />
+                      <div className="min-w-0">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white block">
+                          Cash on Handover / Collection
+                        </span>
+                        <span className="text-[10px] text-slate-500 dark:text-gray-400 block">
+                          Pay upon inspection at Trade Hub (USD / ZWG / ZAR)
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
-                      Pay physical cash upon meeting and inspecting goods at trade hub.
-                    </p>
-                  </div>
-                </button>
-
-                {/* Method 4: Cards & Zimswitch */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('paynow_web')}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                    paymentMethod === 'paynow_web'
-                      ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-1 ring-emerald-500/40'
-                      : 'bg-slate-50 dark:bg-emerald-950/10 border-slate-200 dark:border-emerald-500/20 hover:border-slate-300'
-                  }`}
-                >
-                  <CreditCard className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                        Visa / Mastercard / Zimswitch
-                      </span>
-                      <span className="text-[10px] font-bold text-indigo-500">
-                        Online Card
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
-                      Online 3D Secure checkout via Paynow payment gateway.
-                    </p>
-                  </div>
-                </button>
-              </div>
+                    {paymentMethod === 'cash_handover' && (
+                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 ml-2" />
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Order Form */}
@@ -371,49 +411,20 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-emerald-950/40 border border-emerald-500/30 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-emerald-500"
                   />
                   <p className="text-[11px] text-slate-600 dark:text-gray-300">
-                    A USSD prompt will be sent to this number to authorize <strong>${calculatedPrice} USD</strong>.
+                    A USSD prompt will be sent to this number to authorize <strong>${calculatedPrice.toFixed(2)} {listing.currency}</strong>.
                   </p>
                 </div>
               )}
 
-              {paymentMethod === 'direct_transfer' && (
-                <div className="p-3.5 rounded-2xl bg-teal-500/10 border border-teal-500/30 space-y-3">
-                  <div>
-                    <span className="text-xs font-bold text-teal-800 dark:text-teal-300 block mb-1">
-                      Seller&apos;s Mobile Money Details:
-                    </span>
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-teal-950/40 border border-teal-500/20 font-mono text-xs">
-                      <div>
-                        <span className="text-slate-500 dark:text-gray-400 text-[10px] block">Transfer to:</span>
-                        <strong className="text-slate-900 dark:text-white">{listing.user.fullName} ({listing.user.phoneNumber})</strong>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleCopySellerPhone}
-                        className="p-1.5 rounded-lg bg-teal-500/20 text-teal-700 dark:text-teal-300 hover:bg-teal-500/30 text-[11px] flex items-center gap-1"
-                      >
-                        {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{isCopied ? 'Copied' : 'Copy'}</span>
-                      </button>
-                    </div>
+              {paymentMethod === 'cash_handover' && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1.5">
+                  <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+                    <Banknote className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span>In-Person Cash Settlement</span>
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-teal-800 dark:text-teal-300 mb-1">
-                      EcoCash / InnBucks Transaction ID / Reference *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. MP261009.1420.H12345 or InnBucks approval code"
-                      value={transactionCode}
-                      onChange={(e) => setTransactionCode(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-teal-950/40 border border-teal-500/30 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-teal-500 text-xs sm:text-sm"
-                    />
-                    <p className="text-[11px] text-slate-600 dark:text-gray-300 mt-1">
-                      Found in your EcoCash confirmation SMS after dialing *151#.
-                    </p>
-                  </div>
+                  <p className="text-slate-600 dark:text-gray-300 leading-relaxed text-[11px]">
+                    Pay physical cash (USD, ZWG, or ZAR) upon meeting and inspecting goods at <strong>{effectiveHub}</strong>. No online deduction now.
+                  </p>
                 </div>
               )}
 
@@ -513,26 +524,22 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                 />
               </div>
 
-              {/* Transparent 5% Platform Fee & Total Breakdown */}
+              {/* Order Summary & All-Inclusive Total */}
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-emerald-950/20 border border-slate-200 dark:border-emerald-500/20 space-y-2 text-xs">
                 <div className="flex items-center justify-between text-slate-600 dark:text-gray-400">
                   <span>Item Subtotal ({qty} {qty === 1 ? 'unit' : 'units'})</span>
                   <span className="font-mono font-semibold">${subtotal.toFixed(2)} {listing.currency}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-600 dark:text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span>Platform Facilitation &amp; Verification (5%)</span>
-                  </span>
-                  <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">+${platformFee.toFixed(2)} {listing.currency}</span>
-                </div>
                 <div className="pt-2 border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white">
                   <span>Total to Pay:</span>
-                  <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-base">${calculatedPrice.toFixed(2)} {listing.currency}</span>
+                  <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-base">
+                    ${calculatedPrice.toFixed(2)} {listing.currency}
+                  </span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 pt-0.5 leading-tight">
-                  * Seller receives 100% of their ${subtotal.toFixed(2)} asking price. The 5% facilitation fee covers platform hosting, anti-fraud checks, and WhatsApp connectivity.
-                </p>
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-gray-400 pt-0.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Includes all trade processing &amp; verification services</span>
+                </div>
               </div>
 
               <div>
@@ -562,22 +569,12 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                   ) : paymentMethod === 'ecocash' ? (
                     <>
                       <Smartphone className="w-4 h-4" />
-                      <span>Trigger EcoCash PIN Prompt • ${calculatedPrice} USD</span>
-                    </>
-                  ) : paymentMethod === 'direct_transfer' ? (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>Confirm Direct Transfer Order • ${calculatedPrice} USD</span>
-                    </>
-                  ) : paymentMethod === 'paynow_web' ? (
-                    <>
-                      <CreditCard className="w-4 h-4" />
-                      <span>Pay Online via Paynow Card • ${calculatedPrice} USD</span>
+                      <span>Pay with EcoCash • ${calculatedPrice.toFixed(2)} {listing.currency}</span>
                     </>
                   ) : (
                     <>
                       <Banknote className="w-4 h-4" />
-                      <span>Place Cash Handover Order • ${calculatedPrice} USD</span>
+                      <span>Confirm Cash Handover • ${calculatedPrice.toFixed(2)} {listing.currency}</span>
                     </>
                   )}
                 </button>
@@ -638,19 +635,19 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                 </div>
               </div>
 
-              {/* Price & 5% Fee Breakdown on Receipt */}
+              {/* Total Breakdown on Receipt */}
               <div className="pt-2 border-t border-slate-200 dark:border-emerald-500/20 space-y-1 font-mono text-[11px]">
                 <div className="flex justify-between text-slate-500 dark:text-gray-400">
-                  <span>Seller Item Subtotal:</span>
+                  <span>Item Subtotal ({qty} {qty === 1 ? 'unit' : 'units'}):</span>
                   <span>${subtotal.toFixed(2)} {listing.currency}</span>
-                </div>
-                <div className="flex justify-between text-slate-500 dark:text-gray-400">
-                  <span>Platform Fee (5%):</span>
-                  <span>+${platformFee.toFixed(2)} {listing.currency}</span>
                 </div>
                 <div className="flex justify-between font-bold text-xs text-slate-900 dark:text-white pt-1 border-t border-slate-200 dark:border-emerald-500/20">
                   <span>Total Amount:</span>
                   <span className="text-emerald-600 dark:text-emerald-400 text-sm">${calculatedPrice.toFixed(2)} {listing.currency}</span>
+                </div>
+                <div className="text-[10px] text-slate-400 font-sans flex items-center gap-1 pt-0.5">
+                  <Check className="w-3 h-3 text-emerald-500" />
+                  <span>Includes all trade processing &amp; verification</span>
                 </div>
               </div>
 
@@ -759,9 +756,9 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                         <div class="row"><span>Collection Hub:</span><strong>${effectiveHub}</strong></div>
                         <div class="row"><span>Payment Method:</span><strong>${paymentMethod.toUpperCase()}</strong></div>
                         <hr style="border: 0; border-top: 1px dashed #ccc; margin: 12px 0;" />
-                        <div class="row"><span>Seller Subtotal:</span><span>$${subtotal.toFixed(2)} ${listing.currency}</span></div>
-                        <div class="row"><span>Platform Fee (5%):</span><span>+$${platformFee.toFixed(2)} ${listing.currency}</span></div>
-                        <div class="row total"><span>Total Charged:</span><span>$${calculatedPrice.toFixed(2)} ${listing.currency}</span></div>
+                        <div class="row"><span>Item Subtotal:</span><span>$${subtotal.toFixed(2)} ${listing.currency}</span></div>
+                        <div class="row total"><span>Total Amount:</span><span>$${calculatedPrice.toFixed(2)} ${listing.currency}</span></div>
+                        <div class="row" style="font-size: 11px; color: #666; margin-top: 4px;"><span>Status:</span><span>Includes all trade processing &amp; verification</span></div>
                         <div class="footer">
                           <p>Thank you for trading on ZimBarter!</p>
                           <p>Show this receipt when collecting your item at ${effectiveHub}.</p>
