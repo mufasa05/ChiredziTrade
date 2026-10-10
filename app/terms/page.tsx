@@ -200,11 +200,33 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 9. Indemnification */}
+            {/* 9. Platform Facilitation Fees & Technology Charges */}
+            <section className="space-y-3 p-4 rounded-2xl bg-slate-100 dark:bg-lowveld-950/70 border border-slate-200 dark:border-lowveld-800">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                9. Platform Facilitation Fees &amp; Technology Charges (5%)
+              </h2>
+              <p>
+                To maintain high-availability server infrastructure, anti-fraud algorithms, AI vision appraisal, and direct WhatsApp trade integration across Zimbabwe:
+              </p>
+              <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
+                <li>
+                  <strong>Buyer Facilitation Fee:</strong> Zim Barter applies a transparent <strong>5% Platform Facilitation &amp; Verification Fee</strong> (subject to a minimum floor of USD $0.50 and a maximum cap of USD $20.00) to order transactions initiated on the platform.
+                </li>
+                <li>
+                  <strong>Seller Retains 100%:</strong> Sellers receive 100% of their listed item price, ensuring farmers, ranchers, and artisans retain full earnings without commission deductions from their asking price.
+                </li>
+                <li>
+                  <strong>Non-Custodial Technology Service:</strong> Platform facilitation fees represent compensation for software access, verified introductions, and digital communications services under the Consumer Protection Act (2019). Zim Barter does not operate as an escrow bank, deposit-taking institution, or custodial financial entity.
+                </li>
+              </ul>
+            </section>
+
+            {/* 10. Indemnification */}
             <section className="space-y-3 p-4 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/30">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                9. Indemnification &amp; Hold Harmless Clause
+                10. Indemnification &amp; Hold Harmless Clause
               </h2>
               <p>
                 You agree to defend, indemnify, and hold harmless Zim Barter, its founder Prince A. Shumba, and any platform contributors from and against any claims, liabilities, damages, losses, costs, and expenses (including reasonable legal and attorneys&apos; fees) arising out of or in any way connected with:
@@ -217,10 +239,10 @@ export default function TermsPage() {
               </ul>
             </section>
 
-            {/* 10. Governing Law */}
+            {/* 11. Governing Law */}
             <section className="space-y-3">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                10. Governing Law &amp; Dispute Resolution
+                11. Governing Law &amp; Dispute Resolution
               </h2>
               <p>
                 These Terms of Service and any dispute arising from or related to the platform shall be governed exclusively by and construed in accordance with the <strong>laws of the Republic of Zimbabwe</strong>, without regard to conflict of law principles.
@@ -230,11 +252,11 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 11. Contact */}
+            {/* 12. Contact */}
             <section className="space-y-3 pt-4 border-t border-slate-200 dark:border-lowveld-800">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                11. Contact &amp; Legal Notices
+                12. Contact &amp; Legal Notices
               </h2>
               <p>
                 For legal notices, complaints, or inquiries regarding these Terms of Service:

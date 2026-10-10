@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Listing } from '@/lib/types';
-import { ZIMBABWE_TRADE_HUBS } from '@/lib/constants';
+import { ZIMBABWE_TRADE_HUBS, calculateTotalWithFee } from '@/lib/constants';
 import { 
   X, 
   CheckCircle2, 
@@ -104,7 +104,8 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
   };
 
   const qty = Math.max(1, parseInt(quantity) || 1);
-  const calculatedPrice = (listing.price || 0) * qty;
+  const subtotal = (listing.price || 0) * qty;
+  const { fee: platformFee, total: calculatedPrice } = calculateTotalWithFee(subtotal);
   const effectiveHub = isCustomHub ? (customHub.trim() || 'Custom Trade Hub') : selectedHub;
 
   const handleCopySellerPhone = () => {
@@ -168,7 +169,9 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
   const encodedWhatsApp = encodeURIComponent(
     `ORDER INQUIRY: Hi ${listing.user.fullName}, I have placed an order for "${listing.title}".\n\n` +
     `• Quantity: ${qty}\n` +
-    `• Total: $${calculatedPrice} ${listing.currency}\n` +
+    `• Item Subtotal: $${subtotal.toFixed(2)} ${listing.currency}\n` +
+    `• Platform Fee (5%): $${platformFee.toFixed(2)} ${listing.currency}\n` +
+    `• Total Charged: $${calculatedPrice.toFixed(2)} ${listing.currency}\n` +
     `• Payment Method: ${paymentMethod === 'ecocash' ? 'EcoCash USSD Push' : paymentMethod === 'direct_transfer' ? `Direct Transfer (TX: ${transactionCode || 'Pending'})` : paymentMethod === 'cash_handover' ? 'Cash on Handover' : 'Paynow Online Card'}\n` +
     `• Order Ref: ${orderReference || 'New Order'}\n` +
     `• Collection Trade Hub: ${effectiveHub}\n` +
@@ -493,31 +496,41 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                 )}
               </div>
 
-              {/* Quantity and Total Display */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
-                    Quantity
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-emerald-950/30 border border-slate-200 dark:border-emerald-500/20 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
+              {/* Quantity Selector */}
+              <div>
+                <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
+                  Quantity
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-emerald-950/30 border border-slate-200 dark:border-emerald-500/20 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-emerald-500"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-slate-700 dark:text-gray-300 font-semibold mb-1">
-                    Total Amount
-                  </label>
-                  <div className="w-full px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-mono font-extrabold flex items-center justify-between">
-                    <span>{listing.currency}</span>
-                    <span>${calculatedPrice.toLocaleString()}</span>
-                  </div>
+              {/* Transparent 5% Platform Fee & Total Breakdown */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-emerald-950/20 border border-slate-200 dark:border-emerald-500/20 space-y-2 text-xs">
+                <div className="flex items-center justify-between text-slate-600 dark:text-gray-400">
+                  <span>Item Subtotal ({qty} {qty === 1 ? 'unit' : 'units'})</span>
+                  <span className="font-mono font-semibold">${subtotal.toFixed(2)} {listing.currency}</span>
                 </div>
+                <div className="flex items-center justify-between text-slate-600 dark:text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>Platform Facilitation &amp; Verification (5%)</span>
+                  </span>
+                  <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">+${platformFee.toFixed(2)} {listing.currency}</span>
+                </div>
+                <div className="pt-2 border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white">
+                  <span>Total to Pay:</span>
+                  <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-base">${calculatedPrice.toFixed(2)} {listing.currency}</span>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-gray-400 pt-0.5 leading-tight">
+                  * Seller receives 100% of their ${subtotal.toFixed(2)} asking price. The 5% facilitation fee covers platform hosting, anti-fraud checks, and WhatsApp connectivity.
+                </p>
               </div>
 
               <div>

@@ -3,6 +3,7 @@ import { initiatePaynowTransaction } from '@/lib/paynow';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getAuthUser } from '@/lib/supabase/server';
 import { db } from '@/lib/db';
+import { calculateTotalWithFee } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,14 +31,15 @@ export async function POST(req: NextRequest) {
       notes 
     } = body;
 
-    if (!listingId || !amount || amount <= 0) {
-      return NextResponse.json({ success: false, error: 'Invalid order amount' }, { status: 400 });
-    }
-
     const listing = await db.getListingById(listingId);
     if (!listing) {
       return NextResponse.json({ success: false, error: 'Listing not found or expired' }, { status: 404 });
     }
+
+    // Server-Side 5% Fee Calculation (protects against client tampering)
+    const verifiedQty = Math.max(1, parseInt(quantity) || 1);
+    const rawSubtotal = Number(((listing.price || 0) * verifiedQty).toFixed(2));
+    const { fee: platformFee, total: verifiedTotal } = calculateTotalWithFee(rawSubtotal);
 
     const finalBuyerName = (buyerName || user?.user_metadata?.full_name || 'Lowveld Trader').trim();
     const finalBuyerPhone = (buyerPhone || mobileNumber || user?.user_metadata?.phone_number || '').trim();
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     const orderReference = `ZT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
-    let orderNotes = `[PAYMENT: ${paymentMethod.toUpperCase()}] [REF: ${orderReference}]`;
+    let orderNotes = `[PAYMENT: ${paymentMethod.toUpperCase()}] [REF: ${orderReference}] [SUBTOTAL: $${rawSubtotal}] [FEE_5%: $${platformFee}]`;
     if (transactionRef) {
       orderNotes += ` [TX_CODE: ${transactionRef.trim()}]`;
     }
@@ -60,8 +62,8 @@ export async function POST(req: NextRequest) {
       buyerPhone: finalBuyerPhone,
       pickupLocation: pickupLocation || 'Chiredzi Town',
       currencyChoice: currencyChoice || listing.currency || 'USD',
-      quantity: quantity || 1,
-      totalPrice: Number(amount.toFixed(2)),
+      quantity: verifiedQty,
+      totalPrice: verifiedTotal,
       notes: orderNotes,
     });
 
@@ -73,8 +75,8 @@ export async function POST(req: NextRequest) {
         orderReference,
         status: 'order_recorded',
         instructions: paymentMethod === 'direct_transfer' 
-          ? `Direct transfer of $${amount} recorded. Reference code: ${transactionRef || orderReference}.`
-          : `Cash handover of $${amount} recorded for collection at ${pickupLocation}.`,
+          ? `Direct transfer of $${verifiedTotal.toFixed(2)} recorded (Seller Subtotal: $${rawSubtotal.toFixed(2)}, Platform Fee: $${platformFee.toFixed(2)}). Reference code: ${transactionRef || orderReference}.`
+          : `Cash handover of $${verifiedTotal.toFixed(2)} recorded for collection at ${pickupLocation}.`,
       });
     }
 
@@ -85,7 +87,7 @@ export async function POST(req: NextRequest) {
 
     const paynowResult = await initiatePaynowTransaction({
       reference: orderReference,
-      amount,
+      amount: verifiedTotal,
       title: listing.title,
       authEmail: finalEmail,
       phone: mobileNumber || finalBuyerPhone,
