@@ -19,7 +19,9 @@ import {
   Copy,
   Check,
   Send,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Phone
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
@@ -583,50 +585,102 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
             </form>
           </div>
         ) : (
-          /* Confirmation & Payment Verification Screen */
-          <div className="text-center py-4 space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30 shadow-md">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-
-            <div>
+          /* Confirmation, Seller Connection & Official Trade Receipt Screen */
+          <div className="py-2 space-y-4">
+            <div className="text-center">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-2 border border-emerald-500/30 shadow-md">
+                <CheckCircle2 className="w-7 h-7" />
+              </div>
               <h3 className="font-display font-extrabold text-xl text-slate-900 dark:text-white">
-                {paymentMethod === 'ecocash' ? 'EcoCash USSD Prompt Sent!' : 'Order Successfully Placed!'}
+                {paymentMethod === 'ecocash' ? 'EcoCash USSD Prompt Sent!' : 'Order Verified & Recorded!'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">
                 {paymentMethod === 'ecocash' 
-                  ? `A mobile money USSD prompt was sent to ${ecoCashNumber || buyerPhone}. Please check your phone now and enter your EcoCash PIN to approve $${calculatedPrice} USD.`
-                  : `Your order has been recorded for ${listing.user.fullName}. Notify the seller on WhatsApp to finalize collection at ${effectiveHub}.`}
+                  ? `Prompt dispatched to ${ecoCashNumber || buyerPhone}. Enter PIN on your phone to complete payment.`
+                  : `Trade recorded on ZimBarter. Connect directly with the seller to finalize collection at ${effectiveHub}.`}
               </p>
             </div>
 
-            {orderReference && (
-              <div className="p-3 rounded-2xl bg-slate-100 dark:bg-emerald-950/30 border border-slate-200 dark:border-emerald-500/20 font-mono text-xs text-emerald-600 dark:text-emerald-400 inline-block px-5">
-                Order Reference: <strong>{orderReference}</strong>
+            {/* Official Itemized Trade Receipt Card */}
+            <div className="rounded-2xl bg-slate-50 dark:bg-emerald-950/20 border border-dashed border-slate-300 dark:border-emerald-500/40 p-4 space-y-3 text-xs">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20 pb-2.5">
+                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                  <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>OFFICIAL TRADE RECEIPT</span>
+                </div>
+                <span className="font-mono text-emerald-700 dark:text-emerald-300 font-extrabold px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30">
+                  {orderReference || 'ZT-ORDER'}
+                </span>
               </div>
-            )}
+
+              {/* Order Meta */}
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-gray-300">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Seller Contact:</span>
+                  <strong className="text-slate-900 dark:text-white">{listing.user.fullName}</strong>
+                  <span className="block text-emerald-600 dark:text-emerald-400 font-mono">{listing.user.phoneNumber}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Buyer:</span>
+                  <strong className="text-slate-900 dark:text-white">{buyerName}</strong>
+                  <span className="block font-mono">{buyerPhone}</span>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-600 dark:text-gray-300 pt-1 border-t border-slate-200 dark:border-emerald-500/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Collection Trade Hub:</span>
+                  <strong className="text-slate-900 dark:text-white">{effectiveHub}</strong>
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-slate-400">Item:</span>
+                  <strong className="text-slate-900 dark:text-white truncate max-w-[200px]">{listing.title} (x{qty})</strong>
+                </div>
+              </div>
+
+              {/* Price & 5% Fee Breakdown on Receipt */}
+              <div className="pt-2 border-t border-slate-200 dark:border-emerald-500/20 space-y-1 font-mono text-[11px]">
+                <div className="flex justify-between text-slate-500 dark:text-gray-400">
+                  <span>Seller Item Subtotal:</span>
+                  <span>${subtotal.toFixed(2)} {listing.currency}</span>
+                </div>
+                <div className="flex justify-between text-slate-500 dark:text-gray-400">
+                  <span>Platform Fee (5%):</span>
+                  <span>+${platformFee.toFixed(2)} {listing.currency}</span>
+                </div>
+                <div className="flex justify-between font-bold text-xs text-slate-900 dark:text-white pt-1 border-t border-slate-200 dark:border-emerald-500/20">
+                  <span>Total Amount:</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 text-sm">${calculatedPrice.toFixed(2)} {listing.currency}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 font-mono">
+                <span>Method: {paymentMethod.toUpperCase()}</span>
+                <span>Date: {new Date().toLocaleDateString()}</span>
+              </div>
+            </div>
 
             {/* If EcoCash was used, interactive PIN prompt confirmation */}
             {paymentMethod === 'ecocash' && (
-              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-left space-y-3">
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-left space-y-2.5">
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
                   <Smartphone className="w-4 h-4 text-emerald-500 animate-pulse" />
-                  <span>Mobile Handset Verification</span>
+                  <span>Mobile Handset PIN Prompt</span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">
-                  {instructions || `Please enter your EcoCash PIN on ${ecoCashNumber || buyerPhone} to confirm the deduction of $${calculatedPrice} USD.`}
+                <p className="text-xs text-slate-600 dark:text-gray-300">
+                  {instructions || `Please enter your EcoCash PIN on ${ecoCashNumber || buyerPhone} to confirm deduction.`}
                 </p>
                 {!pinConfirmed ? (
                   <button
                     type="button"
                     onClick={() => setPinConfirmed(true)}
-                    className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Check className="w-4 h-4" />
-                    <span>I Have Entered My PIN on My Phone</span>
+                    <span>I Have Entered My PIN on My Handset</span>
                   </button>
                 ) : (
-                  <div className="p-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-center gap-2">
+                  <div className="p-2 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     <span>PIN Authorization Confirmed!</span>
                   </div>
@@ -640,7 +694,7 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                 href={paynowUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all text-xs"
               >
                 <CreditCard className="w-4 h-4" />
                 <span>Open Secure Paynow Card Gateway</span>
@@ -648,22 +702,88 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
               </a>
             )}
 
-            {/* WhatsApp Notification Link to Seller */}
-            <div className="space-y-2.5 pt-2">
-              <a
-                href={directWhatsAppUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-[#005c4b] hover:bg-[#00705b] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+            {/* Direct Seller Connection & Receipt Action Buttons */}
+            <div className="space-y-2 pt-1">
+              {/* Primary: Seller Direct Connection on WhatsApp & Direct Phone Call */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <a
+                  href={directWhatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-3 px-3 rounded-xl bg-[#005c4b] hover:bg-[#00705b] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer text-center"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-300 shrink-0" />
+                  <span className="truncate">WhatsApp Seller</span>
+                </a>
+
+                <a
+                  href={`tel:${cleanPhone}`}
+                  className="py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer text-center"
+                >
+                  <Phone className="w-4 h-4 text-emerald-100 shrink-0" />
+                  <span className="truncate">Call {listing.user.fullName}</span>
+                </a>
+              </div>
+
+              {/* Secondary: Print / Save Trade Receipt */}
+              <button
+                type="button"
+                onClick={() => {
+                  const printWindow = window.open('', '_blank');
+                  if (!printWindow) {
+                    window.print();
+                    return;
+                  }
+                  const receiptHtml = `
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                        <title>Trade Receipt - ${orderReference}</title>
+                        <style>
+                          body { font-family: -apple-system, BlinkMacSystemFont, monospace, sans-serif; padding: 24px; max-width: 440px; margin: auto; }
+                          .header { text-align: center; border-bottom: 2px dashed #222; padding-bottom: 12px; margin-bottom: 16px; }
+                          .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+                          .total { font-size: 15px; font-weight: bold; border-top: 2px dashed #222; padding-top: 10px; margin-top: 12px; }
+                          .footer { text-align: center; font-size: 11px; margin-top: 24px; color: #555; }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="header">
+                          <h2>ZimBarter Trade Receipt</h2>
+                          <p>Order Reference: <strong>${orderReference}</strong></p>
+                          <p>${new Date().toLocaleString()}</p>
+                        </div>
+                        <div class="row"><span>Item:</span><strong>${listing.title} (x${qty})</strong></div>
+                        <div class="row"><span>Seller:</span><strong>${listing.user.fullName} (${listing.user.phoneNumber})</strong></div>
+                        <div class="row"><span>Buyer:</span><strong>${buyerName} (${buyerPhone})</strong></div>
+                        <div class="row"><span>Collection Hub:</span><strong>${effectiveHub}</strong></div>
+                        <div class="row"><span>Payment Method:</span><strong>${paymentMethod.toUpperCase()}</strong></div>
+                        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 12px 0;" />
+                        <div class="row"><span>Seller Subtotal:</span><span>$${subtotal.toFixed(2)} ${listing.currency}</span></div>
+                        <div class="row"><span>Platform Fee (5%):</span><span>+$${platformFee.toFixed(2)} ${listing.currency}</span></div>
+                        <div class="row total"><span>Total Charged:</span><span>$${calculatedPrice.toFixed(2)} ${listing.currency}</span></div>
+                        <div class="footer">
+                          <p>Thank you for trading on ZimBarter!</p>
+                          <p>Show this receipt when collecting your item at ${effectiveHub}.</p>
+                        </div>
+                      </body>
+                    </html>
+                  `;
+                  printWindow.document.write(receiptHtml);
+                  printWindow.document.close();
+                  printWindow.focus();
+                  setTimeout(() => printWindow.print(), 250);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-emerald-950/30 text-slate-700 dark:text-gray-300 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <MessageCircle className="w-4 h-4 text-emerald-300" />
-                <span>Notify Seller ({listing.user.fullName}) on WhatsApp</span>
-              </a>
+                <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Print / Save Trade Receipt</span>
+              </button>
 
               <button
                 type="button"
                 onClick={handleReturnToMarketplace}
-                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-emerald-950/30 text-slate-700 dark:text-gray-300 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
+                className="w-full py-2 px-4 rounded-xl text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white font-medium text-xs transition-colors flex items-center justify-center gap-1"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Return to Marketplace</span>

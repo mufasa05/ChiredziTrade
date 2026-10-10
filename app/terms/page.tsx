@@ -217,6 +217,9 @@ export default function TermsPage() {
                   <strong>Seller Retains 100%:</strong> Sellers receive 100% of their listed item price, ensuring farmers, ranchers, and artisans retain full earnings without commission deductions from their asking price.
                 </li>
                 <li>
+                  <strong>Buyer Deliverables:</strong> In exchange for the facilitation fee, the buyer receives: (1) a unique <strong>Verified Order Reference</strong> recorded in the ZimBarter trade ledger, (2) an immediate <strong>Direct Seller Connection</strong> (via pre-populated WhatsApp messaging and direct telephony), and (3) an official itemized <strong>Trade Receipt</strong> displaying pickup hubs and breakdown for physical handover verification.
+                </li>
+                <li>
                   <strong>Non-Custodial Technology Service:</strong> Platform facilitation fees represent compensation for software access, verified introductions, and digital communications services under the Consumer Protection Act (2019). Zim Barter does not operate as an escrow bank, deposit-taking institution, or custodial financial entity.
                 </li>
               </ul>
