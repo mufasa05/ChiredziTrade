@@ -16,25 +16,29 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
 }
 
 // In-Memory Fallback State (with localStorage sync when in browser)
-let memoryListings: Listing[] = [];
+let memoryListings: Listing[] = [...INITIAL_LISTINGS];
 let memoryProposals: BarterProposal[] = [];
 let memoryOrders: TradeOrder[] = [];
 let memoryReviews: TradeReview[] = [];
 let memorySessions: Record<string, BotSession> = {};
 
-// Load saved local listings if in browser environment & purge legacy mock data
+// Load saved local listings if in browser environment
 if (typeof window !== 'undefined') {
   try {
     const savedListings = localStorage.getItem('zimbarter_live_listings');
     if (savedListings) {
       const parsed = JSON.parse(savedListings);
-      if (Array.isArray(parsed)) {
-        // Discard any legacy mock items
-        const realOnly = parsed.filter(
-          (l) => l && l.id && !l.id.startsWith('listing-00') && !l.id.startsWith('mock-')
-        );
-        memoryListings = realOnly;
-        localStorage.setItem('zimbarter_live_listings', JSON.stringify(realOnly));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Discard any broken items
+        const realOnly = parsed.filter((l) => l && l.id);
+        if (realOnly.length > 0) {
+          // Keep genuine user-created listings and the 3 current Prince A Shumba demo listings
+          const initialIds = new Set(INITIAL_LISTINGS.map((l: Listing) => l.id));
+          const genuineUserListings = realOnly.filter((l: Listing) => !l.id.startsWith('zim-') || initialIds.has(l.id));
+          const existingIds = new Set(genuineUserListings.map((l: Listing) => l.id));
+          const missingInitials = INITIAL_LISTINGS.filter((l) => !existingIds.has(l.id));
+          memoryListings = [...missingInitials, ...genuineUserListings];
+        }
       }
     }
   } catch (e) {
@@ -80,7 +84,7 @@ export const db = {
         }
 
         const { data, error } = await query;
-        if (!error && Array.isArray(data)) {
+        if (!error && Array.isArray(data) && data.length > 0) {
           return data.map((row: any) => ({
             id: row.id,
             userId: row.user_id,

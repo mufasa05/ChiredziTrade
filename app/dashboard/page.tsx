@@ -21,7 +21,8 @@ import {
   Clock,
   MapPin,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -101,6 +102,30 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error('Error updating status:', err);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleDeleteListing = async (listingId: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${title}"? This cannot be undone.`)) {
+      return;
+    }
+    setUpdatingId(listingId);
+    try {
+      const res = await fetch(`/api/dashboard?listingId=${encodeURIComponent(listingId)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setListings((prev) => prev.filter((l) => l.id !== listingId));
+        fetchDashboardData();
+      } else {
+        alert(data.error || 'Failed to delete listing');
+      }
+    } catch (err) {
+      console.error('Error deleting listing:', err);
+      alert('Failed to delete listing. Please try again.');
     } finally {
       setUpdatingId(null);
     }
@@ -353,12 +378,22 @@ export default function DashboardPage() {
                         <button
                           onClick={() => handleUpdateStatus(item.id, 'archived')}
                           disabled={updatingId === item.id}
-                          className="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-semibold flex items-center gap-1 border border-rose-500/30"
+                          className="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-semibold flex items-center gap-1 border border-amber-500/30"
                         >
                           <Archive className="w-3 h-3" />
                           <span>Archive</span>
                         </button>
                       )}
+
+                      <button
+                        onClick={() => handleDeleteListing(item.id, item.title)}
+                        disabled={updatingId === item.id}
+                        className="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-semibold flex items-center gap-1 border border-rose-500/30"
+                        title="Permanently delete this listing"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
+                      </button>
                     </div>
                   </div>
                 ))}

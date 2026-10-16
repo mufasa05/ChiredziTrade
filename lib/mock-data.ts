@@ -1,8 +1,82 @@
-import { Listing } from './types';
+import { Listing, ListingUser } from './types';
+
+export const PRINCE_SHUMBA_USER: ListingUser = {
+  id: 'user-prince-shumba',
+  fullName: 'Prince A. Shumba',
+  phoneNumber: '+263773123456',
+  locationArea: 'Harare / Masvingo',
+  verifiedArtisan: true,
+  rating: 5,
+  tradeCount: 42,
+  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+};
 
 /**
- * Production Clean State
- * No mock data. The platform starts fresh, ready for real Zimbabwean trades,
- * artisan showcases, and user-generated barter listings.
+ * ZimBarter Showcase Initial Listings - Exactly 3 demo listings owned by Prince A. Shumba
  */
-export const INITIAL_LISTINGS: Listing[] = [];
+export const INITIAL_LISTINGS: Listing[] = [
+  {
+    id: 'zim-broiler-01',
+    userId: 'user-prince-shumba',
+    user: PRINCE_SHUMBA_USER,
+    title: 'Broiler farming',
+    description: 'Metra Poultry is a poultry farming business that specialises in raising broiler chickens for meat production. The business provides fresh, organic chickens directly from Chiredzi farms.',
+    category: 'livestock_agric',
+    currency: 'USD',
+    price: 6,
+    stockInfo: 'Chiredzi / Triangle • Available',
+    listingType: 'for_sale',
+    conditionGrade: 'New',
+    harvestReady: true,
+    openToBarter: true,
+    barterTerms: 'Open to barter for maize grain or broiler starter feed',
+    locationArea: 'Chiredzi / Triangle',
+    imageUrls: ['https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80'],
+    imageTags: ['Poultry', 'Livestock', 'Broiler', 'Farming'],
+    status: 'active',
+    createdAt: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
+  },
+  {
+    id: 'zim-hamper-02',
+    userId: 'user-prince-shumba',
+    user: PRINCE_SHUMBA_USER,
+    title: 'ladies hamper gifts',
+    description: 'snacks and period prep to spoil your loved ones',
+    category: 'grocery_wholesale',
+    currency: 'USD',
+    price: 15,
+    stockInfo: 'Masvingo • Sold Out',
+    listingType: 'for_sale',
+    conditionGrade: 'New',
+    openToBarter: false,
+    barterTerms: 'Cash or EcoCash only',
+    locationArea: 'Masvingo',
+    imageUrls: ['https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800&auto=format&fit=crop&q=80'],
+    imageTags: ['Gifts', 'Hamper', 'Snacks', 'CarePackage'],
+    status: 'sold',
+    createdAt: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
+  },
+  {
+    id: 'zim-solar-03',
+    userId: 'user-prince-shumba',
+    user: PRINCE_SHUMBA_USER,
+    title: 'Solar Inverter & Lithium Battery (5kVA)',
+    description: 'Complete 5kVA hybrid solar inverter system with 4.8kWh LiFePO4 battery pack, pre-wired protection box, and smart monitoring. Perfect for uninterrupted home and business power in Zimbabwe.',
+    category: 'electronics',
+    currency: 'USD',
+    price: 1250,
+    stockInfo: 'Harare CBD • In Stock',
+    listingType: 'for_sale',
+    conditionGrade: 'New',
+    openToBarter: true,
+    barterTerms: 'Open to trade for cattle, delivery truck, or farm produce with cash top-up',
+    locationArea: 'Harare CBD',
+    imageUrls: ['https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop&q=80'],
+    imageTags: ['Solar', 'Inverter', 'Energy', 'Battery'],
+    status: 'active',
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+  },
+];

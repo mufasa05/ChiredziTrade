@@ -11,6 +11,7 @@ export interface UserProfile {
   email?: string;
   locationArea: string;
   avatarUrl?: string;
+  verifiedArtisan?: boolean;
   createdAt?: string;
   isGoogleUser?: boolean;
   isAdmin?: boolean;

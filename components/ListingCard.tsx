@@ -3,230 +3,244 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Listing } from '@/lib/types';
-import { 
-  MapPin, 
-  MessageCircle, 
-  RefreshCw, 
-  ShoppingBag, 
-  Sparkles, 
-  ChevronRight,
-  ShieldCheck
+import {
+  MapPin,
+  MessageCircle,
+  RefreshCw,
+  ShoppingBag,
+  Heart
 } from 'lucide-react';
-import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 
 interface ListingCardProps {
   listing: Listing;
   onProposeBarter?: (listing: Listing) => void;
   onBuyCash?: (listing: Listing) => void;
+  isFavorited?: boolean;
+  onToggleFavorite?: (listing: Listing) => void;
 }
 
-export default function ListingCard({ listing, onProposeBarter, onBuyCash }: ListingCardProps) {
-  const { t } = useLanguage();
+export default function ListingCard({
+  listing,
+  onProposeBarter,
+  onBuyCash,
+  isFavorited = false,
+  onToggleFavorite,
+}: ListingCardProps) {
   const { isAuthenticated, openAuthModal } = useAuth();
+  const [favorite, setFavorite] = useState(isFavorited);
+  const [imgError, setImgError] = useState(false);
 
-  const handleBuyClick = () => {
-    if (!isAuthenticated) {
-      openAuthModal('Please sign in or create an account to place cash orders.');
-      return;
-    }
-    if (onBuyCash) onBuyCash(listing);
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFavorite(!favorite);
+    if (onToggleFavorite) onToggleFavorite(listing);
   };
 
-  const handleBarterClick = () => {
+  const handleBarterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!isAuthenticated) {
-      openAuthModal('Please sign in or create an account to propose barter swaps.');
+      openAuthModal('Sign in to propose a barter trade offer.');
       return;
     }
     if (onProposeBarter) onProposeBarter(listing);
   };
 
-  const cleanPhone = listing.user.phoneNumber.replace(/\D/g, '');
-  const encodedText = encodeURIComponent(
-    `Hi ${listing.user.fullName}, I saw your listing "${listing.title}" on ChiredziTrade. I want to buy it. Is it still available?`
-  );
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
+  const handleBuyClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onBuyCash) {
+      onBuyCash(listing);
+    }
+  };
 
-  const [imgError, setImgError] = useState(false);
-  const primaryImage = listing.imageUrls[0] || 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=800&auto=format&fit=crop&q=80';
+  const cleanPhone = (listing.user?.phoneNumber || '+263771234567').replace(/\D/g, '');
+  const encodedText = encodeURIComponent(
+    `Hi ${listing.user?.fullName || 'Trader'}, I saw your listing "${listing.title}" on ZimBarter. Is this still available?`
+  );
+  const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
+
+  const primaryImage =
+    listing.imageUrls?.[0] ||
+    'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&auto=format&fit=crop&q=80';
+
+  const isSold = listing.status === 'sold';
+  const currencySymbol = listing.currency === 'USD' ? '$' : listing.currency === 'ZAR' ? 'R' : listing.currency === 'ZWG' ? 'ZWG' : '$';
+  const displayPrice = listing.price ? `${currencySymbol} ${listing.price.toLocaleString()} ${listing.currency}` : listing.currency === 'BARTER' ? 'BARTER ONLY' : `${currencySymbol} 0 ${listing.currency}`;
+  const sellerInitial = (listing.user?.fullName || 'T').trim().charAt(0).toLowerCase();
 
   return (
-    <div className="group relative flex flex-col rounded-2xl glass-card overflow-hidden transition-all duration-300">
-      {/* Image Header & Badges */}
-      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-lowveld-950">
-        {!imgError ? (
-          <img
-            src={primaryImage}
-            alt=""
-            onError={() => setImgError(true)}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-lowveld-900 via-lowveld-950 to-emerald-950 flex flex-col items-center justify-center text-emerald-400 p-4 text-center">
-            <ShoppingBag className="w-10 h-10 mb-1.5 opacity-60" />
-            <span className="text-[11px] font-bold text-gray-400 line-clamp-1">{listing.title}</span>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-darkbg via-transparent to-black/40 pointer-events-none" />
-
-        {/* Currency & Price Badge */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
-          {listing.currency === 'BARTER' ? (
-            <span className="px-2.5 py-1 rounded-lg text-xs font-black badge-barter flex items-center gap-1 shadow-md">
-              <RefreshCw className="w-3 h-3" />
-              <span>{t.barterOnly}</span>
-            </span>
+    <div className="group relative bg-white dark:bg-[#0c1813] rounded-2xl border border-[#E2E8E4] dark:border-[#0e4337] overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between">
+      {/* Top Image Section */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-black/40">
+        <Link href={`/listing/${listing.id}`} className="block w-full h-full">
+          {!imgError ? (
+            <img
+              src={primaryImage}
+              alt={listing.title}
+              onError={() => setImgError(true)}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            />
           ) : (
-            <span
-              className={`px-2.5 py-1 rounded-lg text-xs font-extrabold shadow-md flex items-center gap-1 ${
-                listing.currency === 'USD' ? 'badge-usd' : 'badge-zar'
-              }`}
-            >
-              <span>
-                {listing.currency === 'USD' ? '$' : 'R'} {listing.price?.toLocaleString()}
-              </span>
-              <span className="text-[10px] font-bold opacity-80">{listing.currency}</span>
-            </span>
+            <div className="w-full h-full bg-slate-200 dark:bg-[#0a231b] flex items-center justify-center text-slate-400">
+              <ShoppingBag className="w-8 h-8 opacity-50" />
+            </div>
           )}
+        </Link>
+
+        {/* Top-Left: Price Glass Pill */}
+        <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
+          <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-[#031d17]/85 backdrop-blur-md text-[#10b981] border border-[#10b981]/30 shadow-md inline-flex items-center">
+            {displayPrice}
+          </span>
         </div>
 
-        {/* Availability Status & Location Badges */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          {listing.status === 'sold' ? (
-            <span className="px-2 py-1 rounded-lg text-[10px] font-black bg-red-600/90 text-white border border-red-400 shadow-md flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+        {/* Top-Right: Status & Location Badges */}
+        <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+          {/* Status Badge */}
+          {isSold ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-red-950/85 backdrop-blur-md text-red-400 border border-red-500/40 shadow-sm flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               <span>SOLD</span>
             </span>
           ) : (
-            <span className="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-emerald-950/80 backdrop-blur-md text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-[#031d17]/85 backdrop-blur-md text-emerald-400 border border-emerald-500/40 shadow-sm flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>AVAILABLE</span>
             </span>
           )}
 
-          <span className="px-2 py-1 rounded-lg text-[11px] font-medium bg-black/60 backdrop-blur-md text-gray-200 border border-white/10 flex items-center gap-1 shadow-sm">
-            <MapPin className="w-3 h-3 text-emerald-400" />
-            <span>{listing.locationArea}</span>
+          {/* Location Badge */}
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 backdrop-blur-md text-gray-200 border border-white/10 shadow-sm flex items-center gap-1 max-w-[120px] truncate">
+            <MapPin className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+            <span className="truncate">{listing.locationArea || 'Zimbabwe'}</span>
           </span>
+
+          {/* Favorite Heart Button */}
+          <button
+            type="button"
+            onClick={handleFavoriteClick}
+            className="w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-md flex items-center justify-center text-white transition-all shadow-md ml-0.5"
+            aria-label="Add to favorites"
+          >
+            <Heart
+              className={`w-3 h-3 transition-colors ${
+                favorite ? 'fill-red-500 text-red-500' : 'text-white'
+              }`}
+            />
+          </button>
         </div>
 
-        {/* Condition Grade or Harvest Ready */}
-        <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5">
-          {listing.harvestReady && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/90 text-white shadow-sm flex items-center gap-0.5">
-              <Sparkles className="w-2.5 h-2.5" />
-              <span>HARVEST READY</span>
-            </span>
-          )}
-          {listing.conditionGrade && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-lowveld-950/80 backdrop-blur-md text-emerald-300 border border-emerald-500/30">
-              {listing.conditionGrade}
-            </span>
-          )}
+        {/* Bottom-Left: 'New' Badge */}
+        <div className="absolute bottom-2.5 left-2.5 z-10 pointer-events-none">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#041d18]/90 backdrop-blur-md text-emerald-400 border border-emerald-500/40 shadow-sm">
+            New
+          </span>
         </div>
       </div>
 
-      {/* Card Content */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      {/* Card Body */}
+      <div className="p-3.5 flex-1 flex flex-col justify-between">
         <div>
           {/* Title */}
           <Link href={`/listing/${listing.id}`}>
-            <h3 className="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug mb-2">
+            <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-1 group-hover:text-[#059669] transition-colors">
               {listing.title}
             </h3>
           </Link>
 
-          {/* Description snippet */}
-          <p className="text-xs text-slate-600 dark:text-gray-400 line-clamp-2 leading-relaxed mb-3">
-            {listing.description}
+          {/* Description */}
+          <p className="text-xs text-slate-600 dark:text-gray-300 line-clamp-2 mt-1 leading-relaxed">
+            {listing.description || 'Verified Zimbabwean marketplace trade offer.'}
           </p>
 
-          {/* Barter Callout Banner */}
-          {listing.barterTerms && (
-            <div className="p-2.5 rounded-xl glass-panel-amber border border-amber-500/30 mb-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-              <RefreshCw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-              <div className="line-clamp-2">
-                <span className="font-bold text-amber-800 dark:text-amber-300">{t.barterTerms}</span>
-                {listing.barterTerms}
-              </div>
-            </div>
-          )}
-
-          {/* Tags */}
-          {listing.imageTags && listing.imageTags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-4">
-              {listing.imageTags.slice(0, 3).map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-lowveld-950 text-[10px] text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-lowveld-800"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer: Seller & Explicit Buy / Barter Actions */}
-        <div className="pt-3 border-t border-slate-200 dark:border-lowveld-800/40">
-          <div className="flex items-center justify-between mb-3 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-lowveld-800 flex items-center justify-center text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-slate-300 dark:border-lowveld-700">
-                {listing.user.fullName.charAt(0)}
-              </div>
-              <div className="overflow-hidden">
-                <p className="font-semibold text-slate-800 dark:text-gray-200 truncate max-w-[120px] sm:max-w-[140px]">
-                  {listing.user.fullName}
-                </p>
-                {listing.user.verifiedArtisan && (
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
-                    <ShieldCheck className="w-2.5 h-2.5" />
-                    <span>Verified</span>
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <span className="text-[11px] text-slate-500 dark:text-gray-400 font-mono">
-              ⭐ {listing.user.rating || '5.0'}
+          {/* Category Hash Tag */}
+          <div className="mt-2">
+            <span className="inline-block px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-[#041d18] border border-emerald-500/30 text-[10px] sm:text-[11px] font-mono font-medium text-emerald-700 dark:text-emerald-400">
+              #{listing.category?.replace(/_/g, ' ')}
             </span>
           </div>
 
-          {/* Action Buttons: Cash Buy + Barter Swap + WhatsApp */}
-          <div className="grid grid-cols-2 gap-2">
-            {/* BUY WITH CASH BUTTON */}
-            <button
-              disabled={listing.status === 'sold'}
-              onClick={handleBuyClick}
-              className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white text-xs font-black transition-all shadow-md shadow-emerald-950/60 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>{listing.status === 'sold' ? 'Sold Out' : t.buyNowCash}</span>
-            </button>
+          {/* Seller Profile Row with Star Rating */}
+          <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 dark:border-[#0e4337]/60">
+            <div className="flex items-center gap-2 min-w-0">
+              {listing.user?.avatarUrl ? (
+                <img
+                  src={listing.user.avatarUrl}
+                  alt={listing.user.fullName || 'Trader'}
+                  className="w-6 h-6 rounded-full object-cover shrink-0 border border-emerald-500/30"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-emerald-800 text-emerald-200 flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                  {sellerInitial}
+                </div>
+              )}
+              <span className="text-xs font-semibold text-slate-800 dark:text-gray-200 truncate">
+                {listing.user?.fullName || 'Trader'}
+              </span>
+            </div>
 
-            {/* BARTER SWAP OR DETAIL BUTTON */}
-            {listing.openToBarter || listing.currency === 'BARTER' ? (
+            <div className="flex items-center gap-1 text-xs font-bold text-amber-400 shrink-0">
+              <span>★</span>
+              <span>{listing.user?.rating || 5}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons: Buy (Cash USD/ZWG) & Swap Offer */}
+        <div className="grid grid-cols-2 gap-2 mt-3 pt-1">
+          {isSold ? (
+            <>
+              {/* Sold Out (Disabled) */}
               <button
-                disabled={listing.status === 'sold'}
-                onClick={handleBarterClick}
-                className="flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                disabled
+                className="py-2 px-2.5 rounded-xl bg-slate-100 dark:bg-[#062A22]/40 text-slate-400 dark:text-emerald-700 border border-slate-200 dark:border-[#0e4337]/40 text-xs font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
               >
-                <RefreshCw className="w-3 h-3 text-amber-400" />
-                <span>{listing.status === 'sold' ? 'Sold Out' : t.proposeBarter}</span>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Sold Out</span>
               </button>
-            ) : (
+
+              {/* Direct WhatsApp Message Button */}
               <a
-                href={whatsappUrl}
+                href={directWhatsAppUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1 py-2 px-2.5 rounded-xl bg-[#005c4b] hover:bg-[#00705b] text-emerald-100 text-xs font-bold transition-all"
+                onClick={(e) => e.stopPropagation()}
+                className="py-2 px-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
               >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-300" />
+                <MessageCircle className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
               </a>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              {/* Buy (Cash USD/ZWG) Button -> Launches BuyCashModal Checkout Logic */}
+              <button
+                type="button"
+                onClick={handleBuyClick}
+                className="py-2 px-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md hover:scale-[1.02] active:scale-[0.98]"
+                title="Buy with EcoCash, OneMoney, Paynow or Cash on Handover"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Buy (Cash USD/ZWG)</span>
+              </button>
+
+              {/* Swap Offer Button -> Launches BarterProposalModal */}
+              <button
+                type="button"
+                onClick={handleBarterClick}
+                className="py-2 px-2.5 rounded-xl bg-[#d97706]/10 hover:bg-[#d97706]/20 border border-[#d97706]/70 text-[#f5c542] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                title="Propose a Barter Swap or Asset Exchange"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Swap Offer</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

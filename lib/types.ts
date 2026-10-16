@@ -11,7 +11,15 @@ export type SectorCategory =
   | 'transport_logistics' 
   | 'general_services'
   | 'woodwork_construction' 
-  | 'retail_hardware';
+  | 'retail_hardware'
+  | 'electronics'
+  | 'fashion_apparel'
+  | 'home_living'
+  | 'vehicles'
+  | 'properties'
+  | 'education'
+  | 'jobs'
+  | string;
 
 export type ZimLocation = 
   | 'Harare CBD'
@@ -44,6 +52,8 @@ export type LowveldLocation = ZimLocation;
 
 export type ConditionGrade = 'New' | 'Used - Good' | 'Used - Fair' | 'Service Showcase';
 
+export type ListingTradeType = 'for_sale' | 'for_trade' | 'for_rent' | 'services' | 'trade_top_up';
+
 export interface ListingUser {
   id: string;
   phoneNumber: string;
@@ -74,6 +84,9 @@ export interface Listing {
   category: SectorCategory;
   currency: TradeCurrency;
   price?: number | null;
+  priceSubtitle?: string;
+  stockInfo?: string;
+  listingType?: ListingTradeType;
   barterTerms?: string | null;
   locationArea: LowveldLocation | string;
   imageUrls: string[];

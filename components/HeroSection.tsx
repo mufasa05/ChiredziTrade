@@ -1,172 +1,175 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Sparkles, MapPin, Zap, ArrowRight, RefreshCw, ShieldCheck } from 'lucide-react';
-import { useLanguage } from '@/context/LanguageContext';
+import {
+  Search,
+  ArrowRight,
+  RefreshCw,
+  ShoppingBag,
+  Coins,
+  Wrench,
+  Users,
+  Store,
+  Sprout,
+  Sparkles
+} from 'lucide-react';
 
 interface HeroSectionProps {
   searchTerm: string;
   onSearchChange: (val: string) => void;
-  onSelectCategory?: (cat: string) => void;
-  onSelectLocation?: (loc: string) => void;
-  onOpenWhatsApp?: () => void;
+  onSelectListingType?: (type: string) => void;
+  onQuickPrompt?: (prompt: string) => void;
 }
 
 export default function HeroSection({
   searchTerm,
   onSearchChange,
-  onSelectCategory,
-  onSelectLocation,
-  onOpenWhatsApp,
+  onSelectListingType,
+  onQuickPrompt,
 }: HeroSectionProps) {
-  const { t } = useLanguage();
   const [localInput, setLocalInput] = useState(searchTerm);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearchChange(localInput);
   };
 
-  const handleQuickPrompt = (prompt: string) => {
-    setLocalInput(prompt);
-    onSearchChange(prompt);
+  const handlePromptClick = (tag: string) => {
+    setLocalInput(tag);
+    onSearchChange(tag);
+    if (onQuickPrompt) onQuickPrompt(tag);
   };
 
-  return (
-    <div className="relative overflow-hidden pt-6 pb-6 sm:pt-8 sm:pb-8 border-b border-slate-200 dark:border-lowveld-800/30">
-      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+  const filterPills = [
+    { id: 'for_sale', label: 'Buy & Sell', icon: ShoppingBag },
+    { id: 'for_trade', label: 'Swap Goods', icon: RefreshCw },
+    { id: 'trade_top_up', label: 'Top Up', icon: Coins },
+    { id: 'services', label: 'Trade Services', icon: Users },
+  ];
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
-          {/* Top Pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs font-semibold mb-3.5 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-            <span>Zimbabwe Trade Network: Harare • Bulawayo • Mutare • Masvingo • Chiredzi</span>
+  const popularTags = [
+    { label: 'Maize', icon: '🌾' },
+    { label: 'Phones', icon: '📱' },
+    { label: 'Rooms', icon: '🏠' },
+    { label: 'Services', icon: '🔧' },
+    { label: 'Vehicles', icon: '🚗' },
+    { label: 'Electronics', icon: '💻' },
+    { label: 'Jobs', icon: '💼' },
+  ];
+
+  return (
+    <div className="relative w-full rounded-3xl overflow-hidden bg-[#062A22] text-white shadow-2xl mb-6">
+      {/* Background Hero Image with Zimbabwean Landscape & Farmer */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/images/hero-banner.jpg"
+          alt="ZimBarter Trading in Zimbabwe"
+          className="w-full h-full object-cover object-center lg:object-right filter brightness-[0.98]"
+        />
+        {/* Soft Left Gradient Overlay for Text Legibility while keeping Farmer & Landscape bright */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#041d18]/95 via-[#062A22]/75 via-45% to-transparent" />
+      </div>
+
+      <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-8 sm:py-10 lg:py-12 flex flex-col lg:flex-row items-center justify-between gap-8">
+        {/* Left Column: Heading, Subtitle, Pills, Search */}
+        <div className="w-full lg:max-w-2xl space-y-4">
+          <div className="space-y-1">
+            <h1 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-[1.1]">
+              Trade More.{' '}
+              <span className="block text-[#4ade80]">Get More.</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-200/90 max-w-xl font-normal leading-relaxed pt-1">
+              ZimBarter is Zimbabwe&apos;s trusted platform to <strong className="text-white font-semibold">buy, sell, swap and trade goods and services</strong> — with money or anything.
+            </p>
           </div>
 
-          {/* Trilingual Heading */}
-          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-3">
-            {t.heroTitle1}
-            <span className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-500 dark:from-emerald-400 dark:via-emerald-300 dark:to-amber-300 bg-clip-text text-transparent">
-              {t.heroTitleHighlight}
-            </span>
-          </h1>
+          {/* 4 Quick Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {filterPills.map((pill) => {
+              const Icon = pill.icon;
+              return (
+                <button
+                  key={pill.id}
+                  type="button"
+                  onClick={() => onSelectListingType && onSelectListingType(pill.id)}
+                  className="px-3 py-1.5 rounded-full bg-[#031d17]/80 hover:bg-[#0a3a30] border border-[#0e4337] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm hover:scale-[1.02]"
+                >
+                  <Icon className="w-3.5 h-3.5 text-[#F5C542]" />
+                  <span>{pill.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-          <p className="text-sm sm:text-base text-slate-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto font-normal leading-relaxed">
-            {t.heroSubtitle}
-          </p>
-
-          {/* Search Input Bar */}
-          <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto mb-3.5">
-            <div className="relative flex items-center shadow-2xl rounded-2xl overflow-hidden glass-panel border border-emerald-500/30 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
-              <div className="pl-4 sm:pl-5 text-slate-400 dark:text-gray-400">
-                <Search className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
+          {/* Embedded Hero Search Bar */}
+          <form onSubmit={handleSearchSubmit} className="pt-2">
+            <div className="relative flex items-center max-w-lg bg-white rounded-full p-1 shadow-2xl border border-white/20">
+              <Search className="w-4 h-4 text-gray-400 ml-3.5 shrink-0" />
               <input
                 type="text"
                 value={localInput}
                 onChange={(e) => setLocalInput(e.target.value)}
-                placeholder={t.searchPlaceholder}
-                className="w-full py-3.5 sm:py-4 pl-3 pr-28 sm:pr-36 bg-transparent text-sm sm:text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-400 focus:outline-none"
+                placeholder="What are you looking for?"
+                className="w-full py-2.5 px-3 bg-transparent text-xs sm:text-sm text-gray-900 placeholder-gray-500 focus:outline-none"
               />
               <button
                 type="submit"
-                className="absolute right-2 sm:right-2.5 px-4 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-full bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm transition-all shadow-md shrink-0 flex items-center gap-1"
               >
-                <span>{t.searchBtn}</span>
-                <ArrowRight className="w-3.5 h-3.5 hidden sm:inline text-white" />
+                <span>Search</span>
               </button>
             </div>
           </form>
 
-          {/* Quick Prompts */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs text-slate-600 dark:text-gray-400">
-            <span className="font-semibold text-slate-700 dark:text-gray-400">{t.quickFind}</span>
-            <button
-              type="button"
-              onClick={() => handleQuickPrompt('Brahman Heifers')}
-              className="px-2.5 py-1 rounded-lg bg-white dark:bg-lowveld-900/60 hover:bg-slate-100 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-lowveld-700/50 transition-colors shadow-sm"
-            >
-              🐄 Cattle & Goats
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPrompt('Boutique')}
-              className="px-2.5 py-1 rounded-lg bg-white dark:bg-lowveld-900/60 hover:bg-slate-100 dark:hover:bg-lowveld-800 text-pink-700 dark:text-pink-300 hover:text-pink-900 dark:hover:text-white border border-pink-200 dark:border-pink-500/30 transition-colors shadow-sm"
-            >
-              👗 Vasoni veHembe & Boutiques
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPrompt('Groceries')}
-              className="px-2.5 py-1 rounded-lg bg-white dark:bg-lowveld-900/60 hover:bg-slate-100 dark:hover:bg-lowveld-800 text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-white border border-amber-200 dark:border-amber-500/30 transition-colors shadow-sm"
-            >
-              🍞 Groceries & Wholesale
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPrompt('Cement')}
-              className="px-2.5 py-1 rounded-lg bg-white dark:bg-lowveld-900/60 hover:bg-slate-100 dark:hover:bg-lowveld-800 text-orange-700 dark:text-orange-300 hover:text-orange-900 dark:hover:text-white border border-orange-200 dark:border-orange-500/30 transition-colors shadow-sm"
-            >
-              🧱 Building & Hardware
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPrompt('Cane Haulage')}
-              className="px-2.5 py-1 rounded-lg bg-white dark:bg-lowveld-900/60 hover:bg-slate-100 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-lowveld-700/50 transition-colors shadow-sm"
-            >
-              🚛 Cane Haulage
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPrompt('Borehole pump repair')}
-              className="px-2.5 py-1 rounded-lg bg-white dark:bg-lowveld-900/60 hover:bg-slate-100 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-lowveld-700/50 transition-colors shadow-sm"
-            >
-              💧 Borehole Repair
-            </button>
+          {/* Popular Search Chips */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1 text-xs">
+            {popularTags.map((t) => (
+              <button
+                key={t.label}
+                type="button"
+                onClick={() => handlePromptClick(t.label)}
+                className="px-2.5 py-1 rounded-lg bg-[#031d17]/70 hover:bg-[#0a3a30] text-gray-300 hover:text-white border border-[#0e4337]/80 text-[11px] font-medium transition-colors flex items-center gap-1"
+              >
+                <span>{t.icon}</span>
+                <span>{t.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Feature Highlights Ticker */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 mt-6 sm:mt-7 max-w-4xl mx-auto text-xs sm:text-sm">
-          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-              <Zap className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{t.directWhatsApp}</p>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-gray-400">Zero data waste for buyers</p>
-            </div>
+        {/* Right Column: Floating Trust Cards & Slogan (Visible on Desktop) */}
+        <div className="hidden lg:flex flex-col items-end gap-3 shrink-0">
+          <div className="text-right mb-2 relative">
+            <span className="font-display italic font-semibold text-sm text-[#F5C542] drop-shadow-md block">
+              Local Trade • Stronger Communities
+            </span>
+            <span className="font-display italic font-bold text-base text-white drop-shadow-md block">
+              A Brighter Zimbabwe
+            </span>
+            {/* Zimbabwe National Color Stripe */}
+            <div className="h-1 w-32 ml-auto bg-gradient-to-r from-emerald-500 via-[#F5C542] via-red-500 to-amber-400 rounded-full mt-1 opacity-90 shadow-sm" />
           </div>
 
-          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-              <RefreshCw className="w-4 h-4" />
+          <div className="w-64 space-y-2">
+            <div className="p-2.5 px-3.5 rounded-2xl bg-[#062A22]/85 backdrop-blur-md border border-[#0e4337] flex items-center gap-3 shadow-lg transform hover:-translate-x-1 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <Users className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-tight">Join a growing community</span>
             </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{t.smartBarter}</p>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-gray-400">Swap goods & trade cattle</p>
-            </div>
-          </div>
 
-          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <span className="font-black text-xs">USD / ZAR</span>
+            <div className="p-2.5 px-3.5 rounded-2xl bg-[#062A22]/85 backdrop-blur-md border border-[#0e4337] flex items-center gap-3 shadow-lg transform hover:-translate-x-1 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <Store className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-tight">Support local businesses</span>
             </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{t.multiCurrency}</p>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-gray-400">USD cash & SA Rand</p>
-            </div>
-          </div>
 
-          <div className="p-2.5 sm:p-3 rounded-xl glass-card flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{t.verifiedArtisans}</p>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-gray-400">Trusted Lowveld mechanics</p>
+            <div className="p-2.5 px-3.5 rounded-2xl bg-[#062A22]/85 backdrop-blur-md border border-[#0e4337] flex items-center gap-3 shadow-lg transform hover:-translate-x-1 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <Sprout className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-tight">Build a stronger Zimbabwe</span>
             </div>
           </div>
         </div>

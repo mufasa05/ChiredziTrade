@@ -3,37 +3,45 @@
 import React from 'react';
 import { Listing } from '@/lib/types';
 import ListingCard from './ListingCard';
-import { Store, RefreshCw } from 'lucide-react';
-import { useLanguage } from '@/context/LanguageContext';
+import { Store, RefreshCw, Plus } from 'lucide-react';
+import Link from 'next/link';
 
 interface ListingGridProps {
   listings: Listing[];
   loading?: boolean;
+  viewMode?: 'grid' | 'list';
   onProposeBarter: (listing: Listing) => void;
   onBuyCash?: (listing: Listing) => void;
   onResetFilters: () => void;
+  favoritedIds?: Set<string>;
+  onToggleFavorite?: (listing: Listing) => void;
 }
 
 export default function ListingGrid({
   listings,
   loading,
+  viewMode = 'grid',
   onProposeBarter,
   onBuyCash,
   onResetFilters,
+  favoritedIds = new Set(),
+  onToggleFavorite,
 }: ListingGridProps) {
-  const { t } = useLanguage();
-
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="h-96 rounded-2xl bg-white dark:bg-lowveld-950/60 border border-slate-200 dark:border-lowveld-900 animate-pulse flex flex-col justify-between p-4 shadow-sm">
-            <div className="h-48 rounded-xl bg-slate-200 dark:bg-lowveld-900/60" />
-            <div className="space-y-2 mt-4">
-              <div className="h-4 rounded bg-slate-200 dark:bg-lowveld-900/80 w-3/4" />
-              <div className="h-3 rounded bg-slate-100 dark:bg-lowveld-900/50 w-full" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div
+            key={i}
+            className="rounded-2xl bg-white dark:bg-[#0c1813] border border-[#E2E8E4] dark:border-[#0e4337] overflow-hidden p-3 space-y-3 animate-pulse shadow-sm"
+          >
+            <div className="aspect-[4/3] rounded-xl bg-slate-200 dark:bg-[#062A22]" />
+            <div className="h-4 rounded bg-slate-200 dark:bg-[#062A22] w-3/4" />
+            <div className="h-4 rounded bg-slate-100 dark:bg-[#062A22]/60 w-1/2" />
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <div className="h-8 rounded-xl bg-slate-200 dark:bg-[#062A22]" />
+              <div className="h-8 rounded-xl bg-slate-200 dark:bg-[#062A22]" />
             </div>
-            <div className="h-9 rounded-xl bg-slate-200 dark:bg-lowveld-900/80 mt-4" />
           </div>
         ))}
       </div>
@@ -42,26 +50,27 @@ export default function ListingGrid({
 
   if (listings.length === 0) {
     return (
-      <div className="py-16 text-center glass-panel rounded-3xl p-8 max-w-lg mx-auto border border-slate-200 dark:border-lowveld-800 shadow-xl">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-lowveld-700/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-4 border border-emerald-500/30 shadow-md">
-          <Store className="w-8 h-8" />
+      <div className="py-16 text-center bg-white dark:bg-[#0c1813] rounded-3xl p-8 max-w-lg mx-auto border border-[#E2E8E4] dark:border-[#0e4337] shadow-lg">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-[#059669] mx-auto mb-3.5 border border-emerald-500/30 shadow-md">
+          <Store className="w-7 h-7" />
         </div>
-        <h3 className="font-display font-black text-xl text-slate-900 dark:text-white mb-2">
-          Ready for Your First Zimbabwe Trade Offer
+        <h3 className="font-display font-black text-lg sm:text-xl text-slate-900 dark:text-white mb-2">
+          No Listings Found In This Filter
         </h3>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mb-6 max-w-sm mx-auto leading-relaxed">
-          Be the first to post livestock, farm produce, building materials, solar hardware, or artisan services in your area.
+          Be the first to list agricultural produce, electronics, accommodation, or services for cash or barter.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+          <Link
             href="/post"
-            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all inline-flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm shadow-md transition-all inline-flex items-center justify-center gap-2"
           >
-            <span>+ Post a Trade Listing</span>
-          </a>
+            <Plus className="w-4 h-4" />
+            <span>Post a Listing</span>
+          </Link>
           <button
             onClick={onResetFilters}
-            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 font-semibold text-xs sm:text-sm border border-slate-300 dark:border-lowveld-700 transition-all inline-flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-[#062A22] hover:bg-slate-200 dark:hover:bg-[#0a3a30] text-slate-700 dark:text-gray-300 font-semibold text-xs sm:text-sm border border-[#E2E8E4] dark:border-[#0e4337] transition-all inline-flex items-center justify-center gap-1.5"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Reset Filters</span>
@@ -72,18 +81,27 @@ export default function ListingGrid({
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400">
-          {t.showingListings} <span className="text-emerald-600 dark:text-emerald-400 font-bold">{listings.length}</span> {t.activeTradeOffers}
+    <div className="space-y-3.5">
+      {/* Header matching reference picture */}
+      <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600 dark:text-gray-300 px-0.5 font-medium">
+        <p>
+          Showing <span className="font-bold text-emerald-600 dark:text-[#10b981]">{listings.length}</span> active trade offers across Zimbabwe
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+      <div
+        className={
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'
+            : 'grid grid-cols-1 gap-3'
+        }
+      >
         {listings.map((listing) => (
           <ListingCard
             key={listing.id}
             listing={listing}
+            isFavorited={favoritedIds.has(listing.id)}
+            onToggleFavorite={onToggleFavorite}
             onProposeBarter={onProposeBarter}
             onBuyCash={onBuyCash}
           />

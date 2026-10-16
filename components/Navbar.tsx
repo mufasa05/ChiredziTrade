@@ -49,44 +49,22 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-lowveld-800/60 bg-white/95 dark:bg-[#070d09]/95 backdrop-blur-md shadow-sm dark:shadow-xl transition-colors duration-300">
-      {/* Micro Ticker */}
-      <div className="hidden sm:flex items-center justify-between px-4 sm:px-8 py-1 bg-slate-100 dark:bg-lowveld-950/80 border-b border-slate-200 dark:border-lowveld-900/50 text-[11px] text-slate-700 dark:text-gray-300">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            {t.liveMarket}
-          </span>
-          <span className="flex items-center gap-1 text-slate-600 dark:text-gray-400">
-            <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-            Harare • Bulawayo • Mutare • Masvingo • Chiredzi • Nationwide
-          </span>
-        </div>
-        <div className="flex items-center gap-4 font-mono text-slate-700 dark:text-gray-300">
-          <span className="flex items-center gap-1">
-            <Coins className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-            {t.multiCurrencyHeader}
-          </span>
-          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400/80 font-medium">
-            <ShieldCheck className="w-3 h-3 text-emerald-500" />
-            Nationwide Barter & Trade Active
-          </span>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
+    <header className="sticky top-0 z-40 w-full border-b border-[#0e4337] bg-[#062A22] text-white shadow-md transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-lowveld-700 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30 group-hover:scale-105 transition-transform">
-            <Store className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+          <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-[#F5C542] p-0.5 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="w-full h-full rounded-full bg-[#062A22] flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-[#F5C542] animate-spin" style={{ animationDuration: '12s' }} />
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="font-display font-extrabold text-base sm:text-2xl tracking-tight text-slate-900 dark:text-white">
-              Zim<span className="text-emerald-600 dark:text-emerald-400">Barter</span>
+          <div>
+            <span className="font-display font-black text-lg sm:text-xl tracking-tight text-white">
+              Zim<span className="text-[#F5C542]">Barter</span>
             </span>
-            <span className="hidden sm:inline-block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-              PWA
-            </span>
+            <p className="text-[10px] text-emerald-400 font-medium leading-none">
+              Trade • Swap • Grow
+            </p>
           </div>
         </Link>
 
@@ -94,23 +72,23 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           <Link
             href="/"
-            className={`px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
               pathname === '/' 
-                ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' 
-                : 'text-slate-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-lowveld-900/50'
+                ? 'bg-[#059669] text-white shadow-sm' 
+                : 'text-gray-200 hover:text-white hover:bg-[#0a3a30]'
             }`}
           >
             {t.marketplace}
           </Link>
           <Link
             href="/barter-network"
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
               pathname === '/barter-network'
-                ? 'bg-amber-500/15 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
-                : 'text-slate-700 dark:text-gray-300 hover:text-amber-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-lowveld-900/50'
+                ? 'bg-amber-500/20 text-[#F5C542] border border-amber-500/30'
+                : 'text-gray-200 hover:text-[#F5C542] hover:bg-[#0a3a30]'
             }`}
           >
-            <RefreshCw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+            <RefreshCw className="w-3.5 h-3.5 text-[#F5C542]" />
             <span>{t.smartBarterHub}</span>
           </Link>
         </nav>
@@ -120,13 +98,13 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           {/* Theme Switcher Toggle (Dark / Light) */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-lowveld-950/80 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-300 transition-all shadow-sm"
+            className="p-2 rounded-xl bg-[#031d17]/80 hover:bg-[#0a3a30] border border-[#0e4337] text-emerald-300 transition-all shadow-sm"
             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
             {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-400" />
+              <Sun className="w-4 h-4 text-[#F5C542]" />
             ) : (
-              <Moon className="w-4 h-4 text-emerald-600" />
+              <Moon className="w-4 h-4 text-emerald-300" />
             )}
           </button>
 
@@ -134,9 +112,9 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
           <div className="relative">
             <button
               onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950/80 hover:bg-slate-200 dark:hover:bg-lowveld-900 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 text-xs font-semibold transition-all shadow-sm"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#031d17]/80 hover:bg-[#0a3a30] border border-[#0e4337] text-white text-xs font-semibold transition-all shadow-sm"
             >
-              <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span>{languages.find((l) => l.code === language)?.flag}</span>
               <span className="uppercase text-[11px]">{language}</span>
               <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
