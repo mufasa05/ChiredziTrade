@@ -73,8 +73,8 @@ export const db = {
         if (filters?.category && filters.category !== 'all') {
           query = query.eq('category', filters.category);
         }
-        if (filters?.location && filters.location !== 'all') {
-          query = query.ilike('location_area', `%${filters.location}%`);
+        if (filters?.location && filters.location !== 'all' && filters.location !== 'All Zimbabwe') {
+          query = query.ilike('location_area', `%${filters.location.trim()}%`);
         }
         if (filters?.currency && filters.currency !== 'all') {
           query = query.eq('currency', filters.currency);
@@ -84,8 +84,8 @@ export const db = {
         }
 
         const { data, error } = await query;
-        if (!error && Array.isArray(data) && data.length > 0) {
-          return data.map((row: any) => ({
+        if (!error && Array.isArray(data)) {
+          let items: Listing[] = data.map((row: any) => ({
             id: row.id,
             userId: row.user_id,
             user: row.user_data,
@@ -106,6 +106,24 @@ export const db = {
             createdAt: row.created_at,
             updatedAt: row.updated_at,
           }));
+
+          if (filters?.barterOnly) {
+            items = items.filter((l) => l.openToBarter || l.currency === 'BARTER');
+          }
+
+          if (filters?.search && filters.search.trim()) {
+            const q = filters.search.toLowerCase().trim();
+            items = items.filter(
+              (l) =>
+                l.title.toLowerCase().includes(q) ||
+                l.description.toLowerCase().includes(q) ||
+                l.locationArea.toLowerCase().includes(q) ||
+                (l.barterTerms && l.barterTerms.toLowerCase().includes(q)) ||
+                (l.imageTags && l.imageTags.some((t: string) => t.toLowerCase().includes(q)))
+            );
+          }
+
+          return items;
         }
       } catch (e) {
         console.warn('Supabase fetch failed, falling back to memory DB:', e);
@@ -121,7 +139,7 @@ export const db = {
       result = result.filter((l) => l.category === filters.category);
     }
 
-    if (filters.location && filters.location !== 'all') {
+    if (filters.location && filters.location !== 'all' && filters.location !== 'All Zimbabwe') {
       result = result.filter((l) =>
         l.locationArea.toLowerCase().includes(filters.location!.toLowerCase())
       );

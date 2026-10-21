@@ -19,16 +19,18 @@ import {
   Plus, 
   Trash2,
   MapPin,
-  Star
+  Star,
+  Zap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
+import { addNotification } from '@/lib/notifications';
 
 export default function PostListingPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { user, isAuthenticated, authLoading, needsProfile, openAuthModal } = useAuth();
+  const { user, isAuthenticated, authLoading, needsProfile, openAuthModal, signInAsDemo } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -362,20 +364,37 @@ export default function PostListingPage() {
             <p className="text-sm text-slate-600 dark:text-gray-400 mb-6 leading-relaxed">
               {needsProfile
                 ? 'Add your WhatsApp number and location so buyers can reach you.'
-                : 'Browsing is free for everyone. To protect buyers, only verified traders can post listings, place orders, or propose swaps.'}
+                : 'Browsing is free for everyone. To protect buyers, sign in or use the 1-tap demo trader account to post listings and trade.'}
             </p>
-            <button
-              onClick={() => openAuthModal(needsProfile ? '' : 'Please sign in to post a listing.')}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-black text-sm shadow-md transition-all inline-flex items-center justify-center gap-2"
-            >
-              <span>{needsProfile ? 'Complete Profile' : 'Sign In / Create Account'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+
+            <div className="space-y-3">
+              {/* 1-Tap Demo Sign In */}
+              {!isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={() => signInAsDemo()}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+                >
+                  <Zap className="w-4 h-4 fill-current" />
+                  <span>1-Tap Demo: Prince A. Shumba</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => openAuthModal(needsProfile ? '' : 'Please sign in to post a listing.')}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-bold text-sm shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>{needsProfile ? 'Complete Profile' : 'Sign In with Email / Google'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
             <button
               onClick={() => router.push('/')}
-              className="mt-3 text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+              className="mt-4 text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
             >
-              Continue browsing the marketplace
+              ← Continue browsing the marketplace
             </button>
           </div>
         </div>

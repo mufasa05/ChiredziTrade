@@ -23,7 +23,7 @@ export default function MarketplacePage() {
   // Filters & Search
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<SectorCategory | 'all'>('all');
-  const [selectedLocation, setSelectedLocation] = useState<string>('Harare');
+  const [selectedLocation, setSelectedLocation] = useState<string>('All Zimbabwe');
   const [selectedCurrency, setSelectedCurrency] = useState<TradeCurrency | 'all'>('all');
   const [tradeFilter, setTradeFilter] = useState<'all' | 'for_sale' | 'for_trade' | 'services' | 'catalog' | 'rooms' | 'jobs'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'price_low' | 'price_high'>('recent');
@@ -123,7 +123,7 @@ export default function MarketplacePage() {
 
   const handleResetFilters = () => {
     setSelectedCategory('all');
-    setSelectedLocation('Harare');
+    setSelectedLocation('All Zimbabwe');
     setSelectedCurrency('all');
     setSearchTerm('');
     setTradeFilter('all');

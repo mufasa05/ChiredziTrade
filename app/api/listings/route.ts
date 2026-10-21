@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const category = (searchParams.get('category') as SectorCategory) || 'all';
-    const location = searchParams.get('location') || 'all';
+    const rawLocation = searchParams.get('location') || 'all';
+    const location = (rawLocation === 'All Zimbabwe' || rawLocation === 'all') ? 'all' : rawLocation;
     const currency = (searchParams.get('currency') as TradeCurrency) || 'all';
     const search = (searchParams.get('search') || '').slice(0, 100);
     const barterOnly = searchParams.get('barterOnly') === 'true';

@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Loader2,
   Globe,
+  Sparkles,
 } from 'lucide-react';
 
 const LOCATIONS = [
@@ -54,7 +55,7 @@ interface AuthPanelProps {
 }
 
 export default function AuthPanel({ redirectPath, onDone }: AuthPanelProps) {
-  const { user, needsProfile, sendEmailOtp, verifyEmailOtp, saveProfile } = useAuth();
+  const { user, needsProfile, sendEmailOtp, verifyEmailOtp, saveProfile, signInAsDemo } = useAuth();
 
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
@@ -223,6 +224,40 @@ export default function AuthPanel({ redirectPath, onDone }: AuthPanelProps) {
         title={<>Zim<span className="text-emerald-600 dark:text-emerald-400">Barter</span> Portal</>}
         subtitle="Sign in or create an account — no password needed"
       />
+
+      {/* 1-Tap Demo Trader Option */}
+      <div className="mb-4">
+        <button
+          id="auth-demo-instant-btn"
+          type="button"
+          onClick={() => {
+            signInAsDemo();
+            onDone?.();
+          }}
+          className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/20 flex items-center justify-between border border-emerald-400/30 transition-all active:scale-[0.99] group text-left"
+        >
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black text-sm text-white shrink-0">
+              P
+            </span>
+            <div>
+              <span className="block font-black text-sm text-white leading-tight">Continue as Prince A. Shumba</span>
+              <span className="text-[11px] text-emerald-100 font-medium leading-tight">Instant Demo Account · +263 77 123 4567</span>
+            </div>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/25 text-white shrink-0 group-hover:bg-white/35 transition-colors flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> 1-Tap
+          </span>
+        </button>
+      </div>
+
+      <div className="relative flex items-center justify-center mb-4">
+        <div className="grow border-t border-slate-200 dark:border-lowveld-800" />
+        <span className="shrink-0 px-3 text-[10px] font-black tracking-wider text-slate-400 dark:text-gray-500 uppercase">
+          Or sign in with Google / Email
+        </span>
+        <div className="grow border-t border-slate-200 dark:border-lowveld-800" />
+      </div>
 
       <div className="mb-5">
         <GoogleAuthButton redirectPath={redirectPath} />

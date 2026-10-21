@@ -6,6 +6,8 @@ import { Listing } from '@/lib/types';
 import { RefreshCw, X, CheckCircle, MessageCircle, Send, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
+import { formatBarterProposalUrl } from '@/lib/whatsapp-messages';
+import { addNotification } from '@/lib/notifications';
 
 interface BarterProposalModalProps {
   listing: Listing | null;
@@ -84,6 +86,19 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
           spread: 70,
           origin: { y: 0.6 },
         });
+
+        // Add real notification
+        addNotification({
+          type: 'proposal',
+          title: 'Barter Swap Offer Sent',
+          desc: `You offered "${offeredItemTitle}" for "${listing.title}". Seller: ${listing.user.fullName}.`,
+          link: '/dashboard?tab=proposals',
+          metadata: {
+            itemTitle: listing.title,
+            proposerName,
+            proposerPhone,
+          },
+        });
       }
     } catch (err) {
       console.error(err);
@@ -92,11 +107,18 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
     }
   };
 
-  const cleanPhone = listing.user.phoneNumber.replace(/\D/g, '');
-  const encodedText = encodeURIComponent(
-    `BARTER OFFER: Hi ${listing.user.fullName}, I want to propose a trade for "${listing.title}". I am offering: "${offeredItemTitle}" (${offeredDescription}) from ${proposerLocation}. My contact number is ${proposerPhone}.`
-  );
-  const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
+  const directWhatsAppUrl = formatBarterProposalUrl({
+    sellerPhone: listing.user.phoneNumber,
+    sellerName: listing.user.fullName,
+    targetListingTitle: listing.title,
+    offeredItemTitle,
+    offeredDescription,
+    cashTopUp,
+    proposerName,
+    proposerPhone,
+    proposerLocation,
+    listingId: listing.id,
+  });
 
   return (
     <div

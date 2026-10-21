@@ -112,7 +112,7 @@ export default function WhatsAppSimulatorModal({
         {
           id: `err-${Date.now()}`,
           sender: 'bot',
-          text: '⚠️ Network timeout connecting to ChiredziTrade webhook.',
+          text: '⚠️ Network timeout connecting to ZimBarter webhook.',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -136,14 +136,14 @@ export default function WhatsAppSimulatorModal({
             <div>
               <div className="flex items-center gap-1.5">
                 <h4 className="font-bold text-sm text-gray-100 leading-tight">
-                  ChiredziTrade Bot
+                  ZimBarter Bot
                 </h4>
                 <span className="text-[9px] bg-[#005c4b] text-emerald-300 px-1 rounded font-mono font-bold">
                   OFFICIAL
                 </span>
               </div>
               <p className="text-[11px] text-emerald-400 font-medium">
-                {isTyping ? 'typing...' : 'online • Lowveld Trade Engine'}
+                {isTyping ? 'typing...' : 'online • Zimbabwe Trade Engine'}
               </p>
             </div>
           </div>
@@ -177,7 +177,7 @@ export default function WhatsAppSimulatorModal({
           {/* Encryption Notice */}
           <div className="text-center my-2">
             <span className="inline-block px-3 py-1 rounded-lg bg-[#182229] text-[#ffd279] text-[10px] shadow-sm border border-[#2a3942]/60">
-              🔒 Messages are routed to ChiredziTrade Webhook Engine with multi-currency & barter parser.
+              🔒 Messages are routed to ZimBarter Webhook Engine with multi-currency & barter parser.
             </span>
           </div>
 

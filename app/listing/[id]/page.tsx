@@ -24,12 +24,14 @@ import {
 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
+import { formatListingInquiryUrl } from '@/lib/whatsapp-messages';
+import { addNotification } from '@/lib/notifications';
 
 function ListingDetailContent() {
   const params = useParams();
   const id = params?.id as string;
   const { t } = useLanguage();
-  const { requireAuth } = useAuth();
+  const { user, requireAuth } = useAuth();
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [barterMatches, setBarterMatches] = useState<BarterMatch[]>([]);
@@ -129,11 +131,15 @@ function ListingDetailContent() {
     );
   }
 
-  const cleanPhone = listing.user.phoneNumber.replace(/\D/g, '');
-  const encodedText = encodeURIComponent(
-    `Hi ${listing.user.fullName}, I saw your listing "${listing.title}" on ChiredziTrade. Is this still available?`
-  );
-  const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
+  const directWhatsAppUrl = formatListingInquiryUrl({
+    sellerPhone: listing.user.phoneNumber,
+    sellerName: listing.user.fullName,
+    listingTitle: listing.title,
+    priceOrTerms: listing.currency === 'BARTER' ? (listing.barterTerms || 'Barter Trade') : `${listing.currency} $${listing.price}`,
+    locationArea: listing.locationArea,
+    listingId: listing.id,
+    buyerName: user?.fullName,
+  });
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -306,7 +312,16 @@ function ListingDetailContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => {
-                    if (!requireAuth('Sign in to contact this seller on WhatsApp.')) e.preventDefault();
+                    if (!requireAuth('Sign in to contact this seller on WhatsApp.')) {
+                      e.preventDefault();
+                      return;
+                    }
+                    addNotification({
+                      type: 'whatsapp_inquiry',
+                      title: 'WhatsApp Inquiry Sent',
+                      desc: `Inquiry initiated for "${listing.title}" with seller ${listing.user.fullName}.`,
+                      link: `/listing/${listing.id}`,
+                    });
                   }}
                   className="w-full py-3.5 px-6 rounded-2xl bg-[#005c4b] hover:bg-[#00735e] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
                 >

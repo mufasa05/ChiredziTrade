@@ -27,7 +27,7 @@ export default function HomePage() {
   // Filters & Search
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<SectorCategory | 'all'>('all');
-  const [selectedLocation, setSelectedLocation] = useState<string>('Harare');
+  const [selectedLocation, setSelectedLocation] = useState<string>('All Zimbabwe');
   const [selectedCurrency, setSelectedCurrency] = useState<TradeCurrency | 'all'>('all');
   const [tradeFilter, setTradeFilter] = useState<'all' | 'for_sale' | 'for_trade' | 'services' | 'catalog' | 'rooms' | 'jobs'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'price_low' | 'price_high'>('recent');
@@ -127,7 +127,7 @@ export default function HomePage() {
 
   const handleResetFilters = () => {
     setSelectedCategory('all');
-    setSelectedLocation('Harare');
+    setSelectedLocation('All Zimbabwe');
     setSelectedCurrency('all');
     setSearchTerm('');
     setTradeFilter('all');
@@ -211,7 +211,7 @@ export default function HomePage() {
           </div>
 
           <span className="text-[11px] text-slate-500 dark:text-gray-400 hidden sm:inline">
-            📍 {selectedLocation} • Active Market
+            📍 {selectedLocation === 'all' ? 'All Zimbabwe' : selectedLocation} • Active Market
           </span>
         </div>
 
@@ -260,6 +260,38 @@ export default function HomePage() {
                     setActiveView('marketplace');
                   }
                 }}
+              />
+            </div>
+
+            {/* Live Active Listings Section */}
+            <div className="pt-4 border-t border-[#E2E8E4] dark:border-[#0e4337] space-y-3.5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-display font-black text-xl sm:text-2xl text-slate-900 dark:text-white tracking-tight">
+                    Latest Trade Offers & Listings
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-gray-400">
+                    Active listings posted by traders across Zimbabwe
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveView('marketplace')}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-[#059669] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-xs font-bold transition-all border border-emerald-500/20 flex items-center gap-1 shadow-sm"
+                >
+                  <span>Explore Marketplace</span>
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <ListingGrid
+                listings={listings}
+                loading={loading}
+                viewMode={viewMode}
+                favoritedIds={favoritedIds}
+                onToggleFavorite={handleToggleFavorite}
+                onProposeBarter={(item) => setActiveBarterListing(item)}
+                onBuyCash={(item) => setActiveBuyListing(item)}
+                onResetFilters={handleResetFilters}
               />
             </div>
           </div>

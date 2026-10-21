@@ -121,24 +121,24 @@ export default function Sidebar({
   const isMarketplace = currentActive === 'Marketplace';
 
   return (
-    <aside className="w-60 shrink-0 bg-[#062A22] text-white min-h-screen flex flex-col justify-between border-r border-[#0e4337] select-none">
+    <aside className="w-60 shrink-0 bg-white dark:bg-[#062A22] text-slate-800 dark:text-white min-h-screen flex flex-col justify-between border-r border-slate-200 dark:border-[#0e4337] select-none transition-colors duration-200">
       {/* Top Brand Logo */}
       <div>
-        <div className="h-16 px-5 flex items-center gap-3 border-b border-[#0e4337]/60">
+        <div className="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-[#0e4337]/60">
           <Link href="/" onClick={(e) => { if (onSelectNav) { e.preventDefault(); onSelectNav('Home'); } }} className="flex items-center gap-2.5 group">
             {/* Swirl Green & Gold Emblem matching screenshot */}
             <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-[#F5C542] p-0.5 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform">
-              <div className="w-full h-full rounded-full bg-[#062A22] flex items-center justify-center">
-                <RefreshCw className="w-4 h-4 text-[#F5C542] animate-spin" style={{ animationDuration: '12s' }} />
+              <div className="w-full h-full rounded-full bg-white dark:bg-[#062A22] flex items-center justify-center">
+                <RefreshCw className="w-4 h-4 text-emerald-600 dark:text-[#F5C542] animate-spin" style={{ animationDuration: '12s' }} />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-1 leading-none">
-                <span className="font-display font-black text-lg tracking-tight text-white">
-                  Zim<span className="text-[#F5C542]">Barter</span>
+                <span className="font-display font-black text-lg tracking-tight text-slate-900 dark:text-white">
+                  Zim<span className="text-emerald-600 dark:text-[#F5C542]">Barter</span>
                 </span>
               </div>
-              <p className="text-[10px] text-emerald-400/90 font-medium tracking-wide">
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400/90 font-medium tracking-wide">
                 Trade • Swap • Grow
               </p>
             </div>
@@ -159,11 +159,11 @@ export default function Sidebar({
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-150 ${
                   active
                     ? 'bg-[#059669] text-white shadow-md'
-                    : 'text-gray-300 hover:text-white hover:bg-[#0a3a30]'
+                    : 'text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#0a3a30]'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-emerald-400'}`} />
+                  <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
@@ -183,16 +183,16 @@ export default function Sidebar({
 
       {/* Bottom Heritage Badge (Switches text between Home and Marketplace as in screenshot) */}
       <div className="p-3">
-        <div className="p-3 rounded-2xl bg-[#031d17]/90 border border-[#0e4337] relative overflow-hidden group">
+        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#031d17]/90 border border-slate-200 dark:border-[#0e4337] relative overflow-hidden group">
           <div className="flex items-center gap-2.5 relative z-10">
             <span className="text-xl shrink-0" role="img" aria-label="Zimbabwe Flag">
               🇿🇼
             </span>
             <div className="min-w-0">
-              <p className="text-[11px] font-bold text-white tracking-tight leading-tight">
+              <p className="text-[11px] font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
                 {isMarketplace ? 'Together We Trade' : 'Proudly Zimbabwean'}
               </p>
-              <p className="text-[10px] text-emerald-400/80 font-medium">
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400/80 font-medium">
                 {isMarketplace ? 'Together We Grow' : 'Built for Africa'}
               </p>
             </div>

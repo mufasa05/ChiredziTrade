@@ -24,7 +24,7 @@ export default function AppShell({
   onSelectNav,
   searchTerm = '',
   onSearchChange,
-  selectedLocation = 'Harare',
+  selectedLocation = 'All Zimbabwe',
   onSelectLocation,
   favoritesCount = 0,
 }: AppShellProps) {
@@ -53,10 +53,10 @@ export default function AppShell({
           />
 
           {/* Drawer content */}
-          <div className="relative z-10 w-64 max-w-[85vw] bg-[#062A22] h-full shadow-2xl flex flex-col justify-between">
+          <div className="relative z-10 w-64 max-w-[85vw] bg-white dark:bg-[#062A22] border-r border-slate-200 dark:border-[#0e4337] h-full shadow-2xl flex flex-col justify-between transition-colors duration-200">
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="absolute top-4 right-3 p-1.5 rounded-lg text-emerald-300 hover:text-white hover:bg-[#0a3a30]"
+              className="absolute top-4 right-3 p-1.5 rounded-lg text-slate-600 dark:text-emerald-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#0a3a30] transition-colors"
               aria-label="Close Sidebar"
             >
               <X className="w-5 h-5" />

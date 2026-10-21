@@ -17,6 +17,18 @@ export interface UserProfile {
   isAdmin?: boolean;
 }
 
+export const DEMO_USER: UserProfile = {
+  id: 'user-prince-shumba',
+  fullName: 'Prince A. Shumba',
+  phoneNumber: '+263 77 123 4567',
+  email: 'prince@zimbarter.co.zw',
+  locationArea: 'Chiredzi Town / Masvingo',
+  verifiedArtisan: true,
+  avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+  isGoogleUser: false,
+  isAdmin: true,
+};
+
 type AuthResult = { success: boolean; message?: string };
 
 interface AuthContextType {
@@ -31,6 +43,7 @@ interface AuthContextType {
   signInWithGoogle: (redirectPath?: string) => Promise<AuthResult>;
   sendEmailOtp: (email: string, redirectPath?: string) => Promise<AuthResult>;
   verifyEmailOtp: (email: string, token: string) => Promise<AuthResult>;
+  signInAsDemo: (customProfile?: Partial<UserProfile>) => void;
   saveProfile: (data: { fullName: string; phoneNumber: string; locationArea: string }) => Promise<AuthResult>;
   logout: () => Promise<void>;
 
@@ -52,6 +65,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithGoogle: notReady,
   sendEmailOtp: notReady,
   verifyEmailOtp: notReady,
+  signInAsDemo: () => {},
   saveProfile: notReady,
   logout: async () => {},
   isAuthModalOpen: false,
@@ -88,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
+  const [demoUser, setDemoUser] = useState<UserProfile | null>(null);
   const [profile, setProfile] = useState<Partial<UserProfile> | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
@@ -108,12 +123,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
+    // Check if demo trader mode was previously activated
+    let activeDemo: UserProfile | null = null;
+    try {
+      if (typeof window !== 'undefined') {
+        const isDemo = localStorage.getItem('zimbarter_demo_active') === 'true';
+        if (isDemo) {
+          const stored = localStorage.getItem('zimbarter_demo_user');
+          activeDemo = stored ? JSON.parse(stored) : DEMO_USER;
+        }
+      }
+    } catch {}
 
     supabase.auth.getUser().then(({ data }) => {
       setAuthUser(data.user ?? null);
-      if (data.user) loadProfile();
-      else setProfileLoaded(true);
+      if (data.user) {
+        loadProfile();
+      } else {
+        if (activeDemo) {
+          setDemoUser(activeDemo);
+        }
+        setProfileLoaded(true);
+      }
       setAuthLoading(false);
     });
 
@@ -121,6 +152,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const next = session?.user ?? null;
       setAuthUser(next);
       if (event === 'SIGNED_IN' && next) {
+        setDemoUser(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('zimbarter_demo_active');
+          localStorage.removeItem('zimbarter_demo_user');
+        }
         setProfileLoaded(false);
         loadProfile();
       }
@@ -133,13 +169,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => sub.subscription.unsubscribe();
   }, [supabase, loadProfile]);
 
-  const user = authUser ? buildUser(authUser, profile) : null;
+  const user = authUser ? buildUser(authUser, profile) : demoUser;
+  const isAuthenticated = !!authUser || !!demoUser;
   const needsProfile = !!authUser && profileLoaded && !profile?.phoneNumber;
 
   // Force profile completion: keep the modal open until WhatsApp number is saved
   useEffect(() => {
     if (needsProfile) setIsAuthModalOpen(true);
   }, [needsProfile]);
+
+  const signInAsDemo = (customProfile?: Partial<UserProfile>) => {
+    const active = { ...DEMO_USER, ...customProfile };
+    setDemoUser(active);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('zimbarter_demo_active', 'true');
+      localStorage.setItem('zimbarter_demo_user', JSON.stringify(active));
+    }
+    setIsAuthModalOpen(false);
+  };
 
   const callbackUrl = (redirectPath?: string) => {
     const path = redirectPath || (typeof window !== 'undefined' ? window.location.pathname : '/');
@@ -194,9 +241,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {}
     setAuthUser(null);
     setProfile(null);
+    setDemoUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('zimbarter_demo_active');
+      localStorage.removeItem('zimbarter_demo_user');
+    }
   };
 
   const openAuthModal = (promptMsg: string = '') => {
@@ -205,7 +259,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const requireAuth = (promptMsg: string = 'Please sign in to continue.') => {
-    if (authUser && !needsProfile) return true;
+    if (isAuthenticated && !needsProfile) return true;
     openAuthModal(authUser ? 'Please complete your profile with a WhatsApp number to continue.' : promptMsg);
     return false;
   };
@@ -219,12 +273,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!authUser,
+        isAuthenticated,
         authLoading,
         needsProfile,
         signInWithGoogle,
         sendEmailOtp,
         verifyEmailOtp,
+        signInAsDemo,
         saveProfile,
         logout,
         isAuthModalOpen,

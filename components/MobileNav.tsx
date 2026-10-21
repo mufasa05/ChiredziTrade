@@ -13,12 +13,12 @@ export default function MobileNav({ onOpenMessages }: MobileNavProps) {
   const pathname = usePathname();
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#062A22] border-t border-[#0e4337] px-2 py-1.5 flex items-center justify-around shadow-2xl">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#062A22] border-t border-slate-200 dark:border-[#0e4337] px-2 py-1.5 flex items-center justify-around shadow-2xl transition-colors duration-200">
       {/* Home */}
       <Link
         href="/"
         className={`flex flex-col items-center gap-0.5 px-2.5 py-1 text-[10px] font-semibold transition-colors ${
-          pathname === '/' ? 'text-emerald-400 font-bold' : 'text-gray-300 hover:text-white'
+          pathname === '/' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white'
         }`}
       >
         <Home className="w-4 h-4" />
@@ -28,7 +28,7 @@ export default function MobileNav({ onOpenMessages }: MobileNavProps) {
       {/* Explore */}
       <Link
         href="/#marketplace"
-        className="flex flex-col items-center gap-0.5 px-2.5 py-1 text-[10px] font-semibold text-gray-300 hover:text-white transition-colors"
+        className="flex flex-col items-center gap-0.5 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <ShoppingBag className="w-4 h-4" />
         <span>Explore</span>
@@ -37,7 +37,7 @@ export default function MobileNav({ onOpenMessages }: MobileNavProps) {
       {/* Center + Create Listing Button */}
       <Link
         href="/post"
-        className="relative -top-3 w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-[#F5C542] text-white flex items-center justify-center shadow-lg shadow-emerald-950/60 hover:scale-105 transition-transform"
+        className="relative -top-3 w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-[#F5C542] text-white flex items-center justify-center shadow-lg shadow-emerald-950/40 hover:scale-105 transition-transform"
         aria-label="Create Listing"
       >
         <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -47,7 +47,7 @@ export default function MobileNav({ onOpenMessages }: MobileNavProps) {
       <Link
         href="/barter-network"
         className={`flex flex-col items-center gap-0.5 px-2.5 py-1 text-[10px] font-semibold transition-colors ${
-          pathname === '/barter-network' ? 'text-emerald-400 font-bold' : 'text-gray-300 hover:text-white'
+          pathname === '/barter-network' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white'
         }`}
       >
         <RefreshCw className="w-4 h-4" />
@@ -57,7 +57,7 @@ export default function MobileNav({ onOpenMessages }: MobileNavProps) {
       {/* Messages / Profile */}
       <button
         onClick={onOpenMessages}
-        className="flex flex-col items-center gap-0.5 px-2.5 py-1 text-[10px] font-semibold text-gray-300 hover:text-white transition-colors relative"
+        className="flex flex-col items-center gap-0.5 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors relative"
       >
         <MessageCircle className="w-4 h-4" />
         <span>Messages</span>
@@ -67,7 +67,7 @@ export default function MobileNav({ onOpenMessages }: MobileNavProps) {
       <Link
         href="/dashboard"
         className={`flex flex-col items-center gap-0.5 px-2.5 py-1 text-[10px] font-semibold transition-colors ${
-          pathname === '/dashboard' ? 'text-emerald-400 font-bold' : 'text-gray-300 hover:text-white'
+          pathname === '/dashboard' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white'
         }`}
       >
         <User className="w-4 h-4" />

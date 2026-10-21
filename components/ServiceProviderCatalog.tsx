@@ -16,6 +16,7 @@ import {
   Sparkles,
   ChevronRight
 } from 'lucide-react';
+import { formatServiceInquiryUrl } from '@/lib/whatsapp-messages';
 
 export interface ServiceProvider {
   id: string;
@@ -221,11 +222,13 @@ export default function ServiceProviderCatalog() {
       {/* Provider Catalog Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {filteredProviders.map((provider) => {
-          const cleanPhone = provider.phone.replace(/\D/g, '');
-          const waText = encodeURIComponent(
-            `Hi ${provider.name}, I found your service "${provider.businessName}" in the ZimBarter Service Providers Catalog. I would like to request a quote for your services in ${provider.locationArea}.`
-          );
-          const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${waText}`;
+          const directWhatsAppUrl = formatServiceInquiryUrl({
+            providerPhone: provider.phone,
+            providerName: provider.name,
+            tradeCategory: provider.businessName,
+            locationHub: provider.locationArea,
+            requestedService: provider.headline,
+          });
 
           return (
             <div

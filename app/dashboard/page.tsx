@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
+import TradeReceiptModal, { ReceiptData } from '@/components/TradeReceiptModal';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Listing, BarterProposal, TradeOrder } from '@/lib/types';
@@ -22,8 +24,17 @@ import {
   MapPin,
   Sparkles,
   AlertCircle,
-  Trash2
+  Trash2,
+  Receipt,
+  Download,
+  Printer,
+  Zap,
+  LogIn
 } from 'lucide-react';
+import {
+  formatSellerOrderResponseUrl,
+  formatBarterProposalUrl
+} from '@/lib/whatsapp-messages';
 
 interface DashboardStats {
   totalListings: number;
@@ -34,11 +45,12 @@ interface DashboardStats {
   totalOrderValue: number;
 }
 
-export default function DashboardPage() {
-  const { user, isAuthenticated, openAuthModal } = useAuth();
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const { user, isAuthenticated, openAuthModal, signInAsDemo } = useAuth();
   const { t } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState<'listings' | 'proposals' | 'orders'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'proposals' | 'orders' | 'transactions'>('listings');
   const [stats, setStats] = useState<DashboardStats>({
     totalListings: 0,
     activeListings: 0,
@@ -50,9 +62,36 @@ export default function DashboardPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [proposals, setProposals] = useState<BarterProposal[]>([]);
   const [orders, setOrders] = useState<TradeOrder[]>([]);
+  const [buyerOrders, setBuyerOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [whatsAppOpen, setWhatsAppOpen] = useState(false);
+
+  // Receipt Modal State
+  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+
+  // Sync tab from query param
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    if (tab === 'proposals' || tab === 'orders' || tab === 'transactions' || tab === 'listings') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  // Load locally saved orders (purchases made as buyer)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('zimbarter_buyer_orders');
+        if (stored) {
+          setBuyerOrders(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.warn('Failed to load local buyer orders:', e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -131,24 +170,104 @@ export default function DashboardPage() {
     }
   };
 
+  const openReceiptForOrder = (order: TradeOrder) => {
+    const listing = listings.find((l) => l.id === order.listingId);
+    const itemTitle = listing?.title || 'Marketplace Item';
+    const unitPrice = order.quantity && order.quantity > 0 ? (order.totalPrice || 0) / order.quantity : (order.totalPrice || 0);
+
+    const receipt: ReceiptData = {
+      orderReference: order.id.toUpperCase().replace(/^ORDER-/, 'ZT-'),
+      date: new Date(order.createdAt).toLocaleDateString() + ' ' + new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      itemTitle,
+      category: listing?.category,
+      quantity: order.quantity || 1,
+      unitPrice: Number(unitPrice.toFixed(2)),
+      subtotal: Number((order.totalPrice || 0).toFixed(2)),
+      platformFee: 0,
+      totalAmount: Number((order.totalPrice || 0).toFixed(2)),
+      currency: order.currencyChoice || 'USD',
+      paymentMethod: order.currencyChoice === 'USD' ? 'EcoCash / Cash Handover' : 'Cash Handover',
+      paymentStatus: 'CONFIRMED',
+      sellerName: user?.fullName || 'Prince A. Shumba',
+      sellerPhone: user?.phoneNumber || '+263 77 123 4567',
+      sellerLocation: user?.locationArea || 'Chiredzi Town',
+      sellerVerified: true,
+      buyerName: order.buyerName,
+      buyerPhone: order.buyerPhone,
+      collectionHub: order.pickupLocation,
+      notes: order.notes,
+    };
+
+    setSelectedReceipt(receipt);
+    setReceiptModalOpen(true);
+  };
+
+  const openReceiptForBuyerOrder = (bo: any) => {
+    const receipt: ReceiptData = {
+      orderReference: bo.reference || 'ZT-ORD-' + Date.now().toString().slice(-4),
+      date: bo.date || new Date().toLocaleDateString(),
+      itemTitle: bo.listingTitle || 'Marketplace Item',
+      quantity: bo.quantity || 1,
+      unitPrice: bo.unitPrice || bo.totalPrice || 0,
+      subtotal: bo.subtotal || bo.totalPrice || 0,
+      platformFee: bo.fee || 0,
+      totalAmount: bo.totalPrice || 0,
+      currency: bo.currency || 'USD',
+      paymentMethod: bo.paymentMethod || 'ecocash',
+      paymentStatus: 'PAID',
+      sellerName: bo.sellerName || 'Verified Merchant',
+      sellerPhone: bo.sellerPhone || '+263 77 123 4567',
+      sellerLocation: bo.sellerLocation || 'Chiredzi Town',
+      buyerName: bo.buyerName || user?.fullName || 'Buyer',
+      buyerPhone: bo.buyerPhone || user?.phoneNumber || '+263 77 000 0000',
+      collectionHub: bo.collectionHub || 'Chiredzi Town',
+      notes: bo.notes,
+    };
+
+    setSelectedReceipt(receipt);
+    setReceiptModalOpen(true);
+  };
+
+  // If user is not authenticated: Show friendly options without trapping the user
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
         <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
-        <div className="max-w-lg mx-auto px-4 py-24 text-center glass-panel rounded-3xl mt-12 border border-slate-200 dark:border-emerald-500/20 shadow-sm">
+        <div className="max-w-md mx-auto px-4 py-16 text-center glass-panel rounded-3xl mt-10 border border-slate-200 dark:border-emerald-500/20 shadow-xl">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-emerald-600 dark:text-emerald-400">
             <Package className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Trader Dashboard</h2>
-          <p className="text-sm text-slate-600 dark:text-gray-400 mb-6">
-            Sign in to manage your active marketplace listings, review incoming barter proposals, and track cash buy orders.
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2 font-display">Trader Portal &amp; Portfolio</h2>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mb-6 leading-relaxed">
+            Manage your active marketplace listings, review incoming barter proposals, and view complete <strong>Transaction History with Downloadable Receipts</strong>.
           </p>
-          <button
-            onClick={() => openAuthModal('Sign in to view your seller dashboard and listings.')}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 text-white font-bold text-sm shadow-md transition-all hover:scale-105"
-          >
-            Sign In to Account
-          </button>
+
+          <div className="space-y-3">
+            {/* 1-Tap Demo Access Button */}
+            <button
+              onClick={() => signInAsDemo()}
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+            >
+              <Zap className="w-4 h-4 fill-current" />
+              <span>1-Tap Demo Sign In (Prince A. Shumba)</span>
+            </button>
+
+            {/* Standard Sign In */}
+            <button
+              onClick={() => openAuthModal('Sign in to view your seller dashboard and listings.')}
+              className="w-full py-3 px-4 rounded-xl bg-slate-200 dark:bg-emerald-950/40 hover:bg-slate-300 dark:hover:bg-emerald-900/40 border border-slate-300 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Sign In with Email / Google</span>
+            </button>
+
+            <Link
+              href="/"
+              className="block pt-2 text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors"
+            >
+              ← Return to Marketplace Feed
+            </Link>
+          </div>
         </div>
         <WhatsAppSimulatorModal isOpen={whatsAppOpen} onClose={() => setWhatsAppOpen(false)} />
       </main>
@@ -159,19 +278,19 @@ export default function DashboardPage() {
     <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
       <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full flex-1">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full flex-1">
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-              <span>Lowveld Trader Portal</span>
+              <span>Zimbabwe Trade &amp; Barter Portal</span>
             </div>
             <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-white">
-              Seller Dashboard
+              Seller &amp; Trader Dashboard
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mt-1">
-              Logged in as <span className="text-emerald-600 dark:text-emerald-400 font-bold">{user?.fullName}</span> ({user?.phoneNumber}) · {user?.locationArea}
+              Active Account: <span className="text-emerald-600 dark:text-emerald-400 font-bold">{user?.fullName}</span> ({user?.phoneNumber}) · {user?.locationArea}
             </p>
           </div>
 
@@ -227,23 +346,23 @@ export default function DashboardPage() {
 
           <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200 dark:border-lowveld-800/80 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-slate-600 dark:text-gray-400 font-medium">Order Value</span>
+              <span className="text-xs text-slate-600 dark:text-gray-400 font-medium">Trade Volume</span>
               <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <p className="text-xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-display">
               ${stats.totalOrderValue.toLocaleString()}
             </p>
             <span className="text-[11px] text-slate-500 dark:text-gray-400 font-medium">
-              Gross sales interest
+              Total transaction value
             </span>
           </div>
         </div>
 
-        {/* TABS CONTROLLER */}
-        <div className="flex items-center gap-2 border-b border-lowveld-800/80 mb-6 pb-2">
+        {/* TABS CONTROLLER (Includes Transaction History & Receipts) */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-lowveld-800/80 mb-6 pb-2">
           <button
             onClick={() => setActiveTab('listings')}
-            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
               activeTab === 'listings'
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                 : 'text-gray-400 hover:text-white'
@@ -255,7 +374,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => setActiveTab('proposals')}
-            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
               activeTab === 'proposals'
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                 : 'text-gray-400 hover:text-white'
@@ -267,7 +386,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
               activeTab === 'orders'
                 ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
                 : 'text-gray-400 hover:text-white'
@@ -275,6 +394,18 @@ export default function DashboardPage() {
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Cash Orders ({orders.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('transactions')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
+              activeTab === 'transactions'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Receipt className="w-4 h-4 text-amber-400" />
+            <span>Transaction History &amp; Receipts ({orders.length + buyerOrders.length})</span>
           </button>
         </div>
 
@@ -416,10 +547,17 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {proposals.map((prop) => {
-                  const cleanPhone = prop.proposerPhone.replace(/\D/g, '');
-                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-                    `Hi ${prop.proposerName}, I received your swap offer of "${prop.offeredItemTitle}" on ChiredziTrade. Let's discuss!`
-                  )}`;
+                  const waUrl = formatBarterProposalUrl({
+                    sellerPhone: prop.proposerPhone,
+                    sellerName: prop.proposerName,
+                    targetListingTitle: prop.offeredItemTitle,
+                    offeredItemTitle: prop.offeredItemTitle,
+                    offeredDescription: prop.offeredDescription,
+                    cashTopUp: prop.cashTopUp,
+                    proposerName: user?.fullName || 'Prince A. Shumba',
+                    proposerPhone: user?.phoneNumber || '+263 77 123 4567',
+                    proposerLocation: user?.locationArea || 'Chiredzi Town',
+                  });
 
                   return (
                     <div
@@ -430,7 +568,7 @@ export default function DashboardPage() {
                         <span className="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[11px] font-bold">
                           Asset Swap Proposal
                         </span>
-                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                        <span className="text-xs text-gray-400 flex items-center gap-1 font-mono">
                           <Clock className="w-3 h-3" />
                           {new Date(prop.createdAt).toLocaleDateString()}
                         </span>
@@ -463,7 +601,7 @@ export default function DashboardPage() {
                           rel="noopener noreferrer"
                           className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-md transition-all"
                         >
-                          <MessageCircle className="w-4 h-4" />
+                          <MessageCircle className="w-4 h-4 text-emerald-300" />
                           <span>Chat on WhatsApp</span>
                         </a>
                       </div>
@@ -489,10 +627,17 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {orders.map((ord) => {
-                  const cleanPhone = ord.buyerPhone.replace(/\D/g, '');
-                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-                    `Hi ${ord.buyerName}, I received your cash order on ChiredziTrade for total ${ord.currencyChoice} $${ord.totalPrice}. Ready to arrange pickup in ${ord.pickupLocation}!`
-                  )}`;
+                  const targetListing = listings.find((l) => l.id === ord.listingId);
+                  const waUrl = formatSellerOrderResponseUrl({
+                    buyerPhone: ord.buyerPhone,
+                    buyerName: ord.buyerName,
+                    listingTitle: targetListing?.title || 'Marketplace Item',
+                    orderReference: ord.id.replace(/^order-/, 'ZT-'),
+                    totalPrice: ord.totalPrice,
+                    currency: ord.currencyChoice,
+                    pickupLocation: ord.pickupLocation,
+                    sellerName: user?.fullName || 'Prince A. Shumba',
+                  });
 
                   return (
                     <div
@@ -500,8 +645,8 @@ export default function DashboardPage() {
                       className="p-5 rounded-2xl glass-panel border border-sky-500/30 space-y-3"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[11px] font-bold">
-                          Cash Order (COD)
+                        <span className="px-2.5 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[11px] font-bold font-mono">
+                          Order #{ord.id.replace(/^order-/, 'ZT-')} · COD
                         </span>
                         <span className="text-xs text-emerald-400 font-bold font-mono">
                           {ord.currencyChoice} ${ord.totalPrice} ({ord.quantity} unit{ord.quantity > 1 ? 's' : ''})
@@ -513,15 +658,25 @@ export default function DashboardPage() {
                         {ord.notes && <p className="italic text-gray-400 mt-1">Note: "{ord.notes}"</p>}
                       </div>
 
-                      <div className="flex items-center justify-end pt-2 border-t border-lowveld-800/60">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-lowveld-800/60">
+                        {/* Download / View Receipt Button */}
+                        <button
+                          type="button"
+                          onClick={() => openReceiptForOrder(ord)}
+                          className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 hover:text-white font-bold text-xs flex items-center gap-1.5 border border-emerald-500/30 transition-all cursor-pointer shadow-sm"
+                        >
+                          <Receipt className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>View / Download Receipt</span>
+                        </button>
+
                         <a
                           href={waUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all"
+                          className="px-4 py-2 rounded-xl bg-[#005c4b] hover:bg-[#00705b] text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
                         >
-                          <MessageCircle className="w-4 h-4" />
-                          <span>Contact Buyer on WhatsApp</span>
+                          <MessageCircle className="w-4 h-4 text-emerald-300" />
+                          <span>WhatsApp Buyer</span>
                         </a>
                       </div>
                     </div>
@@ -531,9 +686,170 @@ export default function DashboardPage() {
             )}
           </div>
         )}
+
+        {/* TAB 4: TRANSACTION HISTORY & DOWNLOADABLE RECEIPTS */}
+        {activeTab === 'transactions' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+              <div className="flex items-center gap-2.5">
+                <Receipt className="w-5 h-5 text-amber-400 shrink-0" />
+                <div>
+                  <h4 className="font-bold text-sm text-white">Transaction History &amp; Official Receipts</h4>
+                  <p className="text-xs text-amber-200/80">
+                    Official proof of trade for all purchases, cash collections, and barter agreements on ZimBarter.
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold text-emerald-400 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 self-start sm:self-auto">
+                {orders.length + buyerOrders.length} Completed Trades
+              </span>
+            </div>
+
+            {orders.length === 0 && buyerOrders.length === 0 ? (
+              <div className="p-12 text-center glass-panel rounded-3xl border border-lowveld-800/80">
+                <Receipt className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-white mb-1">No Transactions Recorded Yet</h3>
+                <p className="text-xs text-gray-400 max-w-sm mx-auto mb-4">
+                  When you buy items via EcoCash/Cash on Handover, or when buyers place orders on your listings, downloadable receipts will be generated here.
+                </p>
+                <Link
+                  href="/#marketplace"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Browse Marketplace</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3.5">
+                {/* 1. Seller Orders */}
+                {orders.map((ord) => {
+                  const targetListing = listings.find((l) => l.id === ord.listingId);
+                  const ref = ord.id.toUpperCase().replace(/^ORDER-/, 'ZT-');
+
+                  return (
+                    <div
+                      key={ord.id}
+                      className="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200 dark:border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:border-emerald-500/60"
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                          <Receipt className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-mono text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                              REF: #{ref}
+                            </span>
+                            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                              SALE (SELLER)
+                            </span>
+                            <span className="text-[11px] text-gray-400 font-mono">
+                              {new Date(ord.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-sm sm:text-base text-white">
+                            {targetListing?.title || 'Marketplace Item'} (x{ord.quantity})
+                          </h4>
+                          <p className="text-xs text-gray-300 mt-0.5">
+                            Buyer: <strong className="text-white">{ord.buyerName}</strong> ({ord.buyerPhone}) · Hub: {ord.pickupLocation}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex sm:flex-col items-end justify-between w-full sm:w-auto gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-lowveld-800">
+                        <span className="text-base sm:text-lg font-black font-mono text-emerald-400">
+                          {ord.currencyChoice} ${ord.totalPrice}
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openReceiptForOrder(ord)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Download Receipt</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* 2. Buyer Orders (Purchases placed by this account) */}
+                {buyerOrders.map((bo, idx) => (
+                  <div
+                    key={`buyer-ord-${idx}`}
+                    className="p-4 sm:p-5 rounded-2xl glass-panel border border-slate-200 dark:border-sky-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:border-sky-500/60"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <ShoppingBag className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-mono text-xs font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/30">
+                            REF: #{bo.reference || 'ZT-PURCHASE'}
+                          </span>
+                          <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-sky-500/20 text-sky-300">
+                            PURCHASE (BUYER)
+                          </span>
+                          <span className="text-[11px] text-gray-400 font-mono">
+                            {bo.date || 'Recent'}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-sm sm:text-base text-white">
+                          {bo.listingTitle} (x{bo.quantity || 1})
+                        </h4>
+                        <p className="text-xs text-gray-300 mt-0.5">
+                          Seller: <strong className="text-white">{bo.sellerName}</strong> · Pickup: {bo.collectionHub}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex sm:flex-col items-end justify-between w-full sm:w-auto gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-lowveld-800">
+                      <span className="text-base sm:text-lg font-black font-mono text-emerald-400">
+                        {bo.currency || 'USD'} ${bo.totalPrice}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => openReceiptForBuyerOrder(bo)}
+                        className="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download Receipt</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Trade Receipt Modal */}
+      <TradeReceiptModal
+        isOpen={receiptModalOpen}
+        onClose={() => setReceiptModalOpen(false)}
+        receipt={selectedReceipt}
+      />
 
       <WhatsAppSimulatorModal isOpen={whatsAppOpen} onClose={() => setWhatsAppOpen(false)} />
     </main>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#070d09] flex items-center justify-center text-white text-xs">
+        Loading Trader Dashboard...
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

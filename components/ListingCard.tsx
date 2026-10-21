@@ -11,6 +11,7 @@ import {
   Heart
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { formatListingInquiryUrl } from '@/lib/whatsapp-messages';
 
 interface ListingCardProps {
   listing: Listing;
@@ -56,19 +57,23 @@ export default function ListingCard({
     }
   };
 
-  const cleanPhone = (listing.user?.phoneNumber || '+263771234567').replace(/\D/g, '');
-  const encodedText = encodeURIComponent(
-    `Hi ${listing.user?.fullName || 'Trader'}, I saw your listing "${listing.title}" on ZimBarter. Is this still available?`
-  );
-  const directWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodedText}`;
+  const currencySymbol = listing.currency === 'USD' ? '$' : listing.currency === 'ZAR' ? 'R' : listing.currency === 'ZWG' ? 'ZWG' : '$';
+  const displayPrice = listing.price ? `${currencySymbol} ${listing.price.toLocaleString()} ${listing.currency}` : listing.currency === 'BARTER' ? 'BARTER ONLY' : `${currencySymbol} 0 ${listing.currency}`;
+
+  const directWhatsAppUrl = formatListingInquiryUrl({
+    sellerPhone: listing.user?.phoneNumber || '+263 77 123 4567',
+    sellerName: listing.user?.fullName || 'Trader',
+    listingTitle: listing.title,
+    priceOrTerms: displayPrice,
+    locationArea: listing.locationArea || 'Zimbabwe',
+    listingId: listing.id,
+  });
 
   const primaryImage =
     listing.imageUrls?.[0] ||
     'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&auto=format&fit=crop&q=80';
 
   const isSold = listing.status === 'sold';
-  const currencySymbol = listing.currency === 'USD' ? '$' : listing.currency === 'ZAR' ? 'R' : listing.currency === 'ZWG' ? 'ZWG' : '$';
-  const displayPrice = listing.price ? `${currencySymbol} ${listing.price.toLocaleString()} ${listing.currency}` : listing.currency === 'BARTER' ? 'BARTER ONLY' : `${currencySymbol} 0 ${listing.currency}`;
   const sellerInitial = (listing.user?.fullName || 'T').trim().charAt(0).toLowerCase();
 
   return (
