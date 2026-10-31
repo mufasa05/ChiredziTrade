@@ -78,7 +78,7 @@ export default function TradeReceiptModal({ isOpen, onClose, receipt }: TradeRec
   const handleShareWhatsApp = () => {
     const cleanPhone = (receipt.sellerPhone || '').replace(/\D/g, '');
     const text = encodeURIComponent(
-      `🧾 *ZimBarter Official Trade Receipt*\nRef: #${receipt.orderReference}\nItem: ${receipt.itemTitle} (x${receipt.quantity})\nTotal: ${receipt.currency} $${receipt.totalAmount}\nCollection: ${receipt.collectionHub}\nStatus: ${receipt.paymentStatus}\nBuyer: ${receipt.buyerName} (${receipt.buyerPhone})\nSeller: ${receipt.sellerName} (${receipt.sellerPhone})`
+      `*ZimBarter Official Trade Receipt*\nRef: #${receipt.orderReference}\nItem: ${receipt.itemTitle} (x${receipt.quantity})\nTotal: ${receipt.currency} $${receipt.totalAmount}\nCollection Hub: ${receipt.collectionHub}\nStatus: ${receipt.paymentStatus}\nBuyer: ${receipt.buyerName} (${receipt.buyerPhone})\nSeller: ${receipt.sellerName} (${receipt.sellerPhone})`
     );
     window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
   };
@@ -133,7 +133,7 @@ export default function TradeReceiptModal({ isOpen, onClose, receipt }: TradeRec
               <span>Zim</span>
               <span className="text-amber-500">Barter</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-mono ml-1 font-bold">
-                ZW 🇿🇼
+                ZW • VERIFIED
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
@@ -378,13 +378,13 @@ function generatePrintableHtml(r: ReceiptData): string {
       <div style="color: #888; font-size: 10px; font-weight: bold; text-transform: uppercase;">Seller</div>
       <div style="font-weight: bold; font-size: 13px;">${r.sellerName}</div>
       <div style="color: #059669; font-family: monospace;">${r.sellerPhone}</div>
-      <div style="color: #666; font-size: 11px;">📍 ${r.sellerLocation}</div>
+      <div style="color: #666; font-size: 11px;">Location: ${r.sellerLocation}</div>
     </div>
     <div class="box">
       <div style="color: #888; font-size: 10px; font-weight: bold; text-transform: uppercase;">Buyer</div>
       <div style="font-weight: bold; font-size: 13px;">${r.buyerName}</div>
       <div style="color: #059669; font-family: monospace;">${r.buyerPhone}</div>
-      <div style="color: #666; font-size: 11px;">📍 Hub: ${r.collectionHub}</div>
+      <div style="color: #666; font-size: 11px;">Hub: ${r.collectionHub}</div>
     </div>
   </div>
 

@@ -48,13 +48,13 @@ export default function HeroSection({
   ];
 
   const popularTags = [
-    { label: 'Maize', icon: '🌾' },
-    { label: 'Phones', icon: '📱' },
-    { label: 'Rooms', icon: '🏠' },
-    { label: 'Services', icon: '🔧' },
-    { label: 'Vehicles', icon: '🚗' },
-    { label: 'Electronics', icon: '💻' },
-    { label: 'Jobs', icon: '💼' },
+    { label: 'Maize' },
+    { label: 'Phones' },
+    { label: 'Rooms' },
+    { label: 'Services' },
+    { label: 'Vehicles' },
+    { label: 'Electronics' },
+    { label: 'Jobs' },
   ];
 
   return (
@@ -128,9 +128,8 @@ export default function HeroSection({
                 key={t.label}
                 type="button"
                 onClick={() => handlePromptClick(t.label)}
-                className="px-2.5 py-1 rounded-lg bg-[#031d17]/70 hover:bg-[#0a3a30] text-gray-300 hover:text-white border border-[#0e4337]/80 text-[11px] font-medium transition-colors flex items-center gap-1"
+                className="px-2.5 py-1 rounded-lg bg-[#031d17]/70 hover:bg-[#0a3a30] text-gray-300 hover:text-white border border-[#0e4337]/80 text-[11px] font-medium transition-colors"
               >
-                <span>{t.icon}</span>
                 <span>{t.label}</span>
               </button>
             ))}

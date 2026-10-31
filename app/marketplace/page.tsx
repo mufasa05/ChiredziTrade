@@ -8,7 +8,7 @@ import ServiceProviderCatalog from '@/components/ServiceProviderCatalog';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
 import { Listing, SectorCategory, TradeCurrency } from '@/lib/types';
-import { ArrowUpDown, Grid, List, Wrench, ShoppingBag } from 'lucide-react';
+import { ArrowUpDown, Grid, List, Wrench, ShoppingBag, MapPin } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import Link from 'next/link';
 
@@ -136,7 +136,7 @@ export default function MarketplacePage() {
     { id: 'for_sale', label: 'For Sale' },
     { id: 'for_trade', label: 'For Trade' },
     { id: 'services', label: 'Services' },
-    { id: 'catalog', label: '🛠️ Service Providers Catalog' },
+    { id: 'catalog', label: 'Service Providers Catalog' },
     { id: 'rooms', label: 'Rooms & Stays' },
     { id: 'jobs', label: 'Jobs' },
   ];
@@ -184,8 +184,9 @@ export default function MarketplacePage() {
             </button>
           </div>
 
-          <span className="text-[11px] text-slate-500 dark:text-gray-400 hidden sm:inline">
-            📍 {selectedLocation} • Active Market
+          <span className="text-[11px] text-slate-500 dark:text-gray-400 hidden sm:inline-flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-[#059669]" />
+            <span>{selectedLocation} • Active Market</span>
           </span>
         </div>
 

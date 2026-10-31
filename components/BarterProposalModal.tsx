@@ -26,6 +26,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
   const [cashTopUp, setCashTopUp] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -63,6 +64,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setErrorMessage('');
 
     try {
       const res = await fetch('/api/barter/propose', {
@@ -70,6 +72,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           listingId: listing.id,
+          listingTitle: listing.title,
           proposerName,
           proposerPhone,
           proposerLocation,
@@ -79,7 +82,9 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
         }),
       });
 
-      if (res.ok) {
+      const data = await res.json();
+
+      if (res.ok && data.success) {
         setSubmitted(true);
         confetti({
           particleCount: 80,
@@ -87,21 +92,50 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
           origin: { y: 0.6 },
         });
 
+        // Save locally to user's sent proposals list
+        if (typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem('zimbarter_sent_proposals');
+            const list = stored ? JSON.parse(stored) : [];
+            list.unshift({
+              id: data.proposal?.id || `prop-${Date.now()}`,
+              listingId: listing.id,
+              listingTitle: listing.title,
+              sellerName: listing.user?.fullName || 'Seller',
+              sellerPhone: listing.user?.phoneNumber || '+263771234567',
+              proposerName,
+              proposerPhone,
+              proposerLocation,
+              offeredItemTitle,
+              offeredDescription,
+              cashTopUp: cashTopUp || undefined,
+              status: 'pending',
+              createdAt: new Date().toISOString(),
+            });
+            localStorage.setItem('zimbarter_sent_proposals', JSON.stringify(list));
+          } catch (storageErr) {
+            console.warn('Failed to save sent proposal locally:', storageErr);
+          }
+        }
+
         // Add real notification
         addNotification({
           type: 'proposal',
           title: 'Barter Swap Offer Sent',
           desc: `You offered "${offeredItemTitle}" for "${listing.title}". Seller: ${listing.user.fullName}.`,
-          link: '/dashboard?tab=proposals',
+          link: '/barter-network',
           metadata: {
             itemTitle: listing.title,
             proposerName,
             proposerPhone,
           },
         });
+      } else {
+        setErrorMessage(data.error || 'Failed to submit proposal. Please check your inputs.');
       }
     } catch (err) {
       console.error(err);
+      setErrorMessage('Network error submitting proposal. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -261,6 +295,12 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                   />
                 </div>
               </div>
+
+              {errorMessage && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/40 text-red-600 dark:text-red-300 text-xs font-semibold">
+                  {errorMessage}
+                </div>
+              )}
 
               <div className="pt-2 flex gap-3">
                 <button

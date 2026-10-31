@@ -33,7 +33,8 @@ import {
 } from 'lucide-react';
 import {
   formatSellerOrderResponseUrl,
-  formatBarterProposalUrl
+  formatBarterProposalUrl,
+  formatBarterResponseUrl
 } from '@/lib/whatsapp-messages';
 
 interface DashboardStats {
@@ -143,6 +144,21 @@ function DashboardContent() {
       console.error('Error updating status:', err);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleUpdateProposalStatus = async (proposalId: string, status: 'accepted' | 'declined') => {
+    setProposals((prev) =>
+      prev.map((p) => (p.id === proposalId ? { ...p, status } : p))
+    );
+    try {
+      await fetch('/api/barter/propose', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ proposalId, status }),
+      });
+    } catch (e) {
+      console.warn('Failed to update proposal status:', e);
     }
   };
 
@@ -547,16 +563,16 @@ function DashboardContent() {
             ) : (
               <div className="space-y-4">
                 {proposals.map((prop) => {
-                  const waUrl = formatBarterProposalUrl({
-                    sellerPhone: prop.proposerPhone,
-                    sellerName: prop.proposerName,
-                    targetListingTitle: prop.offeredItemTitle,
+                  const targetListing = listings.find((l) => l.id === prop.listingId);
+                  const listingTitle = prop.listingTitle || targetListing?.title || 'Your Listing';
+
+                  const waUrl = formatBarterResponseUrl({
+                    proposerPhone: prop.proposerPhone,
+                    proposerName: prop.proposerName,
+                    targetListingTitle: listingTitle,
                     offeredItemTitle: prop.offeredItemTitle,
-                    offeredDescription: prop.offeredDescription,
-                    cashTopUp: prop.cashTopUp,
-                    proposerName: user?.fullName || 'Prince A. Shumba',
-                    proposerPhone: user?.phoneNumber || '+263 77 123 4567',
-                    proposerLocation: user?.locationArea || 'Chiredzi Town',
+                    sellerName: user?.fullName || 'Prince A. Shumba',
+                    status: prop.status === 'accepted' ? 'accepted' : 'counter',
                   });
 
                   return (
@@ -565,9 +581,26 @@ function DashboardContent() {
                       className="p-5 rounded-2xl glass-panel border border-amber-500/30 space-y-3"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[11px] font-bold">
-                          Asset Swap Proposal
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[11px] font-bold">
+                            Asset Swap Proposal
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded text-[11px] font-bold ${
+                              prop.status === 'accepted'
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : prop.status === 'declined'
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'bg-amber-500/10 text-amber-300'
+                            }`}
+                          >
+                            {prop.status === 'accepted'
+                              ? 'Accepted'
+                              : prop.status === 'declined'
+                              ? 'Declined'
+                              : 'Pending Your Decision'}
+                          </span>
+                        </div>
                         <span className="text-xs text-gray-400 flex items-center gap-1 font-mono">
                           <Clock className="w-3 h-3" />
                           {new Date(prop.createdAt).toLocaleDateString()}
@@ -575,6 +608,9 @@ function DashboardContent() {
                       </div>
 
                       <div>
+                        <span className="text-xs text-gray-400 block mb-0.5">
+                          Target Listing: <b className="text-white">{listingTitle}</b>
+                        </span>
                         <h4 className="font-display font-bold text-base text-white">
                           Offered: {prop.offeredItemTitle}
                         </h4>
@@ -590,20 +626,38 @@ function DashboardContent() {
                           From: <strong className="text-white">{prop.proposerName}</strong> ({prop.proposerLocation})
                           {prop.cashTopUp && (
                             <span className="ml-2 text-emerald-400 font-bold">
-                              + Cash Top-up: ${prop.cashTopUp}
+                              + Cash Top-up: {prop.cashTopUp}
                             </span>
                           )}
                         </div>
 
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-md transition-all"
-                        >
-                          <MessageCircle className="w-4 h-4 text-emerald-300" />
-                          <span>Chat on WhatsApp</span>
-                        </a>
+                        <div className="flex items-center gap-2">
+                          {prop.status !== 'accepted' && prop.status !== 'declined' && (
+                            <>
+                              <button
+                                onClick={() => handleUpdateProposalStatus(prop.id, 'accepted')}
+                                className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => handleUpdateProposalStatus(prop.id, 'declined')}
+                                className="px-3 py-2 rounded-xl bg-red-600/30 hover:bg-red-600/50 text-red-300 font-bold transition-all"
+                              >
+                                Decline
+                              </button>
+                            </>
+                          )}
+                          <a
+                            href={waUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 rounded-xl bg-[#005c4b] hover:bg-[#00705b] text-white font-bold flex items-center gap-1.5 shadow-md transition-all"
+                          >
+                            <MessageCircle className="w-4 h-4 text-emerald-300" />
+                            <span>WhatsApp Proposer</span>
+                          </a>
+                        </div>
                       </div>
                     </div>
                   );

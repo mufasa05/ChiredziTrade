@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
 import MobileNav from '@/components/MobileNav';
-import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
+import TradeMessengerModal from '@/components/TradeMessengerModal';
 import { X } from 'lucide-react';
 
 interface AppShellProps {
@@ -97,8 +97,8 @@ export default function AppShell({
         <MobileNav onOpenMessages={() => setWhatsAppModalOpen(true)} />
       </div>
 
-      {/* WhatsApp Messages Simulator Modal */}
-      <WhatsAppSimulatorModal
+      {/* International Standard Trade Messenger Modal */}
+      <TradeMessengerModal
         isOpen={whatsAppModalOpen}
         onClose={() => setWhatsAppModalOpen(false)}
       />

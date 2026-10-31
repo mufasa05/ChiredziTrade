@@ -21,7 +21,7 @@ export default function Footer() {
             <span className="text-[11px] text-slate-500 dark:text-emerald-200/60 flex items-center gap-1">
               <span>Engineered by</span>
               <strong className="text-slate-700 dark:text-white font-semibold">Prince A. Shumba</strong>
-              <span className="text-xs">🇿🇼</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-bold">ZW</span>
             </span>
 
             <span className="text-slate-300 dark:text-emerald-800/80 hidden md:inline">•</span>

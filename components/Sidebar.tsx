@@ -16,7 +16,8 @@ import {
   Sparkles,
   ChevronRight,
   Store,
-  Plus
+  Plus,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -47,14 +48,14 @@ export default function Sidebar({
       label: 'Home',
       href: '/',
       icon: Home,
-      isActive: currentActive === 'Home',
+      isActive: currentActive === 'Home' || pathname === '/',
     },
     {
       id: 'Marketplace',
       label: 'Marketplace',
       href: '/marketplace',
       icon: ShoppingBag,
-      isActive: currentActive === 'Marketplace',
+      isActive: currentActive === 'Marketplace' || pathname === '/marketplace',
     },
     {
       id: 'Barter Hub',
@@ -66,43 +67,42 @@ export default function Sidebar({
     {
       id: 'My Listings',
       label: 'My Listings',
-      href: '/dashboard',
+      href: '/my-listings',
       icon: Tag,
-      isActive: currentActive === 'My Listings' || pathname === '/dashboard',
+      isActive: currentActive === 'My Listings' || pathname === '/my-listings' || pathname === '/dashboard',
     },
     {
       id: 'Messages',
       label: 'Messages',
-      href: '#messages',
+      href: '/messages',
       icon: MessageCircle,
       badge: '3',
       badgeColor: 'bg-red-500',
       onClick: onOpenMessages,
-      isActive: false,
+      isActive: currentActive === 'Messages' || pathname === '/messages',
     },
     {
       id: 'Wallet & Trades',
       label: 'Wallet & Trades',
-      href: '/dashboard?tab=orders',
+      href: '/wallet',
       icon: Wallet,
-      isActive: false,
+      isActive: currentActive === 'Wallet & Trades' || pathname === '/wallet',
     },
     {
       id: 'Favourites',
       label: 'Favourites',
-      href: '#favourites',
+      href: '/favourites',
       icon: Heart,
       badge: favoritesCount > 0 ? String(favoritesCount) : undefined,
       badgeColor: 'bg-amber-500',
-      onClick: onOpenFavorites,
-      isActive: false,
+      isActive: currentActive === 'Favourites' || pathname === '/favourites' || pathname === '/favorites',
     },
     {
       id: 'Settings',
       label: 'Settings',
-      href: '/dashboard?tab=profile',
+      href: '/settings',
       icon: Settings,
-      isActive: false,
+      isActive: currentActive === 'Settings' || pathname === '/settings',
     },
   ];
 
@@ -113,7 +113,6 @@ export default function Sidebar({
       return;
     }
     if (onSelectNav) {
-      e.preventDefault();
       onSelectNav(item.id);
     }
   };
@@ -125,7 +124,7 @@ export default function Sidebar({
       {/* Top Brand Logo */}
       <div>
         <div className="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-[#0e4337]/60">
-          <Link href="/" onClick={(e) => { if (onSelectNav) { e.preventDefault(); onSelectNav('Home'); } }} className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             {/* Swirl Green & Gold Emblem matching screenshot */}
             <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-[#F5C542] p-0.5 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform">
               <div className="w-full h-full rounded-full bg-white dark:bg-[#062A22] flex items-center justify-center">
@@ -152,7 +151,7 @@ export default function Sidebar({
             const active = item.isActive;
 
             return (
-              <a
+              <Link
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleItemClick(e, item)}
@@ -175,25 +174,25 @@ export default function Sidebar({
                     {item.badge}
                   </span>
                 )}
-              </a>
+              </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* Bottom Heritage Badge (Switches text between Home and Marketplace as in screenshot) */}
+      {/* Bottom Trust Badge */}
       <div className="p-3">
         <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#031d17]/90 border border-slate-200 dark:border-[#0e4337] relative overflow-hidden group">
           <div className="flex items-center gap-2.5 relative z-10">
-            <span className="text-xl shrink-0" role="img" aria-label="Zimbabwe Flag">
-              🇿🇼
-            </span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-[#059669] dark:text-[#F5C542] flex items-center justify-center shrink-0 border border-emerald-500/30">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
             <div className="min-w-0">
               <p className="text-[11px] font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
-                {isMarketplace ? 'Together We Trade' : 'Proudly Zimbabwean'}
+                {isMarketplace ? 'Verified Marketplace' : 'Sovereign Trade Network'}
               </p>
-              <p className="text-[10px] text-emerald-600 dark:text-emerald-400/80 font-medium">
-                {isMarketplace ? 'Together We Grow' : 'Built for Africa'}
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                Protected Escrow &amp; Swaps
               </p>
             </div>
           </div>

@@ -321,11 +321,15 @@ export const db = {
   },
 
   createProposal: async (proposal: Omit<BarterProposal, 'id' | 'createdAt' | 'status'>): Promise<BarterProposal> => {
+    const targetListing = memoryListings.find((l) => l.id === proposal.listingId);
     const newProposal: BarterProposal = {
       ...proposal,
       id: `prop-${Date.now()}`,
       status: 'pending',
       createdAt: new Date().toISOString(),
+      listingTitle: proposal.listingTitle || targetListing?.title,
+      sellerName: proposal.sellerName || targetListing?.user.fullName,
+      sellerPhone: proposal.sellerPhone || targetListing?.user.phoneNumber,
     };
 
     if (supabase) {
@@ -355,6 +359,26 @@ export const db = {
 
     memoryProposals.unshift(newProposal);
     return newProposal;
+  },
+
+  updateProposalStatus: async (proposalId: string, status: 'pending' | 'accepted' | 'declined'): Promise<BarterProposal | null> => {
+    if (supabase) {
+      try {
+        await supabase
+          .from('barter_proposals')
+          .update({ status })
+          .eq('id', proposalId);
+      } catch (e) {
+        console.warn('Supabase update proposal status failed:', e);
+      }
+    }
+
+    const idx = memoryProposals.findIndex((p) => p.id === proposalId);
+    if (idx !== -1) {
+      memoryProposals[idx].status = status;
+      return memoryProposals[idx];
+    }
+    return null;
   },
 
   createOrder: async (order: Omit<TradeOrder, 'id' | 'createdAt' | 'status'>): Promise<TradeOrder> => {

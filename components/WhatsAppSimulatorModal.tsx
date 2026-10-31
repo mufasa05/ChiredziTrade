@@ -112,7 +112,7 @@ export default function WhatsAppSimulatorModal({
         {
           id: `err-${Date.now()}`,
           sender: 'bot',
-          text: '⚠️ Network timeout connecting to ZimBarter webhook.',
+          text: 'Network timeout connecting to ZimBarter webhook.',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -177,7 +177,7 @@ export default function WhatsAppSimulatorModal({
           {/* Encryption Notice */}
           <div className="text-center my-2">
             <span className="inline-block px-3 py-1 rounded-lg bg-[#182229] text-[#ffd279] text-[10px] shadow-sm border border-[#2a3942]/60">
-              🔒 Messages are routed to ZimBarter Webhook Engine with multi-currency & barter parser.
+              Messages are routed to ZimBarter Webhook Engine with multi-currency & barter parser.
             </span>
           </div>
 

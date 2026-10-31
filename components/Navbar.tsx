@@ -41,11 +41,11 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const languages: { code: Language; label: string; flag: string }[] = [
-    { code: 'en', label: 'English', flag: '🇬🇧' },
-    { code: 'sn', label: 'chiShona', flag: '🇿🇼' },
-    { code: 'nd', label: 'isiNdebele', flag: '🇿🇼' },
-    { code: 'ts', label: 'Xhangane (Shangani)', flag: '🇿🇼' },
+  const languages: { code: Language; label: string; codeBadge: string }[] = [
+    { code: 'en', label: 'English', codeBadge: 'EN' },
+    { code: 'sn', label: 'chiShona', codeBadge: 'SN' },
+    { code: 'nd', label: 'isiNdebele', codeBadge: 'ND' },
+    { code: 'ts', label: 'Xhangane (Shangani)', codeBadge: 'TS' },
   ];
 
   return (
@@ -115,8 +115,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#031d17]/80 hover:bg-[#0a3a30] border border-[#0e4337] text-white text-xs font-semibold transition-all shadow-sm"
             >
               <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>{languages.find((l) => l.code === language)?.flag}</span>
-              <span className="uppercase text-[11px]">{language}</span>
+              <span className="uppercase text-[11px] font-bold">{language}</span>
               <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
             </button>
 
@@ -135,11 +134,8 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                         : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    <span className="flex items-center gap-2">
-                      <span>{lang.flag}</span>
-                      <span>{lang.label}</span>
-                    </span>
-                    {language === lang.code && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                    <span>{lang.label}</span>
+                    <span className="text-[10px] font-mono font-bold text-slate-400">{lang.codeBadge}</span>
                   </button>
                 ))}
               </div>
@@ -258,7 +254,6 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
               className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 text-[11px] font-bold"
             >
               <Globe className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>{languages.find((l) => l.code === language)?.flag}</span>
               <span className="uppercase">{language}</span>
             </button>
 
@@ -277,11 +272,8 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
                         : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-lowveld-900 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    <span className="flex items-center gap-2">
-                      <span>{lang.flag}</span>
-                      <span>{lang.label}</span>
-                    </span>
-                    {language === lang.code && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                    <span>{lang.label}</span>
+                    <span className="text-[10px] font-mono font-bold text-slate-400">{lang.codeBadge}</span>
                   </button>
                 ))}
               </div>

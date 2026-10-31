@@ -440,8 +440,9 @@ function ListingDetailContent() {
                           {match.matchScore}% Fit
                         </span>
                       </div>
-                      <p className="text-[11px] text-gray-400 line-clamp-1">
-                        📍 {match.matchedListing.locationArea} • Wants: {match.matchedListing.barterTerms || 'Open trade'}
+                      <p className="text-[11px] text-gray-400 line-clamp-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span>{match.matchedListing.locationArea} • Wants: {match.matchedListing.barterTerms || 'Open trade'}</span>
                       </p>
                     </Link>
                   ))}

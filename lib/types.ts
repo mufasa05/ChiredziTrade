@@ -112,6 +112,9 @@ export interface BarterMatch {
 export interface BarterProposal {
   id: string;
   listingId: string;
+  listingTitle?: string;
+  sellerName?: string;
+  sellerPhone?: string;
   proposerId?: string;
   proposerName: string;
   proposerPhone: string;

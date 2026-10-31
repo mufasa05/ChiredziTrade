@@ -8,7 +8,8 @@ import {
   MessageCircle,
   RefreshCw,
   ShoppingBag,
-  Heart
+  Heart,
+  Star
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { formatListingInquiryUrl } from '@/lib/whatsapp-messages';
@@ -42,10 +43,6 @@ export default function ListingCard({
   const handleBarterClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isAuthenticated) {
-      openAuthModal('Sign in to propose a barter trade offer.');
-      return;
-    }
     if (onProposeBarter) onProposeBarter(listing);
   };
 
@@ -188,8 +185,8 @@ export default function ListingCard({
               </span>
             </div>
 
-            <div className="flex items-center gap-1 text-xs font-bold text-amber-400 shrink-0">
-              <span>★</span>
+            <div className="flex items-center gap-1 text-xs font-bold text-amber-500 shrink-0">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               <span>{listing.user?.rating || 5}</span>
             </div>
           </div>
@@ -221,6 +218,28 @@ export default function ListingCard({
                 <span>WhatsApp</span>
               </a>
             </>
+          ) : listing.currency === 'BARTER' ? (
+            /* Barter-only listing */
+            <button
+              type="button"
+              onClick={handleBarterClick}
+              className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-[0.98]"
+              title="Propose a Barter Swap or Asset Exchange"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Propose Barter Swap</span>
+            </button>
+          ) : listing.openToBarter === false ? (
+            /* Cash-only listing */
+            <button
+              type="button"
+              onClick={handleBuyClick}
+              className="w-full py-2 px-3 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md hover:scale-[1.01] active:scale-[0.98]"
+              title="Buy with EcoCash, OneMoney, Paynow or Cash on Handover"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Buy (Cash USD/ZWG)</span>
+            </button>
           ) : (
             <>
               {/* Buy (Cash USD/ZWG) Button -> Launches BuyCashModal Checkout Logic */}

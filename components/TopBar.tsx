@@ -203,27 +203,31 @@ export default function TopBar({
             <div className="absolute right-0 mt-2 w-44 rounded-2xl bg-white dark:bg-[#062A22] border border-slate-200 dark:border-[#0e4337] shadow-2xl py-1.5 z-50">
               <button
                 onClick={() => { setLanguage('en'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center gap-2"
+                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
               >
-                <span>🇬🇧 English</span>
+                <span>English</span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold">EN</span>
               </button>
               <button
                 onClick={() => { setLanguage('sn'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center gap-2"
+                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
               >
-                <span>🇿🇼 chiShona</span>
+                <span>chiShona</span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold">SN</span>
               </button>
               <button
                 onClick={() => { setLanguage('nd'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center gap-2"
+                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
               >
-                <span>🇿🇼 isiNdebele</span>
+                <span>isiNdebele</span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold">ND</span>
               </button>
               <button
                 onClick={() => { setLanguage('ts'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center gap-2"
+                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
               >
-                <span>🇿🇼 Shangani</span>
+                <span>Shangani</span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold">TS</span>
               </button>
             </div>
           )}
