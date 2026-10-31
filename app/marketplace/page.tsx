@@ -36,7 +36,7 @@ export default function MarketplacePage() {
   const [activeBarterListing, setActiveBarterListing] = useState<Listing | null>(null);
   const [activeBuyListing, setActiveBuyListing] = useState<Listing | null>(null);
 
-  // Load saved favorites
+  // Load saved favorites and URL search params
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -46,6 +46,16 @@ export default function MarketplacePage() {
         }
       } catch (e) {
         console.warn('Failed to load favorites:', e);
+      }
+
+      try {
+        const sp = new URLSearchParams(window.location.search);
+        const q = sp.get('search');
+        if (q) setSearchTerm(q);
+        const cat = sp.get('category');
+        if (cat) setSelectedCategory(cat as SectorCategory);
+      } catch (e) {
+        console.warn('Failed to parse URL params:', e);
       }
     }
   }, []);

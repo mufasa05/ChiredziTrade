@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Search,
   MapPin,
@@ -23,7 +24,10 @@ import {
   Zap,
   Receipt,
   MessageCircle,
-  Clock
+  Clock,
+  Wallet,
+  Settings,
+  Tag
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -64,6 +68,8 @@ export default function TopBar({
   selectedLocation = 'All Zimbabwe',
   onSelectLocation,
 }: TopBarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated, logout, openAuthModal, signInAsDemo } = useAuth();
   const { language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
@@ -107,7 +113,12 @@ export default function TopBar({
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearchChange) onSearchChange(localSearch);
+    const query = localSearch.trim();
+    if (onSearchChange && (pathname === '/' || pathname === '/marketplace')) {
+      onSearchChange(query);
+    } else {
+      router.push(`/marketplace?search=${encodeURIComponent(query)}`);
+    }
   };
 
   const unreadNotifsCount = notifications.filter((n) => n.unread).length;
@@ -378,36 +389,36 @@ export default function TopBar({
 
                   <div className="py-1">
                     <Link
-                      href="/dashboard"
+                      href="/my-listings"
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30]"
                     >
-                      <User className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>My Profile &amp; Listings</span>
+                      <Tag className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>My Listings &amp; Inventory</span>
                     </Link>
                     <Link
-                      href="/dashboard?tab=proposals"
+                      href="/messages"
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30]"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>Barter Offers &amp; Swaps</span>
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Trade Messages</span>
                     </Link>
                     <Link
-                      href="/dashboard?tab=orders"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30]"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>Cash Orders</span>
-                    </Link>
-                    <Link
-                      href="/dashboard?tab=transactions"
+                      href="/wallet"
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs text-amber-600 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-[#0a3a30] font-semibold"
                     >
-                      <Receipt className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                      <span>Transaction History &amp; Receipts</span>
+                      <Wallet className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                      <span>Wallet, Escrow &amp; Receipts</span>
+                    </Link>
+                    <Link
+                      href="/settings"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30]"
+                    >
+                      <Settings className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Account Settings &amp; KYC</span>
                     </Link>
                     <button
                       onClick={() => {
@@ -477,23 +488,23 @@ export default function TopBar({
                       onClick={() => {
                         signInAsDemo();
                         setUserMenuOpen(false);
-                        window.location.href = '/dashboard';
+                        router.push('/my-listings');
                       }}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] cursor-pointer"
                     >
-                      <User className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>My Profile &amp; Listings</span>
+                      <Tag className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>My Listings &amp; Inventory</span>
                     </button>
                     <button
                       onClick={() => {
                         signInAsDemo();
                         setUserMenuOpen(false);
-                        window.location.href = '/dashboard?tab=transactions';
+                        router.push('/wallet');
                       }}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-amber-600 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-[#0a3a30] font-semibold cursor-pointer"
                     >
-                      <Receipt className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                      <span>Transaction History &amp; Receipts</span>
+                      <Wallet className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                      <span>Wallet, Escrow &amp; Receipts</span>
                     </button>
                     <button
                       onClick={() => {

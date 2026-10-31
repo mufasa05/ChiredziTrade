@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import Navbar from '@/components/Navbar';
+import AppShell from '@/components/AppShell';
+import TradeMessengerModal from '@/components/TradeMessengerModal';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
 import ReviewModal from '@/components/ReviewModal';
@@ -20,7 +21,8 @@ import {
   Tag,
   Star,
   CheckCircle2,
-  Clock
+  Clock,
+  Phone
 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -100,34 +102,32 @@ function ListingDetailContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
-        <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
-        <div className="max-w-5xl mx-auto px-4 py-16 w-full text-center">
+      <AppShell activeNav="Marketplace">
+        <div className="max-w-5xl mx-auto px-4 py-20 w-full text-center">
           <div className="w-12 h-12 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-gray-400 text-sm">Loading Lowveld listing details...</p>
+          <p className="text-slate-600 dark:text-gray-400 text-sm">Loading listing details...</p>
         </div>
-      </main>
+      </AppShell>
     );
   }
 
   if (!listing) {
     return (
-      <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
-        <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
-        <div className="max-w-lg mx-auto px-4 py-20 text-center glass-panel rounded-3xl mt-12 border border-slate-200 dark:border-lowveld-800 shadow-sm">
+      <AppShell activeNav="Marketplace">
+        <div className="max-w-lg mx-auto px-4 py-20 text-center bg-white dark:bg-[#062A22] rounded-3xl mt-12 border border-slate-200 dark:border-[#0e4337] shadow-sm">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Listing Not Found</h2>
           <p className="text-sm text-slate-600 dark:text-gray-400 mb-6">
             This trade listing might have been concluded or archived.
           </p>
           <Link
-            href="/"
-            className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm shadow-md inline-flex items-center gap-2"
+            href="/marketplace"
+            className="px-5 py-2.5 rounded-2xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-sm shadow-sm inline-flex items-center gap-2 transition"
           >
             <ArrowLeft className="w-4 h-4 text-white" />
             <span>Back to Marketplace</span>
           </Link>
         </div>
-      </main>
+      </AppShell>
     );
   }
 
@@ -150,14 +150,12 @@ function ListingDetailContent() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
-      <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full flex-1">
+    <AppShell activeNav="Marketplace">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full flex-1">
         {/* Top Breadcrumb & Share */}
         <div className="flex items-center justify-between gap-4 mb-6 text-xs sm:text-sm">
           <Link
-            href="/"
+            href="/marketplace"
             className="flex items-center gap-1.5 text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-semibold"
           >
             <ArrowLeft className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -306,6 +304,18 @@ function ListingDetailContent() {
                   </button>
                 )}
 
+                {/* Chat on ZimBarter (In-App Messenger) */}
+                <button
+                  onClick={() => {
+                    if (!requireAuth('Sign in to message this trader.')) return;
+                    setWhatsAppOpen(true);
+                  }}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-100" />
+                  <span>Chat on ZimBarter</span>
+                </button>
+
                 {/* Direct WhatsApp Contact */}
                 <a
                   href={directWhatsAppUrl}
@@ -323,10 +333,10 @@ function ListingDetailContent() {
                       link: `/listing/${listing.id}`,
                     });
                   }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-[#005c4b] hover:bg-[#00735e] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-slate-100 dark:bg-[#0a2e24] hover:bg-slate-200 dark:hover:bg-[#0e3f32] text-slate-800 dark:text-emerald-300 border border-slate-200 dark:border-[#0e4337] font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-300" />
-                  <span>{t.contactSeller}</span>
+                  <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>WhatsApp Direct</span>
                 </a>
 
                 {/* Propose Barter Swap */}
@@ -473,7 +483,13 @@ function ListingDetailContent() {
         listingId={listing.id}
         onReviewSubmitted={reloadReviews}
       />
-    </main>
+
+      <TradeMessengerModal
+        isOpen={whatsAppOpen}
+        onClose={() => setWhatsAppOpen(false)}
+        initialListingId={listing.id}
+      />
+    </AppShell>
   );
 }
 

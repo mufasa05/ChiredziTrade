@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
+import AppShell from '@/components/AppShell';
 import TradeMessengerModal from '@/components/TradeMessengerModal';
 import { SectorCategory, TradeCurrency, ConditionGrade, LowveldLocation } from '@/lib/types';
 import { ZIMBABWE_TRADE_HUBS } from '@/lib/constants';
@@ -340,21 +340,19 @@ export default function PostListingPage() {
   // completed profile can open the listing form.
   if (authLoading) {
     return (
-      <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09]">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <RefreshCw className="w-6 h-6 animate-spin text-emerald-500" />
+      <AppShell activeNav="My Listings">
+        <div className="max-w-4xl mx-auto px-4 py-20 flex items-center justify-center">
+          <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />
         </div>
-      </main>
+      </AppShell>
     );
   }
 
   if (!isAuthenticated || needsProfile) {
     return (
-      <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center px-4 py-16">
-          <div className="max-w-md w-full text-center glass-panel rounded-3xl p-8 border border-slate-200 dark:border-lowveld-800 shadow-xl">
+      <AppShell activeNav="My Listings">
+        <div className="max-w-md mx-auto px-4 py-16 text-center">
+          <div className="bg-white dark:bg-[#062A22] rounded-3xl p-8 border border-slate-200 dark:border-[#0e4337] shadow-sm">
             <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="w-7 h-7" />
             </div>
@@ -373,7 +371,7 @@ export default function PostListingPage() {
                 <button
                   type="button"
                   onClick={() => signInAsDemo()}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
                 >
                   <Zap className="w-4 h-4 fill-current" />
                   <span>1-Tap Demo: Prince A. Shumba</span>
@@ -383,7 +381,7 @@ export default function PostListingPage() {
               <button
                 type="button"
                 onClick={() => openAuthModal(needsProfile ? '' : 'Please sign in to post a listing.')}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-lowveld-600 hover:from-emerald-400 hover:to-lowveld-500 text-white font-bold text-sm shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-4 rounded-2xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-sm shadow-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{needsProfile ? 'Complete Profile' : 'Sign In with Email / Google'}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -391,32 +389,30 @@ export default function PostListingPage() {
             </div>
 
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/marketplace')}
               className="mt-4 text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
             >
               ← Continue browsing the marketplace
             </button>
           </div>
         </div>
-      </main>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 flex flex-col selection:bg-emerald-500 selection:text-white transition-colors duration-300">
-      <Navbar onOpenWhatsApp={() => setWhatsAppOpen(true)} />
-
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full">
-        <div className="mb-8 text-center sm:text-left">
+    <AppShell activeNav="My Listings">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full">
+        <div className="mb-8 text-center sm:text-left bg-white dark:bg-[#062A22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-[#0e4337] shadow-sm">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-            <span>Lowveld Multi-Currency & Barter Marketplace</span>
+            <span>Multi-Currency &amp; Barter Trading Hub</span>
           </div>
-          <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-slate-900 dark:text-white">
-            {t.postListing} on <span className="text-emerald-600 dark:text-emerald-400">ChiredziTrade</span>
+          <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white">
+            Create a Trade Listing on <span className="text-emerald-600 dark:text-emerald-400">ZimBarter</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mt-2">
-            Connect directly with outgrowers, ranchers, artisans, wholesalers, and traders across the Lowveld.
+            Connect directly with outgrowers, ranchers, artisans, wholesalers, and traders across Zimbabwe &amp; the Lowveld hub.
           </p>
         </div>
 
@@ -988,13 +984,13 @@ export default function PostListingPage() {
             </button>
           </div>
         </form>
-      </main>
+      </div>
 
       {/* Trade Messenger Modal */}
       <TradeMessengerModal
         isOpen={whatsAppOpen}
         onClose={() => setWhatsAppOpen(false)}
       />
-    </div>
+    </AppShell>
   );
 }
