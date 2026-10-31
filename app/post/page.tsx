@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
-import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
+import TradeMessengerModal from '@/components/TradeMessengerModal';
 import { SectorCategory, TradeCurrency, ConditionGrade, LowveldLocation } from '@/lib/types';
 import { ZIMBABWE_TRADE_HUBS } from '@/lib/constants';
 import { 
@@ -990,11 +990,10 @@ export default function PostListingPage() {
         </form>
       </main>
 
-      {/* WhatsApp Bot Modal */}
-      <WhatsAppSimulatorModal
+      {/* Trade Messenger Modal */}
+      <TradeMessengerModal
         isOpen={whatsAppOpen}
         onClose={() => setWhatsAppOpen(false)}
-        onListingCreated={() => router.push('/')}
       />
     </div>
   );

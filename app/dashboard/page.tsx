@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
-import WhatsAppSimulatorModal from '@/components/WhatsAppSimulatorModal';
+import TradeMessengerModal from '@/components/TradeMessengerModal';
 import TradeReceiptModal, { ReceiptData } from '@/components/TradeReceiptModal';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -285,7 +285,7 @@ function DashboardContent() {
             </Link>
           </div>
         </div>
-        <WhatsAppSimulatorModal isOpen={whatsAppOpen} onClose={() => setWhatsAppOpen(false)} />
+        <TradeMessengerModal isOpen={whatsAppOpen} onClose={() => setWhatsAppOpen(false)} />
       </main>
     );
   }
@@ -891,7 +891,7 @@ function DashboardContent() {
         receipt={selectedReceipt}
       />
 
-      <WhatsAppSimulatorModal isOpen={whatsAppOpen} onClose={() => setWhatsAppOpen(false)} />
+      <TradeMessengerModal isOpen={whatsAppOpen} onClose={() => setWhatsAppOpen(false)} />
     </main>
   );
 }
