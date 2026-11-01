@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     const reviews = await db.getReviewsForSeller(sellerId);
     const avgRating = reviews.length > 0
       ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
-      : 5.0;
+      : 0;
 
     return NextResponse.json({
       success: true,
@@ -48,17 +48,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Too many reviews submitted. Please wait.' }, { status: 429 });
     }
 
-    // Require session authentication to post seller reviews
     const { user, supabase } = await getAuthUser();
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Sign-in required to submit trader reviews' }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase.from('users').select('full_name').eq('id', user.id).maybeSingle();
-    const reviewerName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Verified Trader';
-
     const rawBody = await req.json();
     const validatedData = CreateReviewSchema.parse(rawBody);
+
+    let reviewerName = rawBody.reviewerName || 'Trader';
+    if (user && supabase) {
+      const { data: profile } = await supabase.from('users').select('full_name').eq('id', user.id).maybeSingle();
+      reviewerName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || reviewerName;
+    }
 
     const review = await db.createReview({
       ...validatedData,

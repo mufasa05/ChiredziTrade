@@ -2,14 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Listing } from '@/lib/types';
+import { Listing, isUserVerified } from '@/lib/types';
 import {
   MapPin,
   MessageCircle,
   RefreshCw,
   ShoppingBag,
   Heart,
-  Star
+  Star,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { formatListingInquiryUrl } from '@/lib/whatsapp-messages';
@@ -185,9 +186,20 @@ export default function ListingCard({
               </span>
             </div>
 
-            <div className="flex items-center gap-1 text-xs font-bold text-amber-500 shrink-0">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>{listing.user?.rating || 5}</span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {isUserVerified(listing.user) && (
+                <span title={Number(listing.user?.tradeCount || 0) >= 25 ? `Verified Trader (${listing.user.tradeCount} Trades)` : 'Admin Verified Trader'} className="text-emerald-600 dark:text-emerald-400">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </span>
+              )}
+              {listing.user?.rating && listing.user.rating > 0 && (listing.user.tradeCount || 0) > 0 ? (
+                <div className="flex items-center gap-0.5 text-xs font-bold text-amber-500">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <span>{listing.user.rating.toFixed(1)}</span>
+                </div>
+              ) : (
+                <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">New Trader</span>
+              )}
             </div>
           </div>
         </div>

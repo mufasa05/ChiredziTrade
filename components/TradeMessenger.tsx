@@ -21,6 +21,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
+import { isUserVerified } from '@/lib/types';
 
 export interface TradeMessage {
   id: string;
@@ -56,125 +57,6 @@ export interface TradeConversation {
 
 const INITIAL_CONVERSATIONS: TradeConversation[] = [
   {
-    id: 'conv-1',
-    counterpartyName: 'Simba Chauke',
-    counterpartyRole: 'Verified Livestock & Grain Producer',
-    counterpartyLocation: 'Triangle Estate, Lowveld',
-    counterpartyPhone: '+263783237918',
-    counterpartyAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-    verified: true,
-    unreadCount: 1,
-    tradeType: 'barter',
-    listing: {
-      id: 'zim-broiler-01',
-      title: 'Broiler farming (Metra Poultry)',
-      price: '$6.00 USD • Open to Barter',
-      image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80',
-      status: 'Active',
-    },
-    messages: [
-      {
-        id: 'm1-1',
-        sender: 'counterparty',
-        text: 'Hello Prince, I saw your broiler chicken listing. Are they available for collection this weekend at Triangle Estate?',
-        time: '10:30 AM',
-      },
-      {
-        id: 'm1-2',
-        sender: 'user',
-        text: 'Yes Simba, the current batch is healthy, vaccinated, and ready for pickup at our Triangle depot.',
-        time: '10:45 AM',
-      },
-      {
-        id: 'm1-3',
-        sender: 'counterparty',
-        text: 'I have 2 sealed bags of Compound D fertilizer and 50kg maize grain. Can we swap with a $10 USD cash top-up?',
-        time: '11:15 AM',
-        isOfferPill: true,
-        offerDetails: {
-          offeredItem: '2 Bags Compound D Fertilizer + 50kg Grain',
-          cashTopUp: '+$10.00 USD',
-        },
-      },
-      {
-        id: 'm1-4',
-        sender: 'counterparty',
-        text: 'Let me know if this works so we can confirm the collection hub and inspect.',
-        time: '11:16 AM',
-      },
-    ],
-  },
-  {
-    id: 'conv-2',
-    counterpartyName: 'Tinashe Musarurwa',
-    counterpartyRole: 'Certified Solar Systems Engineer',
-    counterpartyLocation: 'Harare CBD',
-    counterpartyPhone: '+263783237918',
-    counterpartyAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
-    verified: true,
-    unreadCount: 0,
-    tradeType: 'barter',
-    listing: {
-      id: 'zim-solar-03',
-      title: 'Solar Inverter & Lithium Battery (5kVA)',
-      price: '$1,250.00 USD • Open to Barter',
-      image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop&q=80',
-      status: 'Active',
-    },
-    messages: [
-      {
-        id: 'm2-1',
-        sender: 'counterparty',
-        text: 'Good day. Is the 5kVA hybrid solar system in stock with factory warranty certificates?',
-        time: 'Yesterday',
-      },
-      {
-        id: 'm2-2',
-        sender: 'user',
-        text: 'Good day Tinashe. Yes, brand new in crate with 2-year warranty, Wi-Fi dongle, and pre-wired protection box.',
-        time: 'Yesterday',
-      },
-      {
-        id: 'm2-3',
-        sender: 'counterparty',
-        text: 'I have logged a swap proposal offering a 1.5HP borehole submersible pump plus $450 USD cash top-up.',
-        time: '2 hours ago',
-      },
-    ],
-  },
-  {
-    id: 'conv-3',
-    counterpartyName: 'Farai Ncube',
-    counterpartyRole: 'Masvingo Registered Butchery & Rancher',
-    counterpartyLocation: 'Masvingo Urban',
-    counterpartyPhone: '+263783237918',
-    counterpartyAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&auto=format&fit=crop&q=80',
-    verified: true,
-    unreadCount: 0,
-    tradeType: 'buy',
-    listing: {
-      id: 'zim-broiler-01',
-      title: 'Broiler farming (Metra Poultry)',
-      price: '$6.00 USD',
-      image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80',
-      status: 'Active',
-    },
-    messages: [
-      {
-        id: 'm3-1',
-        sender: 'counterparty',
-        text: 'Hi Prince, we require 60 dressed broilers weekly for our Masvingo depot. Can you supply consistently?',
-        time: 'Oct 28',
-      },
-      {
-        id: 'm3-2',
-        sender: 'user',
-        text: 'Greetings Farai. Yes, we run rolling hatch cycles every 14 days and can guarantee 60-100 units weekly.',
-        time: 'Oct 28',
-      },
-    ],
-  },
-  {
     id: 'conv-support',
     counterpartyName: 'ZimBarter Trade Protection Desk',
     counterpartyRole: 'Official Escrow & Verification Desk',
@@ -189,7 +71,7 @@ const INITIAL_CONVERSATIONS: TradeConversation[] = [
         id: 'ms-1',
         sender: 'counterparty',
         text: 'Welcome to the ZimBarter Trade Protection Desk. We oversee trade escrow holds, verified goods handovers, and dispute resolution across all 10 provinces. Direct Hotline & WhatsApp: +263 78 323 7918 (0783237918). How can we assist your transaction today?',
-        time: 'Oct 25',
+        time: 'Support',
       },
     ],
   },
@@ -207,34 +89,42 @@ export default function TradeMessenger({
   isModal = false,
 }: TradeMessengerProps) {
   const [conversations, setConversations] = useState<TradeConversation[]>(INITIAL_CONVERSATIONS);
-  const [activeConvId, setActiveConvId] = useState<string>('conv-1');
+  const [activeConvId, setActiveConvId] = useState<string>('conv-support');
   const [filterType, setFilterType] = useState<'all' | 'barter' | 'buy' | 'support'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
-  // Load local conversations if stored
+  // Load genuine local conversations (purging old mock data)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('zimbarter_trade_conversations_v3');
+        // Clear all legacy mock data keys
+        localStorage.removeItem('zimbarter_trade_conversations');
+        localStorage.removeItem('zimbarter_trade_conversations_v2');
+        localStorage.removeItem('zimbarter_trade_conversations_v3');
+
+        const stored = localStorage.getItem('zimbarter_trade_conversations_v4');
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            // Force all demo numbers and support desk to user's phone +263783237918
-            const sanitized = parsed.map((c: TradeConversation) => ({
-              ...c,
-              counterpartyPhone: '+263783237918',
-            }));
-            setConversations(sanitized);
-            return;
+            // Keep genuine listing conversations and support desk; filter out old hardcoded mock IDs
+            const cleanList = parsed.filter(
+              (c: TradeConversation) =>
+                c.id !== 'conv-1' &&
+                c.id !== 'conv-2' &&
+                c.id !== 'conv-3' &&
+                !['Simba Chauke', 'Tinashe Musarurwa', 'Farai Ncube'].includes(c.counterpartyName)
+            );
+            if (cleanList.length > 0) {
+              setConversations(cleanList);
+              return;
+            }
           }
         }
-        // Purge old stale keys from browser cache
-        localStorage.removeItem('zimbarter_trade_conversations');
-        localStorage.removeItem('zimbarter_trade_conversations_v2');
-        localStorage.setItem('zimbarter_trade_conversations_v3', JSON.stringify(INITIAL_CONVERSATIONS));
+
+        localStorage.setItem('zimbarter_trade_conversations_v4', JSON.stringify(INITIAL_CONVERSATIONS));
         setConversations(INITIAL_CONVERSATIONS);
       } catch (e) {
         console.warn('Failed to load local conversations:', e);
@@ -246,17 +136,79 @@ export default function TradeMessenger({
   const saveConversations = (updated: TradeConversation[]) => {
     const sanitized = updated.map((c) => ({
       ...c,
-      counterpartyPhone: '+263783237918',
+      counterpartyPhone: c.counterpartyPhone || '+263783237918',
     }));
     setConversations(sanitized);
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem('zimbarter_trade_conversations_v3', JSON.stringify(sanitized));
+        localStorage.setItem('zimbarter_trade_conversations_v4', JSON.stringify(sanitized));
       } catch (e) {
         console.warn('Failed to save conversations:', e);
       }
     }
   };
+
+  // If opened with an initialListingId from a listing page, create or switch to that real listing's conversation!
+  useEffect(() => {
+    if (!initialListingId) return;
+
+    const convId = `conv-listing-${initialListingId}`;
+    const existing = conversations.find(
+      (c) => c.id === convId || c.listing?.id === initialListingId
+    );
+
+    if (existing) {
+      setActiveConvId(existing.id);
+      return;
+    }
+
+    // Fetch listing info from API to seed genuine chat
+    fetch(`/api/listings/${initialListingId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.listing) {
+          const l = data.listing;
+          const newConv: TradeConversation = {
+            id: convId,
+            counterpartyName: l.user?.fullName || 'Seller',
+            counterpartyRole: `${(l.category || 'trade').replace(/_/g, ' ')} Trader`,
+            counterpartyLocation: l.locationArea || 'Zimbabwe',
+            counterpartyPhone: l.user?.phoneNumber || '+263783237918',
+            counterpartyAvatar:
+              l.user?.avatarUrl ||
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+            verified: isUserVerified(l.user),
+            unreadCount: 0,
+            tradeType: l.currency === 'BARTER' ? 'barter' : 'buy',
+            listing: {
+              id: l.id,
+              title: l.title,
+              price: l.currency === 'BARTER' ? (l.barterTerms || 'Open to Barter') : `$${l.price} ${l.currency}`,
+              image: l.imageUrls?.[0] || '',
+              status: l.status,
+            },
+            messages: [
+              {
+                id: `init-${Date.now()}`,
+                sender: 'counterparty',
+                text: `Good day! Thanks for inquiring about "${l.title}". Feel free to message here to coordinate inspection, terms, or trade hub collection.`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              },
+            ],
+          };
+
+          setConversations((prev) => {
+            const next = [newConv, ...prev.filter((c) => c.id !== newConv.id)];
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('zimbarter_trade_conversations_v4', JSON.stringify(next));
+            }
+            return next;
+          });
+          setActiveConvId(newConv.id);
+        }
+      })
+      .catch((err) => console.warn('Could not initialize listing conversation:', err));
+  }, [initialListingId]);
 
   // Scroll to bottom on new message
   useEffect(() => {

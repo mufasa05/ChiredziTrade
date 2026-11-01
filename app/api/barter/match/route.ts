@@ -18,6 +18,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Listing not found' }, { status: 404 });
     }
 
+    // If seller did NOT opt for barter, do not calculate or return any smart barter matches
+    const isBarterEligible = Boolean(
+      listing.openToBarter || listing.currency === 'BARTER' || listing.listingType === 'for_trade'
+    );
+    if (!isBarterEligible) {
+      return NextResponse.json({ success: true, listingId, count: 0, matches: [] });
+    }
+
     const matches = await findSmartBarterMatches(listing);
     return NextResponse.json({ success: true, listingId, count: matches.length, matches });
   } catch (error) {

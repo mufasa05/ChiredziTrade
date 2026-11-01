@@ -8,7 +8,7 @@ import TradeMessengerModal from '@/components/TradeMessengerModal';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
 import ReviewModal from '@/components/ReviewModal';
-import { Listing, BarterMatch, TradeReview } from '@/lib/types';
+import { Listing, BarterMatch, TradeReview, isUserVerified } from '@/lib/types';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -59,20 +59,27 @@ function ListingDetailContent() {
           setListing(data.listing);
 
           const sellerId = data.listing.userId || data.listing.user?.id || 'user-1';
-          const [matchRes, reviewRes] = await Promise.all([
-            fetch(`/api/barter/match?listingId=${id}`),
-            fetch(`/api/reviews?sellerId=${encodeURIComponent(sellerId)}`),
-          ]);
+          const isBarterEligible = Boolean(
+            data.listing.openToBarter || data.listing.currency === 'BARTER' || data.listing.listingType === 'for_trade'
+          );
 
-          const matchData = await matchRes.json();
-          if (matchData.success) {
-            setBarterMatches(matchData.matches);
-          }
+          const matchPromise = isBarterEligible
+            ? fetch(`/api/barter/match?listingId=${id}`)
+                .then((r) => r.json())
+                .then((m) => (m.success ? m.matches : []))
+                .catch(() => [])
+            : Promise.resolve([]);
 
-          const reviewData = await reviewRes.json();
+          const reviewPromise = fetch(`/api/reviews?sellerId=${encodeURIComponent(sellerId)}`)
+            .then((r) => r.json())
+            .catch(() => ({ success: false }));
+
+          const [matches, reviewData] = await Promise.all([matchPromise, reviewPromise]);
+          setBarterMatches(matches);
+
           if (reviewData.success) {
-            setReviews(reviewData.reviews);
-            setAvgRating(reviewData.avgRating);
+            setReviews(reviewData.reviews || []);
+            setAvgRating(reviewData.avgRating || 0);
           }
         }
       } catch (err) {
@@ -339,15 +346,17 @@ function ListingDetailContent() {
                   <span>WhatsApp Direct</span>
                 </a>
 
-                {/* Propose Barter Swap */}
-                <button
-                  disabled={listing.status === 'sold'}
-                  onClick={() => requireAuth('Sign in to propose a barter swap.') && setBarterModalOpen(true)}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/50 font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <RefreshCw className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <span>{listing.status === 'sold' ? 'Sold Out' : t.proposeBarter}</span>
-                </button>
+                {/* Propose Barter Swap (Only if seller opted in to barter) */}
+                {Boolean(listing.openToBarter || listing.currency === 'BARTER' || listing.listingType === 'for_trade') && (
+                  <button
+                    disabled={listing.status === 'sold'}
+                    onClick={() => requireAuth('Sign in to propose a barter swap.') && setBarterModalOpen(true)}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/50 font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <RefreshCw className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span>{listing.status === 'sold' ? 'Sold Out' : t.proposeBarter}</span>
+                  </button>
+                )}
               </div>
 
               <div className="mt-6 pt-6 border-t border-slate-200 dark:border-lowveld-800/60">
@@ -362,9 +371,13 @@ function ListingDetailContent() {
                     <p className="text-xs text-slate-500 dark:text-gray-400 flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       <span>{listing.user.locationArea}</span>
-                      {listing.user.verifiedArtisan && (
+                      {isUserVerified(listing.user) ? (
                         <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
-                          • <ShieldCheck className="w-3 h-3" /> Verified
+                          • <ShieldCheck className="w-3 h-3" /> Verified ({Number(listing.user.tradeCount || 0) >= 25 ? `${listing.user.tradeCount} Trades` : 'Admin Approved'})
+                        </span>
+                      ) : (
+                        <span className="ml-1 text-slate-400 dark:text-gray-500 font-medium text-[11px]">
+                          • Unverified ({listing.user.tradeCount || 0}/25 trades)
                         </span>
                       )}
                     </p>
@@ -373,7 +386,16 @@ function ListingDetailContent() {
 
                 <div className="mt-3 flex items-center justify-between text-xs text-slate-600 dark:text-gray-400 px-3 py-2 rounded-xl bg-slate-100 dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800">
                   <span>{t.completedTrades}: <b className="text-slate-900 dark:text-white">{listing.user.tradeCount || 0}</b></span>
-                  <span>{t.rating}: <b className="text-amber-600 dark:text-amber-400">⭐ {avgRating} ({reviews.length} reviews)</b></span>
+                  <span>
+                    {t.rating}:{' '}
+                    {reviews.length > 0 ? (
+                      <b className="text-amber-600 dark:text-amber-400">
+                        ⭐ {avgRating} ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+                      </b>
+                    ) : (
+                      <b className="text-slate-500 dark:text-gray-400 italic">No reviews yet</b>
+                    )}
+                  </span>
                 </div>
               </div>
 
@@ -423,7 +445,8 @@ function ListingDetailContent() {
               </div>
             </div>
 
-            {barterMatches.length > 0 && (
+            {/* Smart Barter Cross-Matches - ONLY SHOWN IF SELLER OPTED INTO BARTER */}
+            {Boolean(listing.openToBarter || listing.currency === 'BARTER' || listing.listingType === 'for_trade') && barterMatches.length > 0 && (
               <div className="p-5 sm:p-6 rounded-3xl glass-panel-amber border border-amber-500/40 space-y-3">
                 <div className="flex items-center gap-2 text-amber-300">
                   <Sparkles className="w-4 h-4 text-amber-400" />

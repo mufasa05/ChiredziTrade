@@ -61,9 +61,26 @@ export interface ListingUser {
   locationArea: string;
   avatarUrl?: string;
   verifiedArtisan?: boolean;
+  adminVerified?: boolean;
   rating?: number;
   tradeCount?: number;
   isAdmin?: boolean;
+}
+
+/**
+ * Global Verification Rule:
+ * A trader or artisan is ONLY verified if:
+ * 1. The Admin has explicitly verified their identity (adminVerified / verifiedArtisan = true), OR
+ * 2. The user has completed at least 25 successful trades or transactions on the platform (tradeCount >= 25).
+ */
+export function isUserVerified(
+  user?: { verifiedArtisan?: boolean; adminVerified?: boolean; tradeCount?: number } | null
+): boolean {
+  if (!user) return false;
+  if (user.adminVerified) return true;
+  if (user.verifiedArtisan) return true;
+  if (Number(user.tradeCount || 0) >= 25) return true;
+  return false;
 }
 
 export interface AdminPlatformStats {

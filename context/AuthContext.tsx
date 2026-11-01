@@ -23,7 +23,7 @@ export const DEMO_USER: UserProfile = {
   phoneNumber: '+263 78 323 7918',
   email: 'prince@zimbarter.co.zw',
   locationArea: 'Chiredzi Town / Masvingo',
-  verifiedArtisan: true,
+  verifiedArtisan: false,
   avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
   isGoogleUser: false,
   isAdmin: true,

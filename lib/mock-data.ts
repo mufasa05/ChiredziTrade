@@ -5,9 +5,9 @@ export const PRINCE_SHUMBA_USER: ListingUser = {
   fullName: 'Prince A. Shumba',
   phoneNumber: '+263783237918',
   locationArea: 'Harare / Masvingo',
-  verifiedArtisan: true,
-  rating: 5,
-  tradeCount: 42,
+  verifiedArtisan: false,
+  rating: 0,
+  tradeCount: 0,
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
 };
 

@@ -96,6 +96,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: `User ${id} deleted successfully` });
     }
 
+    if (action === 'toggle_user_verification' && id) {
+      const isVerified = Boolean(body.verifiedArtisan);
+      await db.toggleUserVerification(id, isVerified);
+      return NextResponse.json({ success: true, message: `User ${id} verification set to ${isVerified}` });
+    }
+
     return NextResponse.json({ success: false, error: 'Invalid admin action' }, { status: 400 });
   } catch (err) {
     console.error('API Error in POST /api/admin:', err);

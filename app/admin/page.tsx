@@ -20,7 +20,7 @@ import {
   Activity,
   DollarSign
 } from 'lucide-react';
-import { Listing, BarterProposal, TradeOrder, AdminPlatformStats } from '@/lib/types';
+import { Listing, BarterProposal, TradeOrder, AdminPlatformStats, isUserVerified } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function AdminPage() {
@@ -448,18 +448,34 @@ export default function AdminPage() {
                               {u.phoneNumber}
                             </td>
                             <td className="p-3.5">{u.locationArea}</td>
-                            <td className="p-3.5">⭐ {u.rating || 5.0} ({u.tradeCount || 0} trades)</td>
+                            <td className="p-3.5 font-medium">
+                              {u.rating && u.rating > 0 ? (
+                                <span className="text-amber-600 dark:text-amber-400 font-bold">⭐ {u.rating} ({u.tradeCount || 0} trades)</span>
+                              ) : (
+                                <span className="text-slate-400 dark:text-gray-500 italic text-xs">New Trader ({u.tradeCount || 0} trades)</span>
+                              )}
+                            </td>
                             <td className="p-3.5 text-slate-500 dark:text-gray-400 font-mono text-[11px]">
                               {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Active'}
                             </td>
                             <td className="p-3.5">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                u.verifiedArtisan ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-lowveld-900 text-slate-600 dark:text-gray-300'
+                                isUserVerified(u) ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-lowveld-900 text-slate-600 dark:text-gray-300'
                               }`}>
-                                {u.verifiedArtisan ? 'Verified' : 'Active Trader'}
+                                {isUserVerified(u) ? (Number(u.tradeCount || 0) >= 25 ? 'Verified (25+ Trades)' : 'Verified (Admin)') : 'Unverified'}
                               </span>
                             </td>
-                            <td className="p-3.5 text-right">
+                            <td className="p-3.5 text-right space-x-2">
+                              <button
+                                onClick={() => handleExecuteAction('toggle_user_verification', u.id, { verifiedArtisan: !u.verifiedArtisan })}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                                  u.verifiedArtisan
+                                    ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 hover:bg-amber-500/30'
+                                    : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30'
+                                }`}
+                              >
+                                {u.verifiedArtisan ? 'Revoke Verification' : 'Verify Trader'}
+                              </button>
                               <button
                                 onClick={() => handleExecuteAction('delete_user', u.id)}
                                 className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30 text-xs font-bold inline-flex items-center gap-1 transition-colors"

@@ -710,7 +710,44 @@ export const db = {
     }
 
     memoryReviews.unshift(newReview);
+
+    // Compute real seller rating across all submitted reviews
+    const allSellerReviews = memoryReviews.filter((r) => r.sellerId === newReview.sellerId);
+    const avg = Number((allSellerReviews.reduce((sum, r) => sum + r.rating, 0) / allSellerReviews.length).toFixed(1));
+
+    if (supabase) {
+      try {
+        await supabase.from('users').update({ rating: avg }).eq('id', newReview.sellerId);
+      } catch (e) {
+        console.warn('Supabase update seller rating failed:', e);
+      }
+    }
+
+    memoryListings.forEach((l) => {
+      if (l.userId === newReview.sellerId || l.user?.id === newReview.sellerId) {
+        l.user.rating = avg;
+      }
+    });
+    saveLocalListings();
+
     return newReview;
+  },
+
+  toggleUserVerification: async (userId: string, isVerified: boolean): Promise<boolean> => {
+    if (supabase) {
+      try {
+        await supabase.from('users').update({ verified_artisan: isVerified }).eq('id', userId);
+      } catch (e) {
+        console.warn('Supabase toggle user verification failed:', e);
+      }
+    }
+    memoryListings.forEach((l) => {
+      if (l.userId === userId || l.user?.id === userId) {
+        l.user.verifiedArtisan = isVerified;
+      }
+    });
+    saveLocalListings();
+    return true;
   },
 
   getBotSession: async (phoneNumber: string): Promise<BotSession> => {
