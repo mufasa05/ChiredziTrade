@@ -188,7 +188,7 @@ const INITIAL_CONVERSATIONS: TradeConversation[] = [
       {
         id: 'ms-1',
         sender: 'counterparty',
-        text: 'Welcome to ZimBarter Secure Trade Communications. All agreed barter exchanges and cash pickups are recorded in the official trade ledger. Always verify goods before handover.',
+        text: 'Welcome to the ZimBarter Trade Protection Desk. We oversee trade escrow holds, verified goods handovers, and dispute resolution across all 10 provinces. Direct Hotline & WhatsApp: +263 78 323 7918 (0783237918). How can we assist your transaction today?',
         time: 'Oct 25',
       },
     ],
@@ -218,13 +218,24 @@ export default function TradeMessenger({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('zimbarter_trade_conversations');
+        const stored = localStorage.getItem('zimbarter_trade_conversations_v3');
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            setConversations(parsed);
+            // Force all demo numbers and support desk to user's phone +263783237918
+            const sanitized = parsed.map((c: TradeConversation) => ({
+              ...c,
+              counterpartyPhone: '+263783237918',
+            }));
+            setConversations(sanitized);
+            return;
           }
         }
+        // Purge old stale keys from browser cache
+        localStorage.removeItem('zimbarter_trade_conversations');
+        localStorage.removeItem('zimbarter_trade_conversations_v2');
+        localStorage.setItem('zimbarter_trade_conversations_v3', JSON.stringify(INITIAL_CONVERSATIONS));
+        setConversations(INITIAL_CONVERSATIONS);
       } catch (e) {
         console.warn('Failed to load local conversations:', e);
       }
@@ -233,10 +244,14 @@ export default function TradeMessenger({
 
   // Save to localStorage when updated
   const saveConversations = (updated: TradeConversation[]) => {
-    setConversations(updated);
+    const sanitized = updated.map((c) => ({
+      ...c,
+      counterpartyPhone: '+263783237918',
+    }));
+    setConversations(sanitized);
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem('zimbarter_trade_conversations', JSON.stringify(updated));
+        localStorage.setItem('zimbarter_trade_conversations_v3', JSON.stringify(sanitized));
       } catch (e) {
         console.warn('Failed to save conversations:', e);
       }
@@ -437,6 +452,9 @@ export default function TradeMessenger({
                         <MapPin className="w-2.5 h-2.5 text-[#059669]" />
                         <span>{conv.counterpartyLocation}</span>
                       </span>
+                      <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                        {conv.counterpartyPhone}
+                      </span>
                       {conv.unreadCount > 0 && (
                         <span className="ml-auto w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
                           {conv.unreadCount}
@@ -474,9 +492,13 @@ export default function TradeMessenger({
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate">
-                  {activeConversation.counterpartyRole} • {activeConversation.counterpartyLocation}
-                </p>
+                <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-gray-400 truncate">
+                  <span>{activeConversation.counterpartyRole} • {activeConversation.counterpartyLocation}</span>
+                  <span>•</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    {activeConversation.counterpartyPhone}
+                  </span>
+                </div>
               </div>
             </div>
 

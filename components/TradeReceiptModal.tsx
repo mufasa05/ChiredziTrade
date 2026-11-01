@@ -97,7 +97,7 @@ export default function TradeReceiptModal({ isOpen, onClose, receipt }: TradeRec
       `• Buyer: *${receipt.buyerName}* (${receipt.buyerPhone})`,
       `• Seller: *${receipt.sellerName}* (${receipt.sellerPhone})`,
       `────────────────────────────────────────`,
-      `_ZimBarter Trade Protection & Escrow Desk_`,
+      `_ZimBarter Trade Protection & Escrow Desk | Hotline: +263 78 323 7918_`,
     ].join('\n');
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
   };

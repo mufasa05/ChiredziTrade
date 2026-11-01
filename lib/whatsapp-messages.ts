@@ -107,7 +107,7 @@ export function formatListingInquiryUrl(params: WhatsAppInquiryParams): string {
     ``,
     params.listingId ? `*Listing Reference:* https://chiredzi-trade.vercel.app/listing/${params.listingId}` : null,
     `────────────────────────────────────────`,
-    `_ZimBarter Trade Protection & Escrow Desk_`,
+    `_ZimBarter Trade Protection & Escrow Desk | Hotline: +263 78 323 7918_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -147,7 +147,7 @@ export function formatCashOrderUrl(params: WhatsAppOrderParams): string {
     `*Handover Notice:*`,
     `Please prepare the items for inspection and collection at the agreed trade hub. Escrow release occurs upon mutual verification.`,
     `────────────────────────────────────────`,
-    `_ZimBarter Trade Protection & Escrow Desk_`,
+    `_ZimBarter Trade Protection & Escrow Desk | Hotline: +263 78 323 7918_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -179,7 +179,7 @@ export function formatBarterProposalUrl(params: WhatsAppBarterParams): string {
     `*Next Step:*`,
     `Please review the swap proposal and reply to accept, negotiate, or arrange trade hub inspection.`,
     `────────────────────────────────────────`,
-    `_ZimBarter Trade Protection & Escrow Desk_`,
+    `_ZimBarter Trade Protection & Escrow Desk | Hotline: +263 78 323 7918_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -214,7 +214,7 @@ export function formatBarterResponseUrl(params: WhatsAppBarterResponseParams): s
     ``,
     `Let's coordinate on terms or schedule the physical inspection at the collection hub.`,
     `────────────────────────────────────────`,
-    `_ZimBarter Trade Protection & Escrow Desk_`,
+    `_ZimBarter Trade Protection & Escrow Desk | Hotline: +263 78 323 7918_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -266,7 +266,7 @@ export function formatSellerOrderResponseUrl(params: WhatsAppSellerResponseParam
     `*Handover Status:*`,
     `Your order has been prepared and is ready for handover and physical inspection. When would you like to meet at the trade hub?`,
     `────────────────────────────────────────`,
-    `_ZimBarter Trade Protection & Escrow Desk_`,
+    `_ZimBarter Trade Protection & Escrow Desk | Hotline: +263 78 323 7918_`,
   ]
     .filter((line) => line !== null)
     .join('\n');

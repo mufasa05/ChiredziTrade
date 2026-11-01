@@ -33,11 +33,17 @@ if (typeof window !== 'undefined') {
         const realOnly = parsed.filter((l) => l && l.id);
         if (realOnly.length > 0) {
           // Keep genuine user-created listings and the 3 current Prince A Shumba demo listings
-          const initialIds = new Set(INITIAL_LISTINGS.map((l: Listing) => l.id));
-          const genuineUserListings = realOnly.filter((l: Listing) => !l.id.startsWith('zim-') || initialIds.has(l.id));
-          const existingIds = new Set(genuineUserListings.map((l: Listing) => l.id));
-          const missingInitials = INITIAL_LISTINGS.filter((l) => !existingIds.has(l.id));
-          memoryListings = [...missingInitials, ...genuineUserListings];
+          const initialMap = new Map(INITIAL_LISTINGS.map((l: Listing) => [l.id, l]));
+          const genuineUserListings = realOnly
+            .filter((l: Listing) => !l.id.startsWith('zim-'))
+            .map((l: Listing) => ({
+              ...l,
+              user: {
+                ...l.user,
+                phoneNumber: l.user?.phoneNumber && !l.user.phoneNumber.includes('772849102') ? l.user.phoneNumber : '+263783237918',
+              },
+            }));
+          memoryListings = [...INITIAL_LISTINGS, ...genuineUserListings];
         }
       }
     }
