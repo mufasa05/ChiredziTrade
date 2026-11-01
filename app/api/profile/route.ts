@@ -11,7 +11,7 @@ const ProfileSchema = z.object({
     .string()
     .trim()
     .transform((v) => v.replace(/[^\d+]/g, ''))
-    .refine((v) => /^\+?\d{9,15}$/.test(v), 'Enter a valid WhatsApp number, e.g. +263 77 123 4567')
+    .refine((v) => /^\+?\d{9,15}$/.test(v), 'Enter a valid WhatsApp number, e.g. +263 78 323 7918')
     .transform((v) => (v.startsWith('+') ? v : `+${v.startsWith('0') ? '263' + v.slice(1) : v}`)),
   locationArea: z.string().trim().min(2).max(100),
 });

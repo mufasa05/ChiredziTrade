@@ -20,7 +20,7 @@ export interface UserProfile {
 export const DEMO_USER: UserProfile = {
   id: 'user-prince-shumba',
   fullName: 'Prince A. Shumba',
-  phoneNumber: '+263 77 123 4567',
+  phoneNumber: '+263 78 323 7918',
   email: 'prince@zimbarter.co.zw',
   locationArea: 'Chiredzi Town / Masvingo',
   verifiedArtisan: true,

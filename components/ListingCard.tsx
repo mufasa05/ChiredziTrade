@@ -58,7 +58,7 @@ export default function ListingCard({
   const displayPrice = listing.price ? `${currencySymbol} ${listing.price.toLocaleString()} ${listing.currency}` : listing.currency === 'BARTER' ? 'BARTER ONLY' : `${currencySymbol} 0 ${listing.currency}`;
 
   const directWhatsAppUrl = formatListingInquiryUrl({
-    sellerPhone: listing.user?.phoneNumber || '+263 77 123 4567',
+    sellerPhone: listing.user?.phoneNumber || '+263 78 323 7918',
     sellerName: listing.user?.fullName || 'Trader',
     listingTitle: listing.title,
     priceOrTerms: displayPrice,

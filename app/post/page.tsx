@@ -956,7 +956,7 @@ export default function PostListingPage() {
                   required
                   value={sellerPhone}
                   onChange={(e) => setSellerPhone(e.target.value)}
-                  placeholder="+263 77..."
+                  placeholder="+263 78..."
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-lowveld-950 text-slate-900 dark:text-white border border-slate-300 dark:border-lowveld-800 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 />
               </div>

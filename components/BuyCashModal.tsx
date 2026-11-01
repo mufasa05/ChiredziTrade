@@ -259,11 +259,11 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
     }
   };
 
-  const sellerPhone = listing.user?.phoneNumber || '+263771234567';
+  const sellerPhone = listing.user?.phoneNumber || '+263783237918';
   const cleanPhone = sellerPhone.replace(/\D/g, '');
 
   const directWhatsAppUrl = formatCashOrderUrl({
-    sellerPhone: listing.user?.phoneNumber || '+263 77 123 4567',
+    sellerPhone: listing.user?.phoneNumber || '+263 78 323 7918',
     sellerName: listing.user?.fullName || 'Seller',
     listingTitle: listing.title,
     orderReference: orderReference || 'New Order',
@@ -291,11 +291,11 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
     paymentMethod: paymentMethod.toUpperCase(),
     paymentStatus: paymentMethod === 'ecocash' ? 'PAID' : 'HANDOVER_PENDING',
     sellerName: listing.user?.fullName || 'Verified Seller',
-    sellerPhone: listing.user?.phoneNumber || '+263 77 123 4567',
+    sellerPhone: listing.user?.phoneNumber || '+263 78 323 7918',
     sellerLocation: listing.locationArea || 'Zimbabwe',
     sellerVerified: true,
     buyerName: buyerName || 'Trader',
-    buyerPhone: buyerPhone || '+263 77 000 0000',
+    buyerPhone: buyerPhone || '+263 78 323 7918',
     collectionHub: effectiveHub,
     notes: notes,
   };
@@ -492,7 +492,7 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                     <input
                       type="tel"
                       required
-                      placeholder="0771234567 or 078..."
+                      placeholder="0783237918 or 077..."
                       value={ecoCashNumber}
                       onChange={(e) => setEcoCashNumber(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-emerald-950/50 border border-emerald-500/30 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-emerald-500 text-xs"
@@ -552,7 +552,7 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                     <input
                       type="tel"
                       required
-                      placeholder="+263 77..."
+                      placeholder="+263 78..."
                       value={buyerPhone}
                       onChange={(e) => setBuyerPhone(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-emerald-950/30 border border-slate-200 dark:border-emerald-500/20 text-slate-900 dark:text-white placeholder-slate-400 font-mono focus:outline-none focus:border-emerald-500 text-xs"
@@ -741,7 +741,7 @@ export default function BuyCashModal({ listing, isOpen = true, onClose }: BuyCas
                   </a>
 
                   <a
-                    href={`tel:${cleanPhone || '+263771234567'}`}
+                    href={`tel:${cleanPhone || '+263783237918'}`}
                     className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer text-center"
                   >
                     <Phone className="w-4 h-4 text-emerald-100 shrink-0" />

@@ -82,7 +82,7 @@ const DEFAULT_LEDGER: LedgerItem[] = [
     reference: 'ZB-6102',
     date: '25 Oct 2026, 11:20',
     counterparty: 'EcoCash Mobile Payout',
-    title: 'Merchant Payout to +263773123456',
+    title: 'Merchant Payout to +263783237918',
     type: 'payout',
     amount: -250.00,
     currency: 'USD',
@@ -98,7 +98,7 @@ export default function WalletPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'escrow' | 'completed' | 'payouts'>('all');
   const [payoutModalOpen, setPayoutModalOpen] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('100.00');
-  const [payoutPhone, setPayoutPhone] = useState('+263 77 312 3456');
+  const [payoutPhone, setPayoutPhone] = useState('+263 78 323 7918');
   const [payoutChannel, setPayoutChannel] = useState<'ecocash' | 'onemoney' | 'innbucks'>('ecocash');
   const [payoutSuccess, setPayoutSuccess] = useState(false);
 
@@ -195,9 +195,9 @@ export default function WalletPage() {
       paymentMethod: tx.paymentMethod,
       paymentStatus: tx.status === 'COMPLETED' ? 'PAID' : 'HANDOVER_PENDING',
       buyerName: 'Prince A. Shumba',
-      buyerPhone: '+263 77 312 3456',
+      buyerPhone: '+263 78 323 7918',
       sellerName: tx.counterparty,
-      sellerPhone: '+263 77 456 7890',
+      sellerPhone: '+263 78 323 7918',
       sellerLocation: tx.hub || 'Chiredzi Trade Hub',
       collectionHub: tx.hub,
     });

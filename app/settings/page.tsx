@@ -32,7 +32,7 @@ export default function SettingsPage() {
 
   // Form states
   const [fullName, setFullName] = useState(user?.fullName || 'Prince A. Shumba');
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '+263 77 123 4567');
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '+263 78 323 7918');
   const [email, setEmail] = useState(user?.email || 'prince@zimbarter.co.zw');
   const [locationArea, setLocationArea] = useState(user?.locationArea || 'Chiredzi Town / Masvingo');
   const [bio, setBio] = useState('Commercial livestock breeder and heavy machinery contractor based in Lowveld, Chiredzi.');
@@ -46,8 +46,8 @@ export default function SettingsPage() {
   const [allowInstantMessaging, setAllowInstantMessaging] = useState(true);
 
   // Payout details
-  const [ecocashNumber, setEcocashNumber] = useState('0771234567');
-  const [innbucksNumber, setInnbucksNumber] = useState('0771234567');
+  const [ecocashNumber, setEcocashNumber] = useState('0783237918');
+  const [innbucksNumber, setInnbucksNumber] = useState('0783237918');
   const [bankName, setBankName] = useState('Stanbic Bank Zimbabwe');
   const [accountNumber, setAccountNumber] = useState('9140003482190');
 

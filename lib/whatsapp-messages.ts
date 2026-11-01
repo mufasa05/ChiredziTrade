@@ -76,7 +76,7 @@ export interface WhatsAppSellerResponseParams {
 
 function cleanPhone(raw: string): string {
   const digits = (raw || '').replace(/\D/g, '');
-  if (!digits) return '263771234567';
+  if (!digits) return '263783237918';
   if (digits.startsWith('0')) {
     return '263' + digits.slice(1);
   }

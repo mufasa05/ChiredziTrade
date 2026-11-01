@@ -3,7 +3,7 @@ import { Listing, ListingUser } from './types';
 export const PRINCE_SHUMBA_USER: ListingUser = {
   id: 'user-prince-shumba',
   fullName: 'Prince A. Shumba',
-  phoneNumber: '+263773123456',
+  phoneNumber: '+263783237918',
   locationArea: 'Harare / Masvingo',
   verifiedArtisan: true,
   rating: 5,

@@ -50,7 +50,7 @@ const DEFAULT_INCOMING: IncomingTradeItem[] = [
     listingTitle: 'Broiler farming (Metra Poultry)',
     proposerName: 'Simba Chauke',
     proposerLocation: 'Triangle Estate',
-    proposerPhone: '+263774567890',
+    proposerPhone: '+263783237918',
     offeredItem: '2 Bags of Compound D Fertilizer + 50kg Maize Grain',
     offeredDescription: 'Unopened sealed bags from Windmill, stored dry.',
     cashTopUp: 'US$ 10.00',
@@ -63,7 +63,7 @@ const DEFAULT_INCOMING: IncomingTradeItem[] = [
     listingTitle: 'Solar Inverter & Lithium Battery (5kVA)',
     proposerName: 'Tinashe Musarurwa',
     proposerLocation: 'Harare CBD',
-    proposerPhone: '+263773456789',
+    proposerPhone: '+263783237918',
     offeredItem: 'Solar Submersible Borehole Inverter Pump (1.5HP) + 2 Solar Panels',
     offeredDescription: 'Brand new in crate with MPPT controller and DC cables.',
     cashTopUp: 'US$ 450.00',
@@ -76,7 +76,7 @@ const DEFAULT_INCOMING: IncomingTradeItem[] = [
     listingTitle: 'Broiler farming (Metra Poultry)',
     proposerName: 'Farai Ncube',
     proposerLocation: 'Masvingo',
-    proposerPhone: '+263775678901',
+    proposerPhone: '+263783237918',
     offeredItem: '3 Boer Goat Does (Young breeding stock, vaccinated)',
     offeredDescription: 'Ear-tagged, dipping records available from veterinary department.',
     cashTopUp: '',
@@ -91,9 +91,9 @@ const DEFAULT_SENT: BarterProposal[] = [
     listingId: 'zim-solar-03',
     listingTitle: 'Solar Inverter & Lithium Battery (5kVA)',
     sellerName: 'Prince A. Shumba',
-    sellerPhone: '+263773123456',
+    sellerPhone: '+263783237918',
     proposerName: 'Lowveld Rancher',
-    proposerPhone: '+263774567890',
+    proposerPhone: '+263783237918',
     proposerLocation: 'Triangle Estate',
     offeredItemTitle: '4 Brahman Cross Heifers (Polled, 18 months)',
     offeredDescription: 'Healthy grass-fed stock with veterinary clearance and brand certificates.',
@@ -602,7 +602,7 @@ export default function BarterHubPage() {
                         <span>Make Barter Proposal</span>
                       </button>
                       <a
-                        href={`https://wa.me/${(item.user?.phoneNumber || '+263771234567').replace(/\D/g, '')}?text=${encodeURIComponent(
+                        href={`https://wa.me/${(item.user?.phoneNumber || '+263783237918').replace(/\D/g, '')}?text=${encodeURIComponent(
                           `Hi ${item.user?.fullName}, I saw your barter listing "${item.title}" on ZimBarter. I have a trade offer.`
                         )}`}
                         target="_blank"
@@ -909,7 +909,7 @@ export default function BarterHubPage() {
                         </span>
 
                         <a
-                          href={`https://wa.me/${(sent.sellerPhone || '+263773123456').replace(/\D/g, '')}?text=${encodeURIComponent(
+                          href={`https://wa.me/${(sent.sellerPhone || '+263783237918').replace(/\D/g, '')}?text=${encodeURIComponent(
                             `Hi, I submitted a barter offer for "${sent.listingTitle || 'your item'}" on ZimBarter. Following up on terms.`
                           )}`}
                           target="_blank"

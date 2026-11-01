@@ -173,7 +173,7 @@ export default function AuthPanel({ redirectPath, onDone }: AuthPanelProps) {
                 id="profile-phone"
                 type="tel"
                 required
-                placeholder="+263 77 123 4567"
+                placeholder="+263 78 323 7918"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 className={`${inputCls} font-mono`}
@@ -242,7 +242,7 @@ export default function AuthPanel({ redirectPath, onDone }: AuthPanelProps) {
             </span>
             <div>
               <span className="block font-black text-sm text-white leading-tight">Continue as Prince A. Shumba</span>
-              <span className="text-[11px] text-emerald-100 font-medium leading-tight">Instant Demo Account · +263 77 123 4567</span>
+              <span className="text-[11px] text-emerald-100 font-medium leading-tight">Instant Demo Account · +263 78 323 7918</span>
             </div>
           </div>
           <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/25 text-white shrink-0 group-hover:bg-white/35 transition-colors flex items-center gap-1">

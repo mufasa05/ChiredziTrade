@@ -23,14 +23,14 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch verified seller profile
-    let phone = '+263 77 123 4567';
+    let phone = '+263 78 323 7918';
     let isPrince = true;
     if (user && supabase) {
       const { data: profile } = await supabase.from('users').select('phone_number, full_name').eq('id', user.id).maybeSingle();
       phone = profile?.phone_number || '';
       isPrince = (user?.email && user.email.toLowerCase().includes('prince')) ||
                  (profile?.full_name && profile.full_name.toLowerCase().includes('prince')) ||
-                 (phone && phone.includes('773123456')) ||
+                 (phone && phone.includes('783237918')) ||
                  user.id === 'user-prince-shumba';
     }
 

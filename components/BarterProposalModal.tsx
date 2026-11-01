@@ -102,7 +102,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
               listingId: listing.id,
               listingTitle: listing.title,
               sellerName: listing.user?.fullName || 'Seller',
-              sellerPhone: listing.user?.phoneNumber || '+263771234567',
+              sellerPhone: listing.user?.phoneNumber || '+263783237918',
               proposerName,
               proposerPhone,
               proposerLocation,
@@ -254,7 +254,7 @@ export default function BarterProposalModal({ listing, isOpen = true, onClose }:
                   <input
                     type="text"
                     required
-                    placeholder="+263 77..."
+                    placeholder="+263 78..."
                     value={proposerPhone}
                     onChange={(e) => setProposerPhone(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-lowveld-950/90 border border-slate-200 dark:border-lowveld-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"

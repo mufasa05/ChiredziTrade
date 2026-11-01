@@ -379,7 +379,7 @@ export default function TopBar({
                   <div className="px-4 py-2.5 border-b border-slate-200 dark:border-[#0e4337]">
                     <p className="text-xs font-bold text-slate-900 dark:text-white">{user.fullName}</p>
                     <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
-                      {user.phoneNumber || '+263 77 123 4567'}
+                      {user.phoneNumber || '+263 78 323 7918'}
                     </p>
                     <p className="text-[10px] text-slate-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
                       <MapPin className="w-2.5 h-2.5 text-emerald-500" />

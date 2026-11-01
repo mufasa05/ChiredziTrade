@@ -49,7 +49,7 @@ export const INITIAL_PROVIDERS: ServiceProvider[] = [
     verifiedArtisan: true,
     rating: 4.9,
     completedJobs: 88,
-    phone: '+263779012345',
+    phone: '+263783237918',
     headline: '4x4 Tractor Disc Ploughing, Sugarcane Haulage & Land Clearing',
     availability: 'Available Today',
     rates: [
@@ -72,7 +72,7 @@ export const INITIAL_PROVIDERS: ServiceProvider[] = [
     verifiedArtisan: true,
     rating: 5.0,
     completedJobs: 95,
-    phone: '+263770123456',
+    phone: '+263783237918',
     headline: 'Certified Solar Submersible Pumps, 5kVA-10kVA Inverter Systems',
     availability: 'Available Today',
     rates: [
@@ -95,7 +95,7 @@ export const INITIAL_PROVIDERS: ServiceProvider[] = [
     verifiedArtisan: true,
     rating: 4.9,
     completedJobs: 64,
-    phone: '+263776789012',
+    phone: '+263783237918',
     headline: 'Tractor, Sugarcane Harvester & Heavy Truck Hydraulic Rebuilds',
     availability: 'Available Today',
     rates: [
@@ -118,7 +118,7 @@ export const INITIAL_PROVIDERS: ServiceProvider[] = [
     verifiedArtisan: true,
     rating: 5.0,
     completedJobs: 110,
-    phone: '+263778901234',
+    phone: '+263783237918',
     headline: 'Custom Web Apps, WhatsApp Trading Bots & Mobile Payment Integration',
     availability: 'Available Today',
     rates: [
@@ -141,7 +141,7 @@ export const INITIAL_PROVIDERS: ServiceProvider[] = [
     verifiedArtisan: true,
     rating: 4.8,
     completedJobs: 72,
-    phone: '+263774567890',
+    phone: '+263783237918',
     headline: 'Refrigerated Meat Transport, Cattle Trucking & Lowveld Deliveries',
     availability: 'Available Today',
     rates: [
