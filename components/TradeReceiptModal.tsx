@@ -76,11 +76,30 @@ export default function TradeReceiptModal({ isOpen, onClose, receipt }: TradeRec
   };
 
   const handleShareWhatsApp = () => {
-    const cleanPhone = (receipt.sellerPhone || '').replace(/\D/g, '');
-    const text = encodeURIComponent(
-      `*ZimBarter Official Trade Receipt*\nRef: #${receipt.orderReference}\nItem: ${receipt.itemTitle} (x${receipt.quantity})\nTotal: ${receipt.currency} $${receipt.totalAmount}\nCollection Hub: ${receipt.collectionHub}\nStatus: ${receipt.paymentStatus}\nBuyer: ${receipt.buyerName} (${receipt.buyerPhone})\nSeller: ${receipt.sellerName} (${receipt.sellerPhone})`
-    );
-    window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
+    let cleanPhone = (receipt.sellerPhone || '').replace(/\D/g, '');
+    if (!cleanPhone) cleanPhone = '263783237918';
+    if (cleanPhone.startsWith('0')) cleanPhone = '263' + cleanPhone.slice(1);
+    const text = [
+      `*ZIMBARTER TRADE NETWORK | OFFICIAL RECEIPT*`,
+      `────────────────────────────────────────`,
+      `Order Reference: *#${receipt.orderReference}*`,
+      `Date: *${receipt.date}*`,
+      `Payment Status: *${receipt.paymentStatus.toUpperCase()}*`,
+      `Payment Mode: *${receipt.paymentMethod.toUpperCase()}*`,
+      ``,
+      `*Transaction Particulars:*`,
+      `• Item: *${receipt.itemTitle}* (Qty: ${receipt.quantity})`,
+      `• Unit Price: *${receipt.currency} $${receipt.unitPrice}*`,
+      `• Total Settlement: *${receipt.currency} $${receipt.totalAmount}*`,
+      `• Collection Trade Hub: *${receipt.collectionHub}*`,
+      ``,
+      `*Counterparties:*`,
+      `• Buyer: *${receipt.buyerName}* (${receipt.buyerPhone})`,
+      `• Seller: *${receipt.sellerName}* (${receipt.sellerPhone})`,
+      `────────────────────────────────────────`,
+      `_ZimBarter Trade Protection & Escrow Desk_`,
+    ].join('\n');
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (

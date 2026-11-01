@@ -46,7 +46,7 @@ export async function processWhatsAppMessage(msg: WhatsAppInboundMessage): Promi
     await db.updateBotSession(sender, 'IDLE', {});
     return {
       to: sender,
-      text: `Welcome to Zim Barter\nZimbabwe's #1 Barter & Trade Engine\n\nHow can we help you today?\n\n1. Reply SELL to list goods, produce, livestock, or artisan services.\n2. Reply with what you need to SEARCH (e.g. Need solar kit in Harare).\n3. Open web catalog: https://zimbarter.co.zw`,
+      text: `Welcome to ZimBarter\nZimbabwe's #1 Barter & Trade Engine\n\nHow can we help you today?\n\n1. Reply SELL to list goods, produce, livestock, or artisan services.\n2. Reply with what you need to SEARCH (e.g. Need solar kit in Harare).\n3. Open web catalog: https://chiredzi-trade.vercel.app`,
       quickReplies: ['SELL', 'Search Haulage', 'Browse Cattle', 'Find Welder'],
     };
   }
@@ -146,7 +146,7 @@ export async function processWhatsAppMessage(msg: WhatsAppInboundMessage): Promi
       return {
         to: sender,
         createdListingId: newListing.id,
-        text: `Listing is Live on ChiredziTrade!\n\nTitle: ${newListing.title}\nPrice: ${priceDisplay}\nLocation: ${newListing.locationArea}\nSector: ${newListing.category}\n\nShare your listing link:\nhttps://chiredzitrade.co.zw/listing/${newListing.id}\n\nType SELL to post another item, or type your search query anytime.`,
+        text: `Listing is Live on ZimBarter!\n\nTitle: ${newListing.title}\nPrice: ${priceDisplay}\nLocation: ${newListing.locationArea}\nSector: ${newListing.category}\n\nShare your listing link:\nhttps://chiredzi-trade.vercel.app/listing/${newListing.id}\n\nType SELL to post another item, or type your search query anytime.`,
       };
     }
 
@@ -163,7 +163,7 @@ export async function processWhatsAppMessage(msg: WhatsAppInboundMessage): Promi
               : `${item.price} ${item.currency}`;
           reply += `${idx + 1}. ${item.title}\n   Location: ${item.locationArea} | Price: ${cost}\n   Contact: wa.me/${item.user.phoneNumber.replace(/\D/g, '')}\n\n`;
         });
-        reply += `View all at https://chiredzitrade.co.zw?q=${encodeURIComponent(rawText)}`;
+        reply += `View all at https://chiredzi-trade.vercel.app?q=${encodeURIComponent(rawText)}`;
         return {
           to: sender,
           text: reply,
@@ -172,7 +172,7 @@ export async function processWhatsAppMessage(msg: WhatsAppInboundMessage): Promi
 
       return {
         to: sender,
-        text: `ChiredziTrade Bot\n\nWe could not find exact matches for "${rawText}".\n\n1. Type SELL to post an item or artisan service.\n2. Type SEARCH to find tractors, cattle, welders, or haulage.\n3. Browse web catalog: https://chiredzitrade.co.zw`,
+        text: `ZimBarter Assistant\n\nWe could not find exact matches for "${rawText}".\n\n1. Type SELL to post an item or artisan service.\n2. Type SEARCH to find tractors, cattle, welders, or haulage.\n3. Browse web catalog: https://chiredzi-trade.vercel.app`,
       };
     }
   }

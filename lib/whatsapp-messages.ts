@@ -92,21 +92,22 @@ function cleanPhone(raw: string): string {
 export function formatListingInquiryUrl(params: WhatsAppInquiryParams): string {
   const phone = cleanPhone(params.sellerPhone);
   const text = [
-    `*ZimBarter Marketplace Inquiry*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `Hello *${params.sellerName}*,`,
+    `*ZIMBARTER TRADE NETWORK | OFFICIAL INQUIRY*`,
+    `────────────────────────────────────────`,
+    `To: *${params.sellerName}*`,
+    params.buyerName ? `From: *${params.buyerName}*` : null,
     ``,
-    `I am inquiring about your listing on *ZimBarter*:`,
-    `• *Item:* ${params.listingTitle}`,
-    `• *Price / Terms:* ${params.priceOrTerms}`,
-    `• *Location:* ${params.locationArea}`,
+    `*Listing Details:*`,
+    `• Item: *${params.listingTitle}*`,
+    `• Listed Price / Terms: *${params.priceOrTerms}*`,
+    `• Trade Hub / Location: *${params.locationArea}*`,
     ``,
-    params.buyerName ? `• *From:* ${params.buyerName}` : null,
-    `• *Inquiry:* Is this still available? Can we arrange inspection or handover?`,
+    `*Inquiry:*`,
+    `Good day. I am inquiring about this listing on ZimBarter. Is it currently available for physical inspection and handover?`,
     ``,
-    params.listingId ? `• *Listing Link:* https://zimbarter.co.zw/listing/${params.listingId}` : null,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `_Sent via ZimBarter Zimbabwe Trade Network_`,
+    params.listingId ? `*Listing Reference:* https://chiredzi-trade.vercel.app/listing/${params.listingId}` : null,
+    `────────────────────────────────────────`,
+    `_ZimBarter Trade Protection & Escrow Desk_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -127,27 +128,26 @@ export function formatCashOrderUrl(params: WhatsAppOrderParams): string {
       : params.paymentMethod.toUpperCase();
 
   const text = [
-    `*ZimBarter Official Buy Order*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `Hello *${params.sellerName}*,`,
-    ``,
-    `A confirmed order has been placed for your listing:`,
+    `*ZIMBARTER TRADE NETWORK | CONFIRMED BUY ORDER*`,
+    `────────────────────────────────────────`,
+    `Order Reference: *#${params.orderReference}*`,
+    `Status: *CONFIRMED / PENDING HANDOVER*`,
     ``,
     `*Order Details:*`,
-    `• Reference: *#${params.orderReference}*`,
-    `• Item: *${params.listingTitle}* (x${params.quantity})`,
-    `• Total: *${params.currency} $${params.totalPrice}*`,
+    `• Item: *${params.listingTitle}* (Qty: ${params.quantity})`,
+    `• Total Settlement: *${params.currency} $${params.totalPrice}*`,
     `• Payment Mode: *${formattedMethod}*`,
-    `• Pickup Trade Hub: *${params.collectionHub}*`,
+    `• Collection Trade Hub: *${params.collectionHub}*`,
     ``,
-    `*Buyer Information:*`,
-    `• Name: *${params.buyerName}*`,
-    `• WhatsApp: *${params.buyerPhone}*`,
-    params.notes ? `• Special Note: "${params.notes}"` : null,
+    `*Counterparty Contact:*`,
+    `• Buyer Name: *${params.buyerName}*`,
+    `• WhatsApp Contact: *${params.buyerPhone}*`,
+    params.notes ? `• Special Instructions: "${params.notes}"` : null,
     ``,
-    `I am ready to arrange handover/collection. Please confirm when ready.`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `_Sent via ZimBarter Zimbabwe Trade Network_`,
+    `*Handover Notice:*`,
+    `Please prepare the items for inspection and collection at the agreed trade hub. Escrow release occurs upon mutual verification.`,
+    `────────────────────────────────────────`,
+    `_ZimBarter Trade Protection & Escrow Desk_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -161,26 +161,25 @@ export function formatCashOrderUrl(params: WhatsAppOrderParams): string {
 export function formatBarterProposalUrl(params: WhatsAppBarterParams): string {
   const phone = cleanPhone(params.sellerPhone);
   const text = [
-    `*ZimBarter Asset Swap Proposal*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `Hello *${params.sellerName}*,`,
+    `*ZIMBARTER TRADE NETWORK | ASSET SWAP PROPOSAL*`,
+    `────────────────────────────────────────`,
+    `To: *${params.sellerName}*`,
+    `Target Listing: *${params.targetListingTitle}*`,
     ``,
-    `I would like to propose a barter trade for your listing:`,
-    `• *Target Item:* *${params.targetListingTitle}*`,
+    `*Offered in Exchange:*`,
+    `• Asset / Commodity: *${params.offeredItemTitle}*`,
+    params.offeredDescription ? `• Specification: "${params.offeredDescription}"` : null,
+    params.cashTopUp ? `• Cash Top-Up Offer: *+${params.cashTopUp}*` : null,
     ``,
-    `*What I Am Offering in Exchange:*`,
-    `• Asset/Service: *${params.offeredItemTitle}*`,
-    params.offeredDescription ? `• Details: "${params.offeredDescription}"` : null,
-    params.cashTopUp ? `• Cash Top-Up: *+${params.cashTopUp}*` : null,
-    ``,
-    `*Proposer Details:*`,
+    `*Proposer Profile:*`,
     `• Name: *${params.proposerName}*`,
-    `• Location: *${params.proposerLocation}*`,
+    `• Trade Hub: *${params.proposerLocation}*`,
     `• WhatsApp: *${params.proposerPhone}*`,
     ``,
-    `Let's discuss terms and see if we can close this barter trade.`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `_Sent via ZimBarter Zimbabwe Trade Network_`,
+    `*Next Step:*`,
+    `Please review the swap proposal and reply to accept, negotiate, or arrange trade hub inspection.`,
+    `────────────────────────────────────────`,
+    `_ZimBarter Trade Protection & Escrow Desk_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -195,25 +194,27 @@ export function formatBarterResponseUrl(params: WhatsAppBarterResponseParams): s
   const phone = cleanPhone(params.proposerPhone);
   const statusLabel =
     params.status === 'accepted'
-      ? '[ACCEPTED & READY FOR HANDOVER]'
+      ? 'ACCEPTED - READY FOR TRADE HUB INSPECTION'
       : params.status === 'declined'
-      ? '[CANNOT ACCEPT AT THIS TIME]'
-      : '[COUNTEROFFER & NEGOTIATION]';
+      ? 'DECLINED AT THIS TIME'
+      : 'COUNTEROFFER PROPOSED';
 
   const text = [
-    `*ZimBarter Swap Offer Response*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `Hello *${params.proposerName}*,`,
+    `*ZIMBARTER TRADE NETWORK | BARTER PROPOSAL STATUS*`,
+    `────────────────────────────────────────`,
+    `To: *${params.proposerName}*`,
+    `Target Listing: *${params.targetListingTitle}*`,
+    `Your Offer: *${params.offeredItemTitle}*`,
     ``,
-    `Regarding your trade proposal for *"${params.targetListingTitle}"*:`,
-    `• Your Offered Item: *${params.offeredItemTitle}*`,
-    `• Decision: *${statusLabel}*`,
-    params.notes ? `• Note from Seller: "${params.notes}"` : null,
+    `*Seller Decision:* [${statusLabel}]`,
+    params.notes ? `*Seller Note:* "${params.notes}"` : null,
     ``,
-    `Let's finalize the handover / terms:`,
-    `Seller: *${params.sellerName}*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `_Sent via ZimBarter Zimbabwe Trade Network_`,
+    `*Verified Seller:*`,
+    `• Name: *${params.sellerName}*`,
+    ``,
+    `Let's coordinate on terms or schedule the physical inspection at the collection hub.`,
+    `────────────────────────────────────────`,
+    `_ZimBarter Trade Protection & Escrow Desk_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -227,21 +228,19 @@ export function formatBarterResponseUrl(params: WhatsAppBarterResponseParams): s
 export function formatServiceInquiryUrl(params: WhatsAppServiceParams): string {
   const phone = cleanPhone(params.providerPhone);
   const text = [
-    `*ZimBarter Artisan Service Request*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `Hello *${params.providerName}*,`,
+    `*ZIMBARTER TRADE NETWORK | ARTISAN SERVICE DISPATCH*`,
+    `────────────────────────────────────────`,
+    `Artisan: *${params.providerName}*`,
+    `Specialty: *${params.tradeCategory}*`,
+    `Coverage Area: *${params.locationHub}*`,
     ``,
-    `I found your profile on the *ZimBarter Service Providers Catalog*:`,
-    `• *Specialty:* ${params.tradeCategory}`,
-    `• *Coverage Area:* ${params.locationHub}`,
-    ``,
-    `*Service Required:*`,
+    `*Requested Service:*`,
     `"${params.requestedService}"`,
     ``,
-    params.inquirerName ? `• *Customer Name:* ${params.inquirerName}` : null,
-    `Please let me know your availability and estimated quote.`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `_Sent via ZimBarter Zimbabwe Trade Network_`,
+    params.inquirerName ? `*Inquirer Name:* *${params.inquirerName}*` : null,
+    `Please respond with your current availability and formal quotation.`,
+    `────────────────────────────────────────`,
+    `_ZimBarter Artisan & Trades Catalog_`,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -255,19 +254,19 @@ export function formatServiceInquiryUrl(params: WhatsAppServiceParams): string {
 export function formatSellerOrderResponseUrl(params: WhatsAppSellerResponseParams): string {
   const phone = cleanPhone(params.buyerPhone);
   const text = [
-    `*ZimBarter Order Handover Update*`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `Hello *${params.buyerName}*,`,
+    `*ZIMBARTER TRADE NETWORK | ORDER HANDOVER UPDATE*`,
+    `────────────────────────────────────────`,
+    `To: *${params.buyerName}*`,
+    `From: *${params.sellerName}*`,
+    `Listing: *${params.listingTitle}*${params.orderReference ? ` (Ref: #${params.orderReference})` : ''}`,
     ``,
-    `This is *${params.sellerName}* from *ZimBarter*.`,
-    `I received your order for *"${params.listingTitle}"*${params.orderReference ? ` (Ref: #${params.orderReference})` : ''}.`,
+    params.totalPrice ? `• Total Payable: *${params.currency || 'USD'} $${params.totalPrice}*` : null,
+    `• Designated Collection Hub: *${params.pickupLocation}*`,
     ``,
-    params.totalPrice ? `• *Amount Due:* ${params.currency || 'USD'} $${params.totalPrice}` : null,
-    `• *Agreed Pickup Hub:* ${params.pickupLocation}`,
-    ``,
-    `I have prepared your item. When would you like to arrange the pickup / inspection?`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `_Sent via ZimBarter Zimbabwe Trade Network_`,
+    `*Handover Status:*`,
+    `Your order has been prepared and is ready for handover and physical inspection. When would you like to meet at the trade hub?`,
+    `────────────────────────────────────────`,
+    `_ZimBarter Trade Protection & Escrow Desk_`,
   ]
     .filter((line) => line !== null)
     .join('\n');

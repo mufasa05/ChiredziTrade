@@ -10,7 +10,8 @@ import ServiceProviderCatalog from '@/components/ServiceProviderCatalog';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
 import { Listing, SectorCategory, TradeCurrency } from '@/lib/types';
-import { ArrowUpDown, Grid, List, Sparkles, Wrench, ShoppingBag, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowUpDown, Grid, List, Sparkles, Wrench, ShoppingBag, MapPin, ShieldCheck, ArrowRight, RefreshCw } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function HomePage() {
@@ -264,36 +265,74 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Live Active Listings Section */}
-            <div className="pt-4 border-t border-[#E2E8E4] dark:border-[#0e4337] space-y-3.5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-display font-black text-xl sm:text-2xl text-slate-900 dark:text-white tracking-tight">
-                    Latest Trade Offers & Listings
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-gray-400">
-                    Active listings posted by traders across Zimbabwe
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveView('marketplace')}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-[#059669] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-xs font-bold transition-all border border-emerald-500/20 flex items-center gap-1 shadow-sm"
-                >
-                  <span>Explore Marketplace</span>
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                </button>
-              </div>
+            {/* Dedicated Marketplace Access Gateway */}
+            <div className="pt-2 border-t border-slate-200 dark:border-[#0e4337]">
+              <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-emerald-50/40 to-slate-50 dark:from-[#051c16] dark:via-[#07241d] dark:to-[#031510] border border-slate-200/90 dark:border-emerald-500/20 p-5 sm:p-8 shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-2 max-w-xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[11px] font-bold uppercase tracking-wider">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Verified Trade Network • 1,200+ Active Listings</span>
+                    </div>
+                    <h3 className="font-display font-black text-xl sm:text-2xl text-slate-900 dark:text-white tracking-tight">
+                      Ready to Explore Live Listings &amp; Barter Swaps?
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 leading-relaxed">
+                      Access verified livestock, agricultural produce, industrial equipment, building materials, and certified artisan services across all 10 provinces.
+                    </p>
+                  </div>
 
-              <ListingGrid
-                listings={listings}
-                loading={loading}
-                viewMode={viewMode}
-                favoritedIds={favoritedIds}
-                onToggleFavorite={handleToggleFavorite}
-                onProposeBarter={(item) => setActiveBarterListing(item)}
-                onBuyCash={(item) => setActiveBuyListing(item)}
-                onResetFilters={handleResetFilters}
-              />
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setActiveView('marketplace')}
+                      className="px-5 py-3 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all hover:scale-[1.01]"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Explore Marketplace</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <Link
+                      href="/barter-network"
+                      className="px-4 py-3 rounded-xl bg-white dark:bg-[#0b2820] hover:bg-slate-100 dark:hover:bg-[#0f352b] text-slate-800 dark:text-emerald-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 dark:border-emerald-500/30 transition-all"
+                    >
+                      <RefreshCw className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>Barter Hub</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Trust Pillar Badges */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 mt-6 border-t border-slate-200/80 dark:border-[#0e4337]">
+                  <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-gray-300">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
+                      01
+                    </div>
+                    <div>
+                      <span className="font-bold block text-slate-900 dark:text-white">Escrow Protection</span>
+                      <span className="text-[11px] text-slate-500 dark:text-gray-400">Funds held until mutual physical inspection</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-gray-300">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
+                      02
+                    </div>
+                    <div>
+                      <span className="font-bold block text-slate-900 dark:text-white">Verified Traders</span>
+                      <span className="text-[11px] text-slate-500 dark:text-gray-400">KYC vetted farmers, ranchers &amp; registered artisans</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-gray-300">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
+                      03
+                    </div>
+                    <div>
+                      <span className="font-bold block text-slate-900 dark:text-white">Multi-Currency Trade</span>
+                      <span className="text-[11px] text-slate-500 dark:text-gray-400">Seamless USD cash, ZWG, EcoCash &amp; pure barter</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
