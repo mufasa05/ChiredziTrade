@@ -108,6 +108,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalPrompt, setAuthModalPrompt] = useState('');
+  const [profileDismissed, setProfileDismissed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('zimbarter_profile_dismissed') === 'true';
+    }
+    return false;
+  });
 
   const loadProfile = useCallback(async () => {
     try {
@@ -153,7 +159,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthUser(next);
       if (event === 'SIGNED_IN' && next) {
         setDemoUser(null);
+        setProfileDismissed(false);
         if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('zimbarter_profile_dismissed');
           localStorage.removeItem('zimbarter_demo_active');
           localStorage.removeItem('zimbarter_demo_user');
         }
@@ -163,6 +171,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (event === 'SIGNED_OUT') {
         setProfile(null);
         setProfileLoaded(true);
+        setProfileDismissed(false);
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('zimbarter_profile_dismissed');
+        }
       }
     });
 
@@ -173,10 +185,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAuthenticated = !!authUser || !!demoUser;
   const needsProfile = !!authUser && profileLoaded && !profile?.phoneNumber;
 
-  // Force profile completion: keep the modal open until WhatsApp number is saved
+  // Keep modal open when user needs profile unless user dismissed it
   useEffect(() => {
-    if (needsProfile) setIsAuthModalOpen(true);
-  }, [needsProfile]);
+    if (needsProfile && !profileDismissed) {
+      setIsAuthModalOpen(true);
+    }
+  }, [needsProfile, profileDismissed]);
 
   const signInAsDemo = (customProfile?: Partial<UserProfile>) => {
     const active = { ...DEMO_USER, ...customProfile };
@@ -234,6 +248,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const json = await res.json();
       if (!json.success) return { success: false, message: json.error || 'Could not save profile.' };
       setProfile(json.profile);
+      setProfileDismissed(false);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('zimbarter_profile_dismissed');
+      }
       return { success: true, message: 'Profile saved. Welcome to ZimBarter!' };
     } catch {
       return { success: false, message: 'Network error while saving profile.' };
@@ -247,13 +265,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthUser(null);
     setProfile(null);
     setDemoUser(null);
+    setProfileDismissed(false);
     if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('zimbarter_profile_dismissed');
       localStorage.removeItem('zimbarter_demo_active');
       localStorage.removeItem('zimbarter_demo_user');
     }
+    setIsAuthModalOpen(false);
   };
 
   const openAuthModal = (promptMsg: string = '') => {
+    setProfileDismissed(false);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('zimbarter_profile_dismissed');
+    }
     setAuthModalPrompt(promptMsg);
     setIsAuthModalOpen(true);
   };
@@ -265,7 +290,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const closeAuthModal = () => {
-    if (needsProfile) return; // must finish profile first
+    if (needsProfile) {
+      setProfileDismissed(true);
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('zimbarter_profile_dismissed', 'true');
+      }
+    }
     setIsAuthModalOpen(false);
   };
 
