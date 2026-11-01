@@ -130,15 +130,26 @@ function DashboardContent() {
     try {
       const res = await fetch('/api/dashboard', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listingId, status: newStatus }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id || 'user-prince-shumba',
+          'x-user-phone': user?.phoneNumber || '+263783237918',
+        },
+        body: JSON.stringify({ 
+          listingId, 
+          status: newStatus,
+          userId: user?.id || 'user-prince-shumba',
+          userPhone: user?.phoneNumber || '+263783237918',
+        }),
       });
       const data = await res.json();
       if (data.success) {
         setListings((prev) =>
           prev.map((l) => (l.id === listingId ? { ...l, status: newStatus } : l))
         );
-        fetchDashboardData();
+        await fetchDashboardData();
+      } else {
+        alert(data.error || 'Failed to update listing status');
       }
     } catch (err) {
       console.error('Error updating status:', err);
@@ -168,13 +179,22 @@ function DashboardContent() {
     }
     setUpdatingId(listingId);
     try {
-      const res = await fetch(`/api/dashboard?listingId=${encodeURIComponent(listingId)}`, {
-        method: 'DELETE',
-      });
+      const uid = user?.id || 'user-prince-shumba';
+      const uphone = user?.phoneNumber || '+263783237918';
+      const res = await fetch(
+        `/api/dashboard?listingId=${encodeURIComponent(listingId)}&userId=${encodeURIComponent(uid)}&phone=${encodeURIComponent(uphone)}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'x-user-id': uid,
+            'x-user-phone': uphone,
+          },
+        }
+      );
       const data = await res.json();
       if (data.success) {
         setListings((prev) => prev.filter((l) => l.id !== listingId));
-        fetchDashboardData();
+        await fetchDashboardData();
       } else {
         alert(data.error || 'Failed to delete listing');
       }

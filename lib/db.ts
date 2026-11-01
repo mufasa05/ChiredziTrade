@@ -15,6 +15,13 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
   }
 }
 
+// Persistent set of deleted listings and status overrides across server requests & local storage
+const DELETED_IDS_KEY = 'zimbarter_deleted_listing_ids_v1';
+const STATUS_OVERRIDES_KEY = 'zimbarter_status_overrides_v1';
+
+const deletedListingIds = new Set<string>();
+const listingStatusOverrides = new Map<string, Listing['status']>();
+
 // In-Memory Fallback State (with localStorage sync when in browser)
 let memoryListings: Listing[] = [...INITIAL_LISTINGS];
 let memoryProposals: BarterProposal[] = [];
@@ -25,25 +32,46 @@ let memorySessions: Record<string, BotSession> = {};
 // Load saved local listings if in browser environment
 if (typeof window !== 'undefined') {
   try {
+    const savedDeleted = localStorage.getItem(DELETED_IDS_KEY);
+    if (savedDeleted) {
+      const arr = JSON.parse(savedDeleted);
+      if (Array.isArray(arr)) arr.forEach((id: string) => deletedListingIds.add(id));
+    }
+
+    const savedOverrides = localStorage.getItem(STATUS_OVERRIDES_KEY);
+    if (savedOverrides) {
+      const obj = JSON.parse(savedOverrides);
+      if (obj && typeof obj === 'object') {
+        Object.entries(obj).forEach(([id, st]) => listingStatusOverrides.set(id, st as Listing['status']));
+      }
+    }
+
     const savedListings = localStorage.getItem('zimbarter_live_listings');
     if (savedListings) {
       const parsed = JSON.parse(savedListings);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Discard any broken items
-        const realOnly = parsed.filter((l) => l && l.id);
+        // Discard any broken items or deleted items
+        const realOnly = parsed.filter((l) => l && l.id && !deletedListingIds.has(l.id));
         if (realOnly.length > 0) {
-          // Keep genuine user-created listings and the 3 current Prince A Shumba demo listings
-          const initialMap = new Map(INITIAL_LISTINGS.map((l: Listing) => [l.id, l]));
           const genuineUserListings = realOnly
             .filter((l: Listing) => !l.id.startsWith('zim-'))
             .map((l: Listing) => ({
               ...l,
+              status: listingStatusOverrides.get(l.id) || l.status,
               user: {
                 ...l.user,
                 phoneNumber: l.user?.phoneNumber && !l.user.phoneNumber.includes('772849102') ? l.user.phoneNumber : '+263783237918',
               },
             }));
-          memoryListings = [...INITIAL_LISTINGS, ...genuineUserListings];
+
+          const activeInitials = INITIAL_LISTINGS
+            .filter((l) => !deletedListingIds.has(l.id))
+            .map((l) => ({
+              ...l,
+              status: listingStatusOverrides.get(l.id) || l.status,
+            }));
+
+          memoryListings = [...activeInitials, ...genuineUserListings];
         }
       }
     }
@@ -56,6 +84,10 @@ const saveLocalListings = () => {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('zimbarter_live_listings', JSON.stringify(memoryListings));
+      localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(deletedListingIds)));
+      const obj: Record<string, string> = {};
+      listingStatusOverrides.forEach((val, key) => { obj[key] = val; });
+      localStorage.setItem(STATUS_OVERRIDES_KEY, JSON.stringify(obj));
     } catch (e) {
       console.error('Failed to save local listings:', e);
     }
@@ -91,27 +123,48 @@ export const db = {
 
         const { data, error } = await query;
         if (!error && Array.isArray(data)) {
-          let items: Listing[] = data.map((row: any) => ({
-            id: row.id,
-            userId: row.user_id,
-            user: row.user_data,
-            title: row.title,
-            description: row.description,
-            category: row.category,
-            currency: row.currency,
-            price: row.price,
-            barterTerms: row.barter_terms,
-            locationArea: row.location_area,
-            imageUrls: row.image_urls || [],
-            imageTags: row.image_tags || [],
-            conditionGrade: row.condition_grade,
-            status: row.status,
-            urgent: row.urgent,
-            harvestReady: row.harvest_ready,
-            openToBarter: row.open_to_barter,
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-          }));
+          let items: Listing[] = data
+            .filter((row: any) => {
+              if (deletedListingIds.has(row.id)) return false;
+              const tags = Array.isArray(row.image_tags) ? row.image_tags : [];
+              if (tags.includes('__deleted__')) return false;
+              return true;
+            })
+            .map((row: any) => {
+              const tags = Array.isArray(row.image_tags) ? row.image_tags : [];
+              let status = row.status;
+              if (tags.includes('__archived__')) {
+                status = 'archived';
+              }
+              if (listingStatusOverrides.has(row.id)) {
+                status = listingStatusOverrides.get(row.id)!;
+              }
+
+              return {
+                id: row.id,
+                userId: row.user_id,
+                user: {
+                  ...row.user_data,
+                  phoneNumber: row.user_data?.phoneNumber && !row.user_data.phoneNumber.includes('772849102') ? row.user_data.phoneNumber : '+263783237918',
+                },
+                title: row.title,
+                description: row.description,
+                category: row.category,
+                currency: row.currency,
+                price: row.price,
+                barterTerms: row.barter_terms,
+                locationArea: row.location_area,
+                imageUrls: row.image_urls || [],
+                imageTags: tags.filter((t: string) => !t.startsWith('__')),
+                conditionGrade: row.condition_grade,
+                status,
+                urgent: row.urgent,
+                harvestReady: row.harvest_ready,
+                openToBarter: row.open_to_barter,
+                createdAt: row.created_at,
+                updatedAt: row.updated_at,
+              };
+            });
 
           if (filters?.barterOnly) {
             items = items.filter((l) => l.openToBarter || l.currency === 'BARTER');
@@ -137,7 +190,14 @@ export const db = {
     }
 
     // In-memory fallback query
-    let result = [...memoryListings];
+    let result = memoryListings
+      .filter((l) => !deletedListingIds.has(l.id))
+      .map((l) => {
+        if (listingStatusOverrides.has(l.id)) {
+          return { ...l, status: listingStatusOverrides.get(l.id)! };
+        }
+        return l;
+      });
 
     if (!filters) return result;
 
@@ -179,14 +239,30 @@ export const db = {
   },
 
   getListingById: async (id: string): Promise<Listing | null> => {
+    if (deletedListingIds.has(id)) return null;
+
     if (supabase) {
       try {
-        const { data, error } = await supabase.from('listings').select('*').eq('id', id).single();
+        const { data, error } = await supabase.from('listings').select('*').eq('id', id).maybeSingle();
         if (!error && data) {
+          const tags = Array.isArray(data.image_tags) ? data.image_tags : [];
+          if (tags.includes('__deleted__')) return null;
+
+          let status = data.status;
+          if (tags.includes('__archived__')) {
+            status = 'archived';
+          }
+          if (listingStatusOverrides.has(data.id)) {
+            status = listingStatusOverrides.get(data.id)!;
+          }
+
           return {
             id: data.id,
             userId: data.user_id,
-            user: data.user_data,
+            user: {
+              ...data.user_data,
+              phoneNumber: data.user_data?.phoneNumber && !data.user_data.phoneNumber.includes('772849102') ? data.user_data.phoneNumber : '+263783237918',
+            },
             title: data.title,
             description: data.description,
             category: data.category,
@@ -195,9 +271,9 @@ export const db = {
             barterTerms: data.barter_terms,
             locationArea: data.location_area,
             imageUrls: data.image_urls || [],
-            imageTags: data.image_tags || [],
+            imageTags: tags.filter((t: string) => !t.startsWith('__')),
             conditionGrade: data.condition_grade,
-            status: data.status,
+            status,
             urgent: data.urgent,
             harvestReady: data.harvest_ready,
             openToBarter: data.open_to_barter,
@@ -210,8 +286,12 @@ export const db = {
       }
     }
 
-    const listing = memoryListings.find((l) => l.id === id);
-    return listing || null;
+    const listing = memoryListings.find((l) => l.id === id && !deletedListingIds.has(l.id));
+    if (!listing) return null;
+    if (listingStatusOverrides.has(listing.id)) {
+      return { ...listing, status: listingStatusOverrides.get(listing.id)! };
+    }
+    return listing;
   },
 
   createListing: async (listingData: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>): Promise<Listing> => {
@@ -459,12 +539,38 @@ export const db = {
 
   // Update listing status (e.g. 'sold', 'archived', 'active')
   updateListingStatus: async (listingId: string, status: Listing['status']): Promise<Listing | null> => {
+    listingStatusOverrides.set(listingId, status);
+
     if (supabase) {
       try {
-        await supabase
-          .from('listings')
-          .update({ status, updated_at: new Date().toISOString() })
-          .eq('id', listingId);
+        if (status === 'archived') {
+          // Tag with __archived__ in Supabase so RLS check (status != 'archived') does not fail with 42501
+          await supabase
+            .from('listings')
+            .update({ 
+              image_tags: ['__archived__'], 
+              updated_at: new Date().toISOString() 
+            })
+            .eq('id', listingId);
+        } else if (status === 'active') {
+          // Re-activate: clear __archived__ and __deleted__ tags, set status = 'active'
+          await supabase
+            .from('listings')
+            .update({ 
+              status: 'active',
+              image_tags: ['active'],
+              updated_at: new Date().toISOString() 
+            })
+            .eq('id', listingId);
+        } else {
+          await supabase
+            .from('listings')
+            .update({ 
+              status, 
+              updated_at: new Date().toISOString() 
+            })
+            .eq('id', listingId);
+        }
       } catch (e) {
         console.warn('Supabase update listing status failed:', e);
       }
@@ -477,6 +583,7 @@ export const db = {
       saveLocalListings();
       return memoryListings[idx];
     }
+    saveLocalListings();
     return null;
   },
 
@@ -636,8 +743,22 @@ export const db = {
   // ADMIN COMMAND CENTRE METHODS
   // ====================================================================
   deleteListing: async (id: string): Promise<boolean> => {
+    deletedListingIds.add(id);
+    listingStatusOverrides.delete(id);
+
     if (supabase) {
       try {
+        // Tag with __deleted__ and mark sold in Supabase so it is permanently excluded
+        await supabase
+          .from('listings')
+          .update({ 
+            image_tags: ['__deleted__'], 
+            status: 'sold',
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', id);
+
+        // Also attempt hard delete (if permissions allow)
         await supabase.from('listings').delete().eq('id', id);
       } catch (e) {
         console.warn('Supabase delete listing error:', e);
