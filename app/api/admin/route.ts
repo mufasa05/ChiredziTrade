@@ -13,7 +13,6 @@ function isAuthorizedAdmin(req: NextRequest): boolean {
   const validPins = [
     ADMIN_PIN,
     'Mufasa05-?30',
-    'Mufasa05',
     process.env.ADMIN_SECRET_PIN,
     process.env.ADMIN_PIN,
   ].filter(Boolean) as string[];
@@ -81,9 +80,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: `Proposal ${id} deleted` });
     }
 
+    if (action === 'update_proposal_status' && id && status) {
+      await db.updateProposalStatus(id, status);
+      return NextResponse.json({ success: true, message: `Proposal ${id} updated to ${status}` });
+    }
+
     if (action === 'delete_order' && id) {
       await db.deleteOrder(id);
       return NextResponse.json({ success: true, message: `Order ${id} deleted` });
+    }
+
+    if (action === 'update_order_status' && id && status) {
+      await db.updateOrderStatus(id, status);
+      return NextResponse.json({ success: true, message: `Order ${id} status updated to ${status}` });
     }
 
     if (action === 'delete_review' && id) {

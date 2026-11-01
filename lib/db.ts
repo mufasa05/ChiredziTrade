@@ -2,6 +2,7 @@ import { Listing, BarterProposal, TradeOrder, BotSession, SectorCategory, TradeC
 import { INITIAL_LISTINGS } from './mock-data';
 import { uploadListingImage } from './storage';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase/config';
+import { calculatePlatformFee } from './constants';
 
 // Initialize Supabase Client
 let supabase: any = null;
@@ -819,11 +820,12 @@ export const db = {
   },
 
   getAllProposals: async (): Promise<BarterProposal[]> => {
+    let rawProposals: BarterProposal[] = [];
     if (supabase) {
       try {
         const { data, error } = await supabase.from('barter_proposals').select('*').order('created_at', { ascending: false });
         if (!error && data) {
-          return data.map((r: any) => ({
+          rawProposals = data.map((r: any) => ({
             id: r.id,
             listingId: r.listing_id,
             proposerName: r.proposer_name,
@@ -840,7 +842,27 @@ export const db = {
         console.warn('Supabase fetch proposals error:', e);
       }
     }
-    return memoryProposals;
+    if (rawProposals.length === 0) {
+      rawProposals = memoryProposals;
+    }
+
+    try {
+      const allListings = await db.getListings({ category: 'all' });
+      const listingMap = new Map<string, Listing>(allListings.map((l) => [l.id, l]));
+
+      return rawProposals.map((p) => {
+        const listing = listingMap.get(p.listingId);
+        return {
+          ...p,
+          listingTitle: listing?.title || 'Target Barter Item',
+          sellerName: listing?.user?.fullName || 'Listing Owner',
+          sellerPhone: listing?.user?.phoneNumber || '+263 78 323 7918',
+          sellerLocation: listing?.locationArea || 'Harare CBD',
+        };
+      });
+    } catch {
+      return rawProposals;
+    }
   },
 
   deleteOrder: async (id: string): Promise<boolean> => {
@@ -855,12 +877,26 @@ export const db = {
     return true;
   },
 
+  updateOrderStatus: async (id: string, status: TradeOrder['status']): Promise<boolean> => {
+    if (supabase) {
+      try {
+        await supabase.from('trade_orders').update({ status }).eq('id', id);
+      } catch (e) {
+        console.warn('Supabase update order status error:', e);
+      }
+    }
+    const order = memoryOrders.find((o) => o.id === id);
+    if (order) order.status = status;
+    return true;
+  },
+
   getAllOrders: async (): Promise<TradeOrder[]> => {
+    let rawOrders: TradeOrder[] = [];
     if (supabase) {
       try {
         const { data, error } = await supabase.from('trade_orders').select('*').order('created_at', { ascending: false });
         if (!error && data) {
-          return data.map((r: any) => ({
+          rawOrders = data.map((r: any) => ({
             id: r.id,
             listingId: r.listing_id,
             buyerName: r.buyer_name,
@@ -878,7 +914,69 @@ export const db = {
         console.warn('Supabase fetch orders error:', e);
       }
     }
-    return memoryOrders;
+    if (rawOrders.length === 0) {
+      rawOrders = memoryOrders;
+    }
+
+    try {
+      const allListings = await db.getListings({ category: 'all' });
+      const listingMap = new Map<string, Listing>(allListings.map((l) => [l.id, l]));
+
+      return rawOrders.map((o) => {
+        const listing = listingMap.get(o.listingId);
+        const notes = o.notes || '';
+
+        let paymentMethod = 'Direct Transfer / COD';
+        let transactionRef = '';
+        let subtotal = 0;
+        let platformFee = 0;
+        let pickupLocation = '';
+
+        const payMatch = notes.match(/\[PAYMENT:\s*([^\]]+)\]/i);
+        if (payMatch) paymentMethod = payMatch[1].trim();
+
+        const refMatch = notes.match(/\[REF:\s*([^\]]+)\]/i);
+        if (refMatch) transactionRef = refMatch[1].trim();
+
+        const txMatch = notes.match(/\[TX_CODE:\s*([^\]]+)\]/i);
+        if (txMatch) transactionRef = transactionRef ? `${transactionRef} (${txMatch[1].trim()})` : txMatch[1].trim();
+
+        const feeMatch = notes.match(/\[FEE_5%:\s*\$?([0-9.]+)\]/i);
+        if (feeMatch) platformFee = parseFloat(feeMatch[1]);
+
+        const subMatch = notes.match(/\[SUBTOTAL:\s*\$?([0-9.]+)\]/i);
+        if (subMatch) subtotal = parseFloat(subMatch[1]);
+
+        const pickupMatch = notes.match(/Pickup Hub:\s*([^|\]]+)/i);
+        if (pickupMatch) pickupLocation = pickupMatch[1].trim();
+
+        if (!platformFee && o.totalPrice > 0) {
+          platformFee = calculatePlatformFee(o.totalPrice / 1.05);
+        }
+        if (!subtotal && o.totalPrice > 0) {
+          subtotal = Number(Math.max(0, o.totalPrice - platformFee).toFixed(2));
+        }
+
+        const fee = platformFee || calculatePlatformFee(o.totalPrice ? o.totalPrice / 1.05 : 0);
+        const payout = Number(Math.max(0, o.totalPrice - fee).toFixed(2));
+
+        return {
+          ...o,
+          pickupLocation: pickupLocation || o.pickupLocation || listing?.locationArea || 'Harare CBD',
+          listingTitle: listing?.title || 'Platform Trade Item',
+          sellerName: listing?.user?.fullName || 'Registered Merchant',
+          sellerPhone: listing?.user?.phoneNumber || '+263 78 323 7918',
+          sellerLocation: listing?.locationArea || 'Harare CBD',
+          platformFee: fee,
+          sellerPayout: payout,
+          subtotal: subtotal || payout,
+          paymentMethod,
+          transactionRef,
+        };
+      });
+    } catch {
+      return rawOrders;
+    }
   },
 
   deleteReview: async (id: string): Promise<boolean> => {
@@ -948,6 +1046,11 @@ export const db = {
     const reviews = memoryReviews;
 
     const grossOrderVolumeUSD = orders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+    const platformRevenueUSD = orders.reduce((sum, o) => sum + (o.platformFee || 0), 0);
+    const netSellerPayoutUSD = Math.max(0, grossOrderVolumeUSD - platformRevenueUSD);
+    const pendingDisbursalsUSD = orders
+      .filter((o) => o.status === 'pending' || o.status === 'confirmed')
+      .reduce((sum, o) => sum + (o.sellerPayout || 0), 0);
 
     return {
       totalUsers: users.length,
@@ -956,6 +1059,9 @@ export const db = {
       totalOrders: orders.length,
       totalReviews: reviews.length,
       grossOrderVolumeUSD: Number(grossOrderVolumeUSD.toFixed(2)),
+      platformRevenueUSD: Number(platformRevenueUSD.toFixed(2)),
+      netSellerPayoutUSD: Number(netSellerPayoutUSD.toFixed(2)),
+      pendingDisbursalsUSD: Number(pendingDisbursalsUSD.toFixed(2)),
     };
   },
 };

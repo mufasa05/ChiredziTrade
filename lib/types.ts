@@ -90,6 +90,9 @@ export interface AdminPlatformStats {
   totalOrders: number;
   totalReviews: number;
   grossOrderVolumeUSD: number;
+  platformRevenueUSD?: number;
+  netSellerPayoutUSD?: number;
+  pendingDisbursalsUSD?: number;
 }
 
 export interface Listing {
@@ -132,6 +135,7 @@ export interface BarterProposal {
   listingTitle?: string;
   sellerName?: string;
   sellerPhone?: string;
+  sellerLocation?: string;
   proposerId?: string;
   proposerName: string;
   proposerPhone: string;
@@ -153,8 +157,18 @@ export interface TradeOrder {
   quantity: number;
   totalPrice: number;
   notes?: string;
-  status: 'pending' | 'confirmed' | 'delivered';
+  status: 'pending' | 'confirmed' | 'delivered' | 'cancelled';
   createdAt: string;
+  // Enriched trade details for admin activity & transparency
+  listingTitle?: string;
+  sellerName?: string;
+  sellerPhone?: string;
+  sellerLocation?: string;
+  sellerPayout?: number;
+  platformFee?: number;
+  subtotal?: number;
+  paymentMethod?: string;
+  transactionRef?: string;
 }
 
 export interface BotSession {

@@ -18,7 +18,18 @@ import {
   Archive,
   Star,
   Activity,
-  DollarSign
+  DollarSign,
+  ArrowRightLeft,
+  CreditCard,
+  ExternalLink,
+  Printer,
+  Check,
+  X,
+  Clock,
+  Phone,
+  TrendingUp,
+  FileText,
+  BadgePercent
 } from 'lucide-react';
 import { Listing, BarterProposal, TradeOrder, AdminPlatformStats, isUserVerified } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -40,6 +51,9 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<TradeOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [tradeTypeFilter, setTradeTypeFilter] = useState<'all' | 'orders' | 'barter'>('all');
+  const [tradeStatusFilter, setTradeStatusFilter] = useState<string>('all');
+  const [tradeSearchTerm, setTradeSearchTerm] = useState('');
 
   const fetchAdminData = async (pin: string) => {
     setLoading(true);
@@ -120,6 +134,46 @@ export default function AdminPage() {
       (u.phoneNumber || '').toLowerCase().includes(userSearchTerm.toLowerCase()) ||
       (u.locationArea || '').toLowerCase().includes(userSearchTerm.toLowerCase())
   );
+
+  const formatWhatsAppUrl = (phone?: string) => {
+    if (!phone) return '#';
+    let clean = phone.replace(/\D/g, '');
+    if (clean.startsWith('0')) clean = '263' + clean.slice(1);
+    if (!clean.startsWith('263')) clean = '263' + clean;
+    return `https://wa.me/${clean}`;
+  };
+
+  // Filter cash orders
+  const filteredOrders = orders.filter((o) => {
+    const matchesStatus = tradeStatusFilter === 'all' || o.status === tradeStatusFilter;
+    const term = tradeSearchTerm.toLowerCase();
+    const matchesSearch =
+      !term ||
+      (o.buyerName || '').toLowerCase().includes(term) ||
+      (o.buyerPhone || '').toLowerCase().includes(term) ||
+      (o.sellerName || '').toLowerCase().includes(term) ||
+      (o.sellerPhone || '').toLowerCase().includes(term) ||
+      (o.listingTitle || '').toLowerCase().includes(term) ||
+      (o.transactionRef || '').toLowerCase().includes(term) ||
+      (o.pickupLocation || '').toLowerCase().includes(term);
+    return matchesStatus && matchesSearch;
+  });
+
+  // Filter barter proposals
+  const filteredProposals = proposals.filter((p) => {
+    const matchesStatus = tradeStatusFilter === 'all' || p.status === tradeStatusFilter;
+    const term = tradeSearchTerm.toLowerCase();
+    const matchesSearch =
+      !term ||
+      (p.proposerName || '').toLowerCase().includes(term) ||
+      (p.proposerPhone || '').toLowerCase().includes(term) ||
+      (p.sellerName || '').toLowerCase().includes(term) ||
+      (p.sellerPhone || '').toLowerCase().includes(term) ||
+      (p.offeredItemTitle || '').toLowerCase().includes(term) ||
+      (p.listingTitle || '').toLowerCase().includes(term) ||
+      (p.proposerLocation || '').toLowerCase().includes(term);
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
@@ -229,7 +283,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="p-4 rounded-2xl bg-white dark:bg-lowveld-950/80 border border-slate-200 dark:border-lowveld-800 shadow-sm">
                   <div className="flex items-center justify-between text-slate-500 dark:text-gray-400 mb-2">
-                    <span className="text-xs font-semibold">Total Users</span>
+                    <span className="text-xs font-semibold">Total Traders</span>
                     <Users className="w-4 h-4 text-emerald-500" />
                   </div>
                   <p className="font-display font-black text-2xl text-slate-900 dark:text-white">{stats.totalUsers}</p>
@@ -245,26 +299,32 @@ export default function AdminPage() {
 
                 <div className="p-4 rounded-2xl bg-white dark:bg-lowveld-950/80 border border-slate-200 dark:border-lowveld-800 shadow-sm">
                   <div className="flex items-center justify-between text-slate-500 dark:text-gray-400 mb-2">
-                    <span className="text-xs font-semibold">Barter Proposals</span>
-                    <RefreshCw className="w-4 h-4 text-amber-500" />
-                  </div>
-                  <p className="font-display font-black text-2xl text-slate-900 dark:text-white">{stats.totalProposals}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white dark:bg-lowveld-950/80 border border-slate-200 dark:border-lowveld-800 shadow-sm">
-                  <div className="flex items-center justify-between text-slate-500 dark:text-gray-400 mb-2">
-                    <span className="text-xs font-semibold">Cash Orders</span>
-                    <ShoppingBag className="w-4 h-4 text-blue-500" />
-                  </div>
-                  <p className="font-display font-black text-2xl text-slate-900 dark:text-white">{stats.totalOrders}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white dark:bg-lowveld-950/80 border border-slate-200 dark:border-lowveld-800 shadow-sm col-span-2 md:col-span-1">
-                  <div className="flex items-center justify-between text-slate-500 dark:text-gray-400 mb-2">
-                    <span className="text-xs font-semibold">Order Volume</span>
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-semibold">Gross Trade Volume</span>
+                    <DollarSign className="w-4 h-4 text-emerald-500" />
                   </div>
                   <p className="font-display font-black text-2xl text-emerald-600 dark:text-emerald-400">${stats.grossOrderVolumeUSD}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/30 shadow-sm">
+                  <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-300 mb-2">
+                    <span className="text-xs font-bold">Platform Fee (Our Cut)</span>
+                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                  </div>
+                  <p className="font-display font-black text-2xl text-emerald-700 dark:text-emerald-300">
+                    ${stats.platformRevenueUSD ?? Number(((stats.grossOrderVolumeUSD || 0) * 0.05).toFixed(2))}
+                  </p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-mono">5% Platform Commission</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-blue-500/10 dark:bg-blue-950/30 border border-blue-500/30 shadow-sm col-span-2 md:col-span-1">
+                  <div className="flex items-center justify-between text-blue-700 dark:text-blue-300 mb-2">
+                    <span className="text-xs font-bold">Seller Disbursals</span>
+                    <CreditCard className="w-4 h-4 text-blue-500" />
+                  </div>
+                  <p className="font-display font-black text-2xl text-blue-700 dark:text-blue-300">
+                    ${stats.netSellerPayoutUSD ?? Number(((stats.grossOrderVolumeUSD || 0) * 0.95).toFixed(2))}
+                  </p>
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 font-mono">Paid / Payable to Sellers</p>
                 </div>
               </div>
             )}
@@ -302,7 +362,7 @@ export default function AdminPage() {
                 }`}
               >
                 <RefreshCw className="w-4 h-4" />
-                <span>Trade Activity</span>
+                <span>Trade Activity ({orders.length + proposals.length})</span>
               </button>
             </div>
 
@@ -494,70 +554,463 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* TAB 3: TRADE ACTIVITY & PROPOSALS */}
+            {/* TAB 3: UPGRADED TRADE ACTIVITY & FINANCIAL SETTLEMENT PLATFORM */}
             {activeTab === 'proposals' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Barter Proposals */}
-                <div className="space-y-3">
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 text-amber-500" />
-                    <span>Barter Proposals ({proposals.length})</span>
-                  </h3>
-                  <div className="space-y-2">
-                    {proposals.length === 0 ? (
-                      <div className="p-6 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-center text-xs text-slate-500 dark:text-gray-400">
-                        No barter proposals recorded yet.
-                      </div>
-                    ) : (
-                      proposals.map((p) => (
-                        <div key={p.id} className="p-3.5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-xs space-y-1">
-                          <div className="flex items-center justify-between">
-                            <p className="font-bold text-slate-900 dark:text-white">{p.proposerName} ({p.proposerPhone})</p>
-                            <button
-                              onClick={() => handleExecuteAction('delete_proposal', p.id)}
-                              className="text-red-500 hover:text-red-400 font-bold"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                          <p className="text-amber-600 dark:text-amber-400 font-semibold">Offered: {p.offeredItemTitle}</p>
-                          <p className="text-slate-500 dark:text-gray-400">{p.offeredDescription}</p>
-                        </div>
-                      ))
-                    )}
+              <div className="space-y-6">
+                {/* Financial Command & Transparency Overview */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 shadow-sm">
+                    <div className="flex items-center justify-between text-slate-500 dark:text-gray-400 mb-1">
+                      <span className="text-xs font-semibold">Gross Trade Volume (GMV)</span>
+                      <DollarSign className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <p className="font-display font-black text-2xl text-slate-900 dark:text-white">
+                      ${stats?.grossOrderVolumeUSD || 0}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">
+                      Total customer payments across {orders.length} orders
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 shadow-sm">
+                    <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-300 mb-1">
+                      <span className="text-xs font-bold">ZimBarter Revenue (Our Cut)</span>
+                      <BadgePercent className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <p className="font-display font-black text-2xl text-emerald-700 dark:text-emerald-300">
+                      ${stats?.platformRevenueUSD ?? Number(((stats?.grossOrderVolumeUSD || 0) * 0.05).toFixed(2))}
+                    </p>
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
+                      5% platform escrow & trade protection fee
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-blue-500/10 dark:bg-blue-950/40 border border-blue-500/30 shadow-sm">
+                    <div className="flex items-center justify-between text-blue-700 dark:text-blue-300 mb-1">
+                      <span className="text-xs font-bold">Net Seller Disbursals</span>
+                      <CreditCard className="w-4 h-4 text-blue-500" />
+                    </div>
+                    <p className="font-display font-black text-2xl text-blue-700 dark:text-blue-300">
+                      ${stats?.netSellerPayoutUSD ?? Number(((stats?.grossOrderVolumeUSD || 0) * 0.95).toFixed(2))}
+                    </p>
+                    <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                      Disbursed or payable directly to sellers
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 shadow-sm">
+                    <div className="flex items-center justify-between text-amber-700 dark:text-amber-300 mb-1">
+                      <span className="text-xs font-bold">In Handover / Escrow</span>
+                      <Clock className="w-4 h-4 text-amber-500" />
+                    </div>
+                    <p className="font-display font-black text-2xl text-amber-700 dark:text-amber-300">
+                      ${stats?.pendingDisbursalsUSD ?? 0}
+                    </p>
+                    <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 font-medium">
+                      Funds awaiting buyer collection verification
+                    </p>
                   </div>
                 </div>
 
-                {/* Cash Orders */}
-                <div className="space-y-3">
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                    <ShoppingBag className="w-4 h-4 text-emerald-500" />
-                    <span>Cash Purchase Orders ({orders.length})</span>
-                  </h3>
-                  <div className="space-y-2">
-                    {orders.length === 0 ? (
-                      <div className="p-6 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-center text-xs text-slate-500 dark:text-gray-400">
-                        No cash purchase orders placed yet.
+                {/* Filter & Search Bar */}
+                <div className="p-4 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 shadow-sm space-y-3">
+                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                    {/* Sub-Tab Filter: All vs Cash Orders vs Barter Swaps */}
+                    <div className="flex p-1 rounded-xl bg-slate-100 dark:bg-lowveld-900 border border-slate-200 dark:border-lowveld-800 text-xs">
+                      <button
+                        onClick={() => setTradeTypeFilter('all')}
+                        className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                          tradeTypeFilter === 'all'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        All Activity ({orders.length + proposals.length})
+                      </button>
+                      <button
+                        onClick={() => setTradeTypeFilter('orders')}
+                        className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                          tradeTypeFilter === 'orders'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Cash Orders & Transfers ({orders.length})
+                      </button>
+                      <button
+                        onClick={() => setTradeTypeFilter('barter')}
+                        className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                          tradeTypeFilter === 'barter'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Barter Swaps ({proposals.length})
+                      </button>
+                    </div>
+
+                    {/* Status & Search Filters */}
+                    <div className="flex flex-wrap items-center gap-2 flex-1 max-w-xl justify-end">
+                      <select
+                        value={tradeStatusFilter}
+                        onChange={(e) => setTradeStatusFilter(e.target.value)}
+                        className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-lowveld-900 border border-slate-300 dark:border-lowveld-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium"
+                      >
+                        <option value="all">All Trade Statuses</option>
+                        <option value="pending">Pending Handover / Escrow</option>
+                        <option value="confirmed">Payment In Escrow</option>
+                        <option value="delivered">Disbursed to Seller / Settled</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+
+                      <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                        <input
+                          type="text"
+                          placeholder="Search Buyer, Seller, Item, WhatsApp, Ref..."
+                          value={tradeSearchTerm}
+                          onChange={(e) => setTradeSearchTerm(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-lowveld-900 border border-slate-300 dark:border-lowveld-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                        />
                       </div>
-                    ) : (
-                      orders.map((o) => (
-                        <div key={o.id} className="p-3.5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-xs space-y-1">
-                          <div className="flex items-center justify-between">
-                            <p className="font-bold text-slate-900 dark:text-white">{o.buyerName} ({o.buyerPhone})</p>
-                            <button
-                              onClick={() => handleExecuteAction('delete_order', o.id)}
-                              className="text-red-500 hover:text-red-400 font-bold"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                          <p className="text-emerald-600 dark:text-emerald-400 font-semibold">Total: {o.currencyChoice} ${o.totalPrice} ({o.quantity} qty)</p>
-                          <p className="text-slate-500 dark:text-gray-400">Pickup: {o.pickupLocation}</p>
-                        </div>
-                      ))
-                    )}
+
+                      <button
+                        onClick={() => window.print()}
+                        className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-lowveld-900 hover:bg-slate-200 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 text-xs font-semibold flex items-center gap-1.5 border border-slate-300 dark:border-lowveld-800 transition-colors"
+                        title="Print Trade Activity Ledger for Records"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Print Ledger</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
+
+                {/* CASH PURCHASE ORDERS & DISBURSEMENTS LEDGER */}
+                {tradeTypeFilter !== 'barter' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                        <ShoppingBag className="w-4 h-4 text-emerald-500" />
+                        <span>Cash Purchase Orders & Escrow Settlements ({filteredOrders.length})</span>
+                      </h3>
+                      <span className="text-xs text-slate-500 dark:text-gray-400">
+                        Exact financial split between Buyer, Seller & ZimBarter
+                      </span>
+                    </div>
+
+                    {filteredOrders.length === 0 ? (
+                      <div className="p-8 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-center text-xs text-slate-500 dark:text-gray-400">
+                        No orders match the current filter criteria.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {filteredOrders.map((o) => {
+                          const grossPaid = Number(o.totalPrice || 0);
+                          const feeAmount = Number((o.platformFee ?? grossPaid * 0.05).toFixed(2));
+                          const netSeller = Number((o.sellerPayout ?? Math.max(0, grossPaid - feeAmount)).toFixed(2));
+
+                          return (
+                            <div
+                              key={o.id}
+                              className="p-5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 shadow-sm hover:border-emerald-500/40 transition-all space-y-4"
+                            >
+                              {/* Top Bar: Order ID, Timestamp, Payment Method, Status Badge */}
+                              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-lowveld-800/80 text-xs">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-lowveld-900 px-2 py-0.5 rounded">
+                                    {o.transactionRef || o.id}
+                                  </span>
+                                  <span className="text-slate-400 dark:text-gray-500 text-[11px]">
+                                    {o.createdAt ? new Date(o.createdAt).toLocaleString() : 'Recent'}
+                                  </span>
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-lowveld-900 text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-lowveld-800">
+                                    {o.paymentMethod || 'Direct Transfer / COD'}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 ${
+                                      o.status === 'delivered'
+                                        ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                                        : o.status === 'confirmed'
+                                        ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300'
+                                        : o.status === 'cancelled'
+                                        ? 'bg-red-500/20 text-red-700 dark:text-red-300'
+                                        : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                                    }`}
+                                  >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                    {o.status === 'delivered'
+                                      ? 'Disbursed to Seller'
+                                      : o.status === 'confirmed'
+                                      ? 'Payment In Escrow'
+                                      : o.status === 'cancelled'
+                                      ? 'Cancelled'
+                                      : 'Pending Handover'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Main Grid: Item Info, Buyer & Seller Breakdown, Financial Settlement */}
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
+                                {/* Item Details (col 1-4) */}
+                                <div className="md:col-span-4 space-y-1">
+                                  <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-gray-500 tracking-wider">
+                                    Purchased Item
+                                  </span>
+                                  <p className="font-bold text-sm text-slate-900 dark:text-white line-clamp-2">
+                                    {o.listingTitle || 'Platform Trade Listing'}
+                                  </p>
+                                  <p className="text-slate-600 dark:text-gray-300">
+                                    Quantity: <span className="font-bold">{o.quantity} unit(s)</span>
+                                  </p>
+                                  <p className="text-slate-500 dark:text-gray-400 text-[11px]">
+                                    Pickup Hub: <span className="font-medium text-slate-700 dark:text-gray-300">{o.pickupLocation || 'Harare CBD'}</span>
+                                  </p>
+                                </div>
+
+                                {/* Buyer & Seller Information (col 5-8) */}
+                                <div className="md:col-span-4 space-y-3">
+                                  <div>
+                                    <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-gray-500 tracking-wider">
+                                      Payer (Buyer)
+                                    </span>
+                                    <p className="font-bold text-slate-900 dark:text-white">{o.buyerName}</p>
+                                    <a
+                                      href={formatWhatsAppUrl(o.buyerPhone)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-emerald-600 dark:text-emerald-400 hover:underline font-mono inline-flex items-center gap-1 text-[11px]"
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                      <span>{o.buyerPhone}</span>
+                                    </a>
+                                  </div>
+
+                                  <div>
+                                    <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-gray-500 tracking-wider">
+                                      Payee / Recipient (Seller)
+                                    </span>
+                                    <p className="font-bold text-slate-900 dark:text-white">
+                                      {o.sellerName || 'Registered Merchant'}
+                                    </p>
+                                    <a
+                                      href={formatWhatsAppUrl(o.sellerPhone)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-emerald-600 dark:text-emerald-400 hover:underline font-mono inline-flex items-center gap-1 text-[11px]"
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                      <span>{o.sellerPhone || '+263 78 323 7918'}</span>
+                                    </a>
+                                  </div>
+                                </div>
+
+                                {/* Financial Split Card ("What amount goes to who.. including us") (col 9-12) */}
+                                <div className="md:col-span-4 p-3.5 rounded-xl bg-slate-50 dark:bg-lowveld-900/60 border border-slate-200 dark:border-lowveld-800 space-y-2">
+                                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-200 dark:border-lowveld-800">
+                                    <span className="text-slate-600 dark:text-gray-400 font-medium">Buyer Paid (Gross):</span>
+                                    <span className="font-black text-slate-900 dark:text-white font-mono">
+                                      {o.currencyChoice} ${grossPaid.toFixed(2)}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-400">
+                                    <span className="font-medium flex items-center gap-1">
+                                      <span>Platform Cut (Us 5%):</span>
+                                    </span>
+                                    <span className="font-black font-mono">+${feeAmount.toFixed(2)}</span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between text-blue-700 dark:text-blue-400 pt-1 border-t border-slate-200 dark:border-lowveld-800 font-bold">
+                                    <span>Net Seller Payout:</span>
+                                    <span className="font-black font-mono">${netSeller.toFixed(2)}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Action Footer: Change Status, Mark Disbursed, Delete */}
+                              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-lowveld-800/80 text-xs">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[11px] text-slate-500 dark:text-gray-400 font-semibold">
+                                    Update Trade Status:
+                                  </span>
+
+                                  {o.status !== 'confirmed' && o.status !== 'delivered' && (
+                                    <button
+                                      onClick={() => handleExecuteAction('update_order_status', o.id, { status: 'confirmed' })}
+                                      className="px-2.5 py-1 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-700 dark:text-blue-300 font-bold transition-colors"
+                                    >
+                                      Confirm Escrow
+                                    </button>
+                                  )}
+
+                                  {o.status !== 'delivered' && (
+                                    <button
+                                      onClick={() => handleExecuteAction('update_order_status', o.id, { status: 'delivered' })}
+                                      className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold transition-colors flex items-center gap-1"
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      <span>Mark Disbursed to Seller</span>
+                                    </button>
+                                  )}
+
+                                  {o.status !== 'cancelled' && (
+                                    <button
+                                      onClick={() => handleExecuteAction('update_order_status', o.id, { status: 'cancelled' })}
+                                      className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 text-slate-700 dark:text-gray-300 font-semibold transition-colors"
+                                    >
+                                      Cancel Trade
+                                    </button>
+                                  )}
+                                </div>
+
+                                <button
+                                  onClick={() => handleExecuteAction('delete_order', o.id)}
+                                  className="px-2.5 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-600 dark:text-red-400 font-bold transition-colors inline-flex items-center gap-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Delete Order</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* BARTER PROPOSALS LEDGER */}
+                {tradeTypeFilter !== 'orders' && (
+                  <div className="space-y-3 pt-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4 text-amber-500" />
+                        <span>Barter Proposals & Cross-Swap Agreements ({filteredProposals.length})</span>
+                      </h3>
+                      <span className="text-xs text-slate-500 dark:text-gray-400">
+                        Goods & services barter trades
+                      </span>
+                    </div>
+
+                    {filteredProposals.length === 0 ? (
+                      <div className="p-8 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 text-center text-xs text-slate-500 dark:text-gray-400">
+                        No barter proposals match the current filter criteria.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {filteredProposals.map((p) => (
+                          <div
+                            key={p.id}
+                            className="p-5 rounded-2xl bg-white dark:bg-lowveld-950 border border-slate-200 dark:border-lowveld-800 shadow-sm hover:border-amber-500/40 transition-all space-y-4 text-xs"
+                          >
+                            {/* Proposal Header */}
+                            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-lowveld-800/80">
+                              <span className="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-lowveld-900 px-2 py-0.5 rounded text-[11px]">
+                                {p.id}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                  p.status === 'accepted'
+                                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                                    : p.status === 'declined'
+                                    ? 'bg-red-500/20 text-red-700 dark:text-red-300'
+                                    : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                                }`}
+                              >
+                                {p.status}
+                              </span>
+                            </div>
+
+                            {/* Barter Swap Matrix: Offering vs Requested */}
+                            <div className="space-y-3">
+                              <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/20 space-y-1">
+                                <span className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-300 tracking-wider">
+                                  Proposer Offering:
+                                </span>
+                                <p className="font-bold text-sm text-slate-900 dark:text-white">
+                                  {p.offeredItemTitle}
+                                </p>
+                                <p className="text-slate-600 dark:text-gray-300 text-[11px]">
+                                  {p.offeredDescription || 'No extra terms described'}
+                                </p>
+                                <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400">
+                                  <span>{p.proposerName} ({p.proposerLocation})</span>
+                                  <a
+                                    href={formatWhatsAppUrl(p.proposerPhone)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-emerald-600 dark:text-emerald-400 hover:underline font-mono"
+                                  >
+                                    {p.proposerPhone}
+                                  </a>
+                                </div>
+                              </div>
+
+                              <div className="p-3 rounded-xl bg-slate-50 dark:bg-lowveld-900/60 border border-slate-200 dark:border-lowveld-800 space-y-1">
+                                <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-gray-500 tracking-wider">
+                                  Wanted Listing & Seller:
+                                </span>
+                                <p className="font-bold text-sm text-slate-900 dark:text-white">
+                                  {p.listingTitle || 'Target Listing'}
+                                </p>
+                                <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-gray-400">
+                                  <span>{p.sellerName || 'Listing Owner'} ({p.sellerLocation || 'Chiredzi'})</span>
+                                  <a
+                                    href={formatWhatsAppUrl(p.sellerPhone)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-emerald-600 dark:text-emerald-400 hover:underline font-mono"
+                                  >
+                                    {p.sellerPhone || '+263 78 323 7918'}
+                                  </a>
+                                </div>
+                              </div>
+
+                              {p.cashTopUp && (
+                                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-center text-xs">
+                                  Cash Top-Up Included: ${p.cashTopUp} USD
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Barter Moderation Footer */}
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-lowveld-800/80">
+                              <div className="flex items-center gap-1.5">
+                                {p.status !== 'accepted' && (
+                                  <button
+                                    onClick={() => handleExecuteAction('update_proposal_status', p.id, { status: 'accepted' })}
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold transition-colors"
+                                  >
+                                    Accept Swap
+                                  </button>
+                                )}
+                                {p.status !== 'declined' && (
+                                  <button
+                                    onClick={() => handleExecuteAction('update_proposal_status', p.id, { status: 'declined' })}
+                                    className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-lowveld-900 hover:bg-slate-300 text-slate-700 dark:text-gray-300 font-semibold transition-colors"
+                                  >
+                                    Decline
+                                  </button>
+                                )}
+                              </div>
+
+                              <button
+                                onClick={() => handleExecuteAction('delete_proposal', p.id)}
+                                className="px-2 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-600 dark:text-red-400 font-bold transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
