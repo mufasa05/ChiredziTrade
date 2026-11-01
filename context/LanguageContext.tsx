@@ -20,7 +20,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     const saved = localStorage.getItem('chiredzi_lang') as Language;
-    if (saved && (saved === 'en' || saved === 'sn' || saved === 'nd')) {
+    if (saved && TRANSLATIONS[saved]) {
       setLanguageState(saved);
     }
   }, []);

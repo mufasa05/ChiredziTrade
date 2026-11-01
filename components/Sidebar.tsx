@@ -20,6 +20,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface SidebarProps {
   activeNav?: string;
@@ -38,6 +39,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const { user, isAuthenticated, openAuthModal } = useAuth();
+  const { t } = useLanguage();
 
   // If activeNav is provided, prioritize it; otherwise fallback to pathname
   const currentActive = activeNav || (pathname === '/marketplace' ? 'Marketplace' : pathname === '/' ? 'Home' : '');
@@ -45,7 +47,7 @@ export default function Sidebar({
   const navItems = [
     {
       id: 'Home',
-      label: 'Home',
+      label: t.navHome,
       href: '/',
       icon: Home,
       requiresAuth: false,
@@ -53,7 +55,7 @@ export default function Sidebar({
     },
     {
       id: 'Marketplace',
-      label: 'Marketplace',
+      label: t.navMarketplace,
       href: '/marketplace',
       icon: ShoppingBag,
       requiresAuth: false,
@@ -61,7 +63,7 @@ export default function Sidebar({
     },
     {
       id: 'Barter Hub',
-      label: 'Barter Hub',
+      label: t.navBarterHub,
       href: '/barter-network',
       icon: RefreshCw,
       requiresAuth: true,
@@ -69,7 +71,7 @@ export default function Sidebar({
     },
     {
       id: 'My Listings',
-      label: 'My Listings',
+      label: t.navMyListings,
       href: '/my-listings',
       icon: Tag,
       requiresAuth: true,
@@ -77,7 +79,7 @@ export default function Sidebar({
     },
     {
       id: 'Messages',
-      label: 'Messages',
+      label: t.navMessages,
       href: '/messages',
       icon: MessageCircle,
       requiresAuth: true,
@@ -86,7 +88,7 @@ export default function Sidebar({
     },
     {
       id: 'Wallet & Trades',
-      label: 'Wallet & Trades',
+      label: t.navWallet,
       href: '/wallet',
       icon: Wallet,
       requiresAuth: true,
@@ -94,7 +96,7 @@ export default function Sidebar({
     },
     {
       id: 'Favourites',
-      label: 'Favourites',
+      label: t.navFavorites,
       href: '/favourites',
       icon: Heart,
       requiresAuth: true,
@@ -104,7 +106,7 @@ export default function Sidebar({
     },
     {
       id: 'Settings',
-      label: 'Settings',
+      label: t.navSettings,
       href: '/settings',
       icon: Settings,
       requiresAuth: true,
@@ -200,10 +202,10 @@ export default function Sidebar({
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
-                {isMarketplace ? 'Verified Marketplace' : 'Sovereign Trade Network'}
+                {isMarketplace ? 'Verified Marketplace' : t.sovereignTradeNetwork}
               </p>
               <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                Protected Escrow &amp; Swaps
+                {t.protectedEscrowSwaps}
               </p>
             </div>
           </div>

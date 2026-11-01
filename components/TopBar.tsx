@@ -70,8 +70,8 @@ export default function TopBar({
 }: TopBarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, logout, openAuthModal, signInAsDemo } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { user, isAuthenticated, logout, openAuthModal } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
   const [localSearch, setLocalSearch] = useState(searchTerm);
@@ -121,8 +121,8 @@ export default function TopBar({
     }
   };
 
-  const unreadNotifsCount = notifications.filter((n) => n.unread).length;
-  const displayName = user?.fullName || 'Guest Trader';
+  const unreadNotifsCount = isAuthenticated ? notifications.filter((n) => n.unread).length : 0;
+  const displayName = user?.fullName || t.guestTrader;
 
   return (
     <header className="h-16 bg-white dark:bg-[#062A22] text-slate-800 dark:text-white border-b border-slate-200 dark:border-[#0e4337] px-3 sm:px-6 flex items-center justify-between gap-3 sticky top-0 z-40 shadow-sm select-none transition-colors duration-200">
@@ -152,7 +152,7 @@ export default function TopBar({
               setLocalSearch(e.target.value);
               if (onSearchChange) onSearchChange(e.target.value);
             }}
-            placeholder="Search for goods, services, or people..."
+            placeholder={t.searchGlobalPlaceholder}
             className="w-full h-10 pl-10 pr-4 rounded-full bg-slate-100 dark:bg-[#031d17]/80 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-emerald-400/60 border border-slate-200 dark:border-[#0e4337] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all"
           />
         </div>
@@ -167,7 +167,7 @@ export default function TopBar({
             className="h-9 px-3 rounded-full bg-slate-100 dark:bg-[#031d17]/80 hover:bg-slate-200 dark:hover:bg-[#0a3a30] border border-slate-200 dark:border-[#0e4337] text-xs font-semibold text-slate-700 dark:text-emerald-100 flex items-center gap-1.5 transition-colors"
           >
             <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>{selectedLocation === 'all' ? 'All Zimbabwe' : (selectedLocation || 'All Zimbabwe')}</span>
+            <span>{selectedLocation === 'all' ? t.allZimbabwe : (selectedLocation || t.allZimbabwe)}</span>
             <ChevronDown className="w-3 h-3 text-slate-400 dark:text-emerald-400/80" />
           </button>
 
@@ -189,7 +189,7 @@ export default function TopBar({
                       : 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-[#0a3a30]'
                   }`}
                 >
-                  <span>{city}</span>
+                  <span>{city === 'All Zimbabwe' ? t.allZimbabwe : city}</span>
                   {(selectedLocation === city || (city === 'All Zimbabwe' && selectedLocation === 'all')) && (
                     <CheckCircle2 className="w-3 h-3" />
                   )}
@@ -211,34 +211,48 @@ export default function TopBar({
           </button>
 
           {langOpen && (
-            <div className="absolute right-0 mt-2 w-44 rounded-2xl bg-white dark:bg-[#062A22] border border-slate-200 dark:border-[#0e4337] shadow-2xl py-1.5 z-50">
+            <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#062A22] border border-slate-200 dark:border-[#0e4337] shadow-2xl py-1.5 z-50">
               <button
                 onClick={() => { setLanguage('en'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
+                className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between ${language === 'en' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-gray-200'}`}
               >
                 <span>English</span>
                 <span className="text-[10px] font-mono text-slate-400 font-bold">EN</span>
               </button>
               <button
                 onClick={() => { setLanguage('sn'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
+                className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between ${language === 'sn' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-gray-200'}`}
               >
                 <span>chiShona</span>
                 <span className="text-[10px] font-mono text-slate-400 font-bold">SN</span>
               </button>
               <button
                 onClick={() => { setLanguage('nd'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
+                className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between ${language === 'nd' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-gray-200'}`}
               >
                 <span>isiNdebele</span>
                 <span className="text-[10px] font-mono text-slate-400 font-bold">ND</span>
               </button>
               <button
                 onClick={() => { setLanguage('ts'); setLangOpen(false); }}
-                className="w-full text-left px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between"
+                className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between ${language === 'ts' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-gray-200'}`}
               >
-                <span>Shangani</span>
+                <span>Xichangani (Shangani)</span>
                 <span className="text-[10px] font-mono text-slate-400 font-bold">TS</span>
+              </button>
+              <button
+                onClick={() => { setLanguage('zh'); setLangOpen(false); }}
+                className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between ${language === 'zh' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-gray-200'}`}
+              >
+                <span>中文 (Mandarin)</span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold">ZH</span>
+              </button>
+              <button
+                onClick={() => { setLanguage('to'); setLangOpen(false); }}
+                className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-slate-100 dark:hover:bg-[#0a3a30] flex items-center justify-between ${language === 'to' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-gray-200'}`}
+              >
+                <span>chiTonga</span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold">TO</span>
               </button>
             </div>
           )}
@@ -277,7 +291,7 @@ export default function TopBar({
             <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-[#062A22] border border-slate-200 dark:border-[#0e4337] shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
               <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-[#0e4337]">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-slate-900 dark:text-white">Live Notifications</span>
+                  <span className="font-bold text-xs text-slate-900 dark:text-white">{t.liveNotifications}</span>
                   {unreadNotifsCount > 0 && (
                     <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-500/10 text-red-600 dark:text-red-300 border border-red-500/30 font-bold">
                       {unreadNotifsCount} new
@@ -289,7 +303,7 @@ export default function TopBar({
                     onClick={() => markAllNotificationsAsRead()}
                     className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold cursor-pointer hover:underline"
                   >
-                    Mark all read
+                    {t.markAllRead}
                   </button>
                 )}
               </div>
@@ -298,7 +312,7 @@ export default function TopBar({
                 {notifications.length === 0 ? (
                   <div className="py-8 text-center text-xs text-slate-500 dark:text-emerald-300/70">
                     <Bell className="w-6 h-6 mx-auto mb-2 text-slate-400 dark:text-emerald-500/40" />
-                    <p className="font-medium text-slate-800 dark:text-white">No notifications yet</p>
+                    <p className="font-medium text-slate-800 dark:text-white">{t.noNotificationsYet}</p>
                     <p className="text-[11px] text-slate-400 dark:text-gray-400 mt-0.5">Activity on your postings and orders will appear here.</p>
                   </div>
                 ) : (
@@ -355,7 +369,7 @@ export default function TopBar({
             </div>
             <div className="hidden md:flex flex-col text-left leading-tight">
               <span className="text-xs font-bold text-slate-800 dark:text-white line-clamp-1 max-w-[120px]">
-                {isAuthenticated && user ? user.fullName : 'Guest Trader'}
+                {isAuthenticated && user ? user.fullName : t.guestTrader}
               </span>
               <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
                 {isAuthenticated ? (
@@ -364,7 +378,7 @@ export default function TopBar({
                     Verified User
                   </>
                 ) : (
-                  'Tap to Sign In'
+                  t.tapToSignIn
                 )}
               </span>
             </div>

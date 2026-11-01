@@ -95,9 +95,13 @@ export default function AuthPanel({ redirectPath, onDone }: AuthPanelProps) {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!fullName.trim()) {
+      setFeedback({ type: 'error', message: 'Please enter your full name or business name.' });
+      return;
+    }
     setBusy(true);
     setFeedback(null);
-    const res = await saveProfile({ fullName: fullName || user?.fullName || '', phoneNumber, locationArea });
+    const res = await saveProfile({ fullName: fullName.trim(), phoneNumber, locationArea });
     setBusy(false);
     if (res.success) {
       setFeedback({ type: 'success', message: res.message || 'Saved.' });
@@ -156,8 +160,8 @@ export default function AuthPanel({ redirectPath, onDone }: AuthPanelProps) {
                 type="text"
                 required
                 minLength={2}
-                placeholder="e.g. Tendai Moyo Traders"
-                value={fullName || user?.fullName || ''}
+                placeholder="Enter your full name or business name"
+                value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className={inputCls}
               />

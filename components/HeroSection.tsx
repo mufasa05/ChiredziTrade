@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   Search,
   ArrowRight,
@@ -28,6 +29,7 @@ export default function HeroSection({
   onQuickPrompt,
 }: HeroSectionProps) {
   const [localInput, setLocalInput] = useState(searchTerm);
+  const { t } = useLanguage();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,10 +43,10 @@ export default function HeroSection({
   };
 
   const filterPills = [
-    { id: 'for_sale', label: 'Buy & Sell', icon: ShoppingBag },
-    { id: 'for_trade', label: 'Swap Goods', icon: RefreshCw },
-    { id: 'trade_top_up', label: 'Top Up', icon: Coins },
-    { id: 'services', label: 'Trade Services', icon: Users },
+    { id: 'for_sale', label: t.buyAndSell, icon: ShoppingBag },
+    { id: 'for_trade', label: t.swapGoods, icon: RefreshCw },
+    { id: 'trade_top_up', label: t.topUp, icon: Coins },
+    { id: 'services', label: t.tradeServices, icon: Users },
   ];
 
   const popularTags = [
@@ -75,11 +77,11 @@ export default function HeroSection({
         <div className="w-full lg:max-w-xl space-y-3">
           <div className="space-y-0.5">
             <h1 className="font-display font-black text-2xl sm:text-3xl lg:text-[32px] text-white tracking-tight leading-[1.15]">
-              Trade More.{' '}
-              <span className="text-[#4ade80]">Get More.</span>
+              {t.heroTradeMore}{' '}
+              <span className="text-[#4ade80]">{t.heroGetMore}</span>
             </h1>
             <p className="text-xs sm:text-[13px] text-gray-200/90 max-w-lg font-normal leading-relaxed pt-0.5">
-              Zimbabwe&apos;s trusted platform to <strong className="text-white font-semibold">buy, sell, swap and trade goods & services</strong> — with money or anything.
+              {t.heroTagline}
             </p>
           </div>
 
@@ -109,28 +111,28 @@ export default function HeroSection({
                 type="text"
                 value={localInput}
                 onChange={(e) => setLocalInput(e.target.value)}
-                placeholder="What are you looking for?"
+                placeholder={t.heroSearchPlaceholder}
                 className="w-full py-2 px-2.5 bg-transparent text-xs text-gray-900 placeholder-gray-500 focus:outline-none"
               />
               <button
                 type="submit"
                 className="px-4 py-2 rounded-full bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs transition-all shadow-md shrink-0 flex items-center gap-1"
               >
-                <span>Search</span>
+                <span>{t.heroSearchBtn}</span>
               </button>
             </div>
           </form>
 
           {/* Popular Search Chips */}
           <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
-            {popularTags.map((t) => (
+            {popularTags.map((tag) => (
               <button
-                key={t.label}
+                key={tag.label}
                 type="button"
-                onClick={() => handlePromptClick(t.label)}
+                onClick={() => handlePromptClick(tag.label)}
                 className="px-2 py-0.5 rounded-md bg-[#031d17]/75 hover:bg-[#0a3a30] text-gray-300 hover:text-white border border-[#0e4337]/80 text-[10px] sm:text-[11px] font-medium transition-colors"
               >
-                <span>{t.label}</span>
+                <span>{tag.label}</span>
               </button>
             ))}
           </div>
@@ -140,10 +142,10 @@ export default function HeroSection({
         <div className="hidden lg:flex flex-col items-end gap-2.5 shrink-0">
           <div className="text-right mb-1 relative">
             <span className="font-display italic font-semibold text-xs text-[#F5C542] drop-shadow-md block">
-              Local Trade • Stronger Communities
+              {t.localTradeSlogan}
             </span>
             <span className="font-display italic font-bold text-sm text-white drop-shadow-md block">
-              A Brighter Zimbabwe
+              {t.brighterZimbabwe}
             </span>
             {/* Zimbabwe National Color Stripe */}
             <div className="h-0.5 w-28 ml-auto bg-gradient-to-r from-emerald-500 via-[#F5C542] via-red-500 to-amber-400 rounded-full mt-1 opacity-90 shadow-sm" />
@@ -154,21 +156,21 @@ export default function HeroSection({
               <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
                 <Users className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-bold text-white tracking-tight">Join a growing community</span>
+              <span className="text-[11px] font-bold text-white tracking-tight">{t.joinCommunity}</span>
             </div>
 
             <div className="p-2 px-3 rounded-xl bg-[#062A22]/85 backdrop-blur-md border border-[#0e4337] flex items-center gap-2.5 shadow-md">
               <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
                 <Store className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-bold text-white tracking-tight">Support local businesses</span>
+              <span className="text-[11px] font-bold text-white tracking-tight">{t.supportLocalBiz}</span>
             </div>
 
             <div className="p-2 px-3 rounded-xl bg-[#062A22]/85 backdrop-blur-md border border-[#0e4337] flex items-center gap-2.5 shadow-md">
               <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
                 <Sprout className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-bold text-white tracking-tight">Build a stronger Zimbabwe</span>
+              <span className="text-[11px] font-bold text-white tracking-tight">{t.buildStrongerZim}</span>
             </div>
           </div>
         </div>

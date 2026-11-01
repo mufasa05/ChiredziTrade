@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { LayoutGrid, ArrowRight } from 'lucide-react';
 import { SectorCategory } from '@/lib/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface CategoryGridProps {
   selectedCategory: SectorCategory | 'all';
@@ -14,56 +15,58 @@ export default function CategoryPills({
   selectedCategory,
   onSelectCategory,
 }: CategoryGridProps) {
+  const { t } = useLanguage();
+
   // Realistic category representations matching international standards
   const categories = [
     {
       id: 'livestock_agric',
-      label: 'Agriculture',
+      label: t.catAgric,
       image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'electronics',
-      label: 'Electronics',
+      label: t.catElectronics,
       image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'clothing_textiles',
-      label: 'Fashion & Apparel',
+      label: t.catFashion,
       image: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'home_living',
-      label: 'Home & Living',
+      label: t.catHome,
       image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'transport_logistics',
-      label: 'Vehicles',
+      label: t.catVehicles,
       image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'properties',
-      label: 'Properties',
+      label: t.catProperties,
       image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'industrial_services',
-      label: 'Services',
+      label: t.catServices,
       image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'education',
-      label: 'Education',
+      label: t.catEducation,
       image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'jobs',
-      label: 'Jobs',
+      label: t.catJobs,
       image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=160&auto=format&fit=crop&q=80',
     },
     {
       id: 'all',
-      label: 'More',
+      label: t.catMore,
       isMore: true,
     },
   ];
