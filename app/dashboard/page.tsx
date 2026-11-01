@@ -279,19 +279,10 @@ function DashboardContent() {
           </p>
 
           <div className="space-y-3">
-            {/* 1-Tap Demo Access Button */}
-            <button
-              onClick={() => signInAsDemo()}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
-            >
-              <Zap className="w-4 h-4 fill-current" />
-              <span>1-Tap Demo Sign In (Prince A. Shumba)</span>
-            </button>
-
             {/* Standard Sign In */}
             <button
               onClick={() => openAuthModal('Sign in to view your seller dashboard and listings.')}
-              className="w-full py-3 px-4 rounded-xl bg-slate-200 dark:bg-emerald-950/40 hover:bg-slate-300 dark:hover:bg-emerald-900/40 border border-slate-300 dark:border-emerald-500/30 text-slate-800 dark:text-emerald-300 font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-4 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01]"
             >
               <LogIn className="w-4 h-4" />
               <span>Sign In with Email / Google</span>

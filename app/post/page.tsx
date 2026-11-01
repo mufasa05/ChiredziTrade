@@ -362,26 +362,14 @@ export default function PostListingPage() {
             <p className="text-sm text-slate-600 dark:text-gray-400 mb-6 leading-relaxed">
               {needsProfile
                 ? 'Add your WhatsApp number and location so buyers can reach you.'
-                : 'Browsing is free for everyone. To protect buyers, sign in or use the 1-tap demo trader account to post listings and trade.'}
+                : 'Browsing is free for everyone. To protect buyers, please sign in with your email or Google to post listings and trade.'}
             </p>
 
             <div className="space-y-3">
-              {/* 1-Tap Demo Sign In */}
-              {!isAuthenticated && (
-                <button
-                  type="button"
-                  onClick={() => signInAsDemo()}
-                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
-                >
-                  <Zap className="w-4 h-4 fill-current" />
-                  <span>1-Tap Demo: Prince A. Shumba</span>
-                </button>
-              )}
-
               <button
                 type="button"
                 onClick={() => openAuthModal(needsProfile ? '' : 'Please sign in to post a listing.')}
-                className="w-full py-3 px-4 rounded-2xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-sm shadow-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-sm shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01]"
               >
                 <span>{needsProfile ? 'Complete Profile' : 'Sign In with Email / Google'}</span>
                 <ArrowRight className="w-4 h-4" />

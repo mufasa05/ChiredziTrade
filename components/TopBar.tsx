@@ -448,7 +448,7 @@ export default function TopBar({
                   </div>
                 </>
               ) : (
-                /* Guest User Menu with 1-Tap Quick Demo & Standard Sign-In */
+                /* Guest User Menu with Clean Standard Sign-In */
                 <>
                   <div className="px-4 py-2.5 border-b border-slate-200 dark:border-[#0e4337]">
                     <p className="text-xs font-bold text-slate-900 dark:text-white">Guest Trader</p>
@@ -458,37 +458,24 @@ export default function TopBar({
                   </div>
 
                   <div className="p-2 space-y-1.5">
-                    {/* 1-Tap Quick Demo Access Button */}
-                    <button
-                      onClick={() => {
-                        signInAsDemo();
-                        setUserMenuOpen(false);
-                      }}
-                      className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
-                    >
-                      <Zap className="w-3.5 h-3.5 fill-current" />
-                      <span>1-Tap Demo: Prince A. Shumba</span>
-                    </button>
-
                     {/* Standard Sign In */}
                     <button
                       onClick={() => {
-                        openAuthModal('Sign in or register with email or Google.');
+                        openAuthModal('Sign in to your ZimBarter trader account.');
                         setUserMenuOpen(false);
                       }}
                       className="w-full py-2.5 px-3 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
                     >
                       <LogIn className="w-3.5 h-3.5" />
-                      <span>Sign In with Email / Google</span>
+                      <span>Sign In / Create Account</span>
                     </button>
                   </div>
 
                   <div className="py-1 border-t border-slate-200 dark:border-[#0e4337]">
                     <button
                       onClick={() => {
-                        signInAsDemo();
+                        openAuthModal('Please sign in to view your listings & inventory.');
                         setUserMenuOpen(false);
-                        router.push('/my-listings');
                       }}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#0a3a30] cursor-pointer"
                     >
@@ -497,9 +484,8 @@ export default function TopBar({
                     </button>
                     <button
                       onClick={() => {
-                        signInAsDemo();
+                        openAuthModal('Please sign in to view your wallet & trades.');
                         setUserMenuOpen(false);
-                        router.push('/wallet');
                       }}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-amber-600 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-[#0a3a30] font-semibold cursor-pointer"
                     >
