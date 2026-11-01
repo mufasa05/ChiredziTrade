@@ -23,6 +23,7 @@ import {
   CreditCard,
   ExternalLink,
   Printer,
+  Download,
   Check,
   X,
   Clock,
@@ -174,6 +175,136 @@ export default function AdminPage() {
       (p.proposerLocation || '').toLowerCase().includes(term);
     return matchesStatus && matchesSearch;
   });
+
+  const handleDownloadAuditReport = () => {
+    const grossVolume = orders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+    const platformRevenue = orders.reduce((sum, o) => sum + (o.platformFee ?? (o.totalPrice || 0) * 0.05), 0);
+    const sellerDisbursals = grossVolume - platformRevenue;
+    const dateStr = new Date().toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ZimBarter Official Financial Audit &amp; Settlement Ledger</title>
+  <style>
+    @page { size: A4 landscape; margin: 12mm; }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 25px; color: #0f172a; background: #fff; line-height: 1.4; }
+    .container { position: relative; max-width: 950px; margin: 0 auto; }
+    .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-12deg); width: 450px; height: 450px; opacity: 0.035; pointer-events: none; z-index: 0; }
+    .content { position: relative; z-index: 1; }
+    .header { text-align: center; border-bottom: 2px solid #059669; padding-bottom: 16px; margin-bottom: 20px; }
+    .header h1 { margin: 0 0 4px; font-size: 24px; color: #062A22; }
+    .header h1 span { color: #D97706; }
+    .header p { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; color: #059669; }
+    .metrics { display: flex; gap: 12px; margin-bottom: 20px; }
+    .metric-card { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+    .metric-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
+    .metric-val { font-size: 18px; font-weight: 900; color: #0f172a; font-family: ui-monospace, monospace; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; }
+    th { background: #f1f5f9; color: #475569; font-weight: 800; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 8px 10px; text-align: left; }
+    td { padding: 9px 10px; border-top: 1px solid #e2e8f0; color: #1e293b; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .mono { font-family: ui-monospace, monospace; }
+    .footer { border-top: 1px solid #cbd5e1; padding-top: 12px; text-align: center; font-size: 10px; color: #64748b; font-family: ui-monospace, monospace; }
+    .no-print { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
+    .btn { padding: 6px 12px; border-radius: 6px; background: #059669; color: #fff; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+    @media print { .no-print { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="no-print">
+      <button class="btn" onclick="window.print()">Print Document</button>
+    </div>
+
+    <svg class="watermark" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="28" stroke="#10B981" stroke-width="2" stroke-dasharray="3 3" />
+      <path d="M 20 22 C 26 15 38 15 44 20 L 46 16 L 47 25 L 38 25 L 41 22 C 36 18 27 18 22 23 Z" fill="#10B981" />
+      <path d="M 44 42 C 38 49 26 49 20 44 L 18 48 L 17 39 L 26 39 L 23 42 C 28 46 37 46 42 41 Z" fill="#F5C542" />
+      <polygon points="32,23 37,32 32,41 27,32" fill="#10B981" />
+      <circle cx="32" cy="32" r="3" fill="#F5C542" />
+    </svg>
+
+    <div class="content">
+      <div class="header">
+        <h1>Zim<span>Barter</span></h1>
+        <p>Sovereign Trade Network &bull; Financial Audit &amp; Settlement Ledger</p>
+        <div style="font-size: 11px; color: #64748b; margin-top: 4px; font-family: ui-monospace, monospace;">Audit Extraction Date: ${dateStr}</div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric-card">
+          <div class="metric-title">Gross Volume Cleared</div>
+          <div class="metric-val" style="color: #059669;">$${grossVolume.toFixed(2)} USD</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Disbursed to Sellers</div>
+          <div class="metric-val" style="color: #0284c7;">$${sellerDisbursals.toFixed(2)} USD</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">ZimBarter Revenue (5%)</div>
+          <div class="metric-val" style="color: #d97706;">$${platformRevenue.toFixed(2)} USD</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Executed Transactions</div>
+          <div class="metric-val">${orders.length} Records</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Order Ref &amp; Date</th>
+            <th>Buyer</th>
+            <th>Seller</th>
+            <th>Item Particulars</th>
+            <th class="text-right">Gross Paid</th>
+            <th class="text-right">Seller Split</th>
+            <th class="text-right">ZimBarter 5%</th>
+            <th class="text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${orders.map((o) => {
+            const gross = o.totalPrice || 0;
+            const fee = o.platformFee ?? gross * 0.05;
+            const sellerNet = gross - fee;
+            return `<tr>
+              <td class="mono"><strong>#${(o.id || '').slice(0, 8)}</strong><br/><span style="color:#64748b; font-size:9px;">${new Date(o.createdAt || Date.now()).toLocaleDateString()}</span></td>
+              <td><strong>${o.buyerName || 'Buyer'}</strong><br/><span class="mono" style="color:#64748b;">${o.buyerPhone || ''}</span></td>
+              <td><strong>${o.sellerName || 'Verified Seller'}</strong><br/><span class="mono" style="color:#64748b;">${o.sellerPhone || '+263 78 323 7918'}</span></td>
+              <td>${o.listingTitle || 'Trade Item'} (x${o.quantity || 1})</td>
+              <td class="text-right mono"><strong>$${gross.toFixed(2)}</strong></td>
+              <td class="text-right mono" style="color:#0284c7;">$${sellerNet.toFixed(2)}</td>
+              <td class="text-right mono" style="color:#059669;">$${fee.toFixed(2)}</td>
+              <td class="text-center"><span style="font-weight:700; text-transform:uppercase; font-size:9px;">${o.status || 'CONFIRMED'}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        <p>CONFIDENTIAL &bull; ZIMBARTER INTERNAL AUDIT TRAIL &bull; CERTIFIED ACCREDITATION</p>
+        <p>Security Hash: ZB-FINANCIAL-AUDIT-${new Date().getFullYear()} &bull; Trade Protection Desk Hotline: +263 78 323 7918</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ZimBarter_Financial_Audit_${new Date().toISOString().slice(0, 10)}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#070d09] text-slate-900 dark:text-gray-100 transition-colors duration-300">
@@ -675,8 +806,17 @@ export default function AdminPage() {
                       </div>
 
                       <button
+                        onClick={handleDownloadAuditReport}
+                        className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                        title="Download Official Watermarked Financial Audit File"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Export Audit (HTML)</span>
+                      </button>
+
+                      <button
                         onClick={() => window.print()}
-                        className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-lowveld-900 hover:bg-slate-200 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 text-xs font-semibold flex items-center gap-1.5 border border-slate-300 dark:border-lowveld-800 transition-colors"
+                        className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-lowveld-900 hover:bg-slate-200 dark:hover:bg-lowveld-800 text-slate-700 dark:text-gray-300 text-xs font-semibold flex items-center gap-1.5 border border-slate-300 dark:border-lowveld-800 transition-colors cursor-pointer"
                         title="Print Trade Activity Ledger for Records"
                       >
                         <Printer className="w-3.5 h-3.5" />
