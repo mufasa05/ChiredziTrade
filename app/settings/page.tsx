@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/AppShell';
+import AuthGate from '@/components/AuthGate';
 import { useAuth } from '@/context/AuthContext';
 import {
   Settings as SettingsIcon,
@@ -31,11 +32,11 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<'profile' | 'trade' | 'verification' | 'payouts' | 'notifications'>('profile');
 
   // Form states
-  const [fullName, setFullName] = useState(user?.fullName || 'Prince A. Shumba');
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '+263 78 323 7918');
-  const [email, setEmail] = useState(user?.email || 'prince@zimbarter.co.zw');
-  const [locationArea, setLocationArea] = useState(user?.locationArea || 'Chiredzi Town / Masvingo');
-  const [bio, setBio] = useState('Commercial livestock breeder and heavy machinery contractor based in Lowveld, Chiredzi.');
+  const [fullName, setFullName] = useState(user?.fullName || '');
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [locationArea, setLocationArea] = useState(user?.locationArea || 'Harare CBD');
+  const [bio, setBio] = useState('');
 
   // Trade preferences
   const [defaultCurrency, setDefaultCurrency] = useState<'USD' | 'ZAR' | 'ZWG'>('USD');
@@ -146,7 +147,12 @@ export default function SettingsPage() {
 
   return (
     <AppShell activeNav="Settings">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+      <AuthGate
+        featureName="Account Settings"
+        description="Manage your KYC verification, payout accounts, and trader notification preferences. Sign in to customize your profile."
+        icon={SettingsIcon}
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
         {/* Header Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#062A22] p-6 rounded-3xl border border-slate-200 dark:border-[#0e4337] shadow-sm">
           <div>
@@ -606,7 +612,8 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </AppShell>
-  );
+    </AuthGate>
+  </AppShell>
+);
 }
 

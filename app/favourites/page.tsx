@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/AppShell';
+import AuthGate from '@/components/AuthGate';
 import ListingGrid from '@/components/ListingGrid';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import BuyCashModal from '@/components/BuyCashModal';
@@ -108,7 +109,12 @@ export default function FavouritesPage() {
 
   return (
     <AppShell activeNav="Favourites">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+      <AuthGate
+        featureName="Favourites & Saved Trades"
+        description="Saved watchlists and bookmarked listings are tied to your personal trader account. Sign in to track items and receive price drop alerts."
+        icon={Heart}
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#062A22] p-6 rounded-3xl border border-slate-200 dark:border-[#0e4337] shadow-sm">
           <div>
@@ -331,6 +337,7 @@ export default function FavouritesPage() {
           onClose={() => setActiveBuyListing(null)}
         />
       )}
-    </AppShell>
-  );
+    </AuthGate>
+  </AppShell>
+);
 }

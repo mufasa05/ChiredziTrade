@@ -59,6 +59,7 @@ export interface ListingUser {
   phoneNumber: string;
   fullName: string;
   locationArea: string;
+  email?: string;
   avatarUrl?: string;
   verifiedArtisan?: boolean;
   adminVerified?: boolean;

@@ -37,7 +37,7 @@ export default function Sidebar({
   favoritesCount = 0,
 }: SidebarProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, isAuthenticated, openAuthModal } = useAuth();
 
   // If activeNav is provided, prioritize it; otherwise fallback to pathname
   const currentActive = activeNav || (pathname === '/marketplace' ? 'Marketplace' : pathname === '/' ? 'Home' : '');
@@ -48,6 +48,7 @@ export default function Sidebar({
       label: 'Home',
       href: '/',
       icon: Home,
+      requiresAuth: false,
       isActive: currentActive === 'Home' || pathname === '/',
     },
     {
@@ -55,6 +56,7 @@ export default function Sidebar({
       label: 'Marketplace',
       href: '/marketplace',
       icon: ShoppingBag,
+      requiresAuth: false,
       isActive: currentActive === 'Marketplace' || pathname === '/marketplace',
     },
     {
@@ -62,6 +64,7 @@ export default function Sidebar({
       label: 'Barter Hub',
       href: '/barter-network',
       icon: RefreshCw,
+      requiresAuth: true,
       isActive: currentActive === 'Barter Hub' || pathname === '/barter-network',
     },
     {
@@ -69,6 +72,7 @@ export default function Sidebar({
       label: 'My Listings',
       href: '/my-listings',
       icon: Tag,
+      requiresAuth: true,
       isActive: currentActive === 'My Listings' || pathname === '/my-listings' || pathname === '/dashboard',
     },
     {
@@ -76,8 +80,7 @@ export default function Sidebar({
       label: 'Messages',
       href: '/messages',
       icon: MessageCircle,
-      badge: '3',
-      badgeColor: 'bg-red-500',
+      requiresAuth: true,
       onClick: onOpenMessages,
       isActive: currentActive === 'Messages' || pathname === '/messages',
     },
@@ -86,6 +89,7 @@ export default function Sidebar({
       label: 'Wallet & Trades',
       href: '/wallet',
       icon: Wallet,
+      requiresAuth: true,
       isActive: currentActive === 'Wallet & Trades' || pathname === '/wallet',
     },
     {
@@ -93,7 +97,8 @@ export default function Sidebar({
       label: 'Favourites',
       href: '/favourites',
       icon: Heart,
-      badge: favoritesCount > 0 ? String(favoritesCount) : undefined,
+      requiresAuth: true,
+      badge: isAuthenticated && favoritesCount > 0 ? String(favoritesCount) : undefined,
       badgeColor: 'bg-amber-500',
       isActive: currentActive === 'Favourites' || pathname === '/favourites' || pathname === '/favorites',
     },
@@ -102,11 +107,17 @@ export default function Sidebar({
       label: 'Settings',
       href: '/settings',
       icon: Settings,
+      requiresAuth: true,
       isActive: currentActive === 'Settings' || pathname === '/settings',
     },
   ];
 
   const handleItemClick = (e: React.MouseEvent, item: typeof navItems[0]) => {
+    if (item.requiresAuth && !isAuthenticated) {
+      e.preventDefault();
+      openAuthModal(`Please sign in to access ${item.label}.`);
+      return;
+    }
     if (item.onClick) {
       e.preventDefault();
       item.onClick();

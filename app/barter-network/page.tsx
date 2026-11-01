@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import AppShell from '@/components/AppShell';
+import AuthGate from '@/components/AuthGate';
 import BarterProposalModal from '@/components/BarterProposalModal';
 import { Listing, BarterProposal, BarterMatch } from '@/lib/types';
 import {
@@ -266,8 +267,13 @@ export default function BarterHubPage() {
   };
 
   return (
-    <AppShell>
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+    <AppShell activeNav="Barter Hub">
+      <AuthGate
+        featureName="Barter Hub & Bilateral Swaps"
+        description="Bilateral barter proposals and intelligent cross-matching are exclusively accessible to verified traders. Sign in to review incoming offers and negotiate swaps."
+        icon={RefreshCw}
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
         {/* Hub Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#062A22] via-[#041d18] to-[#0a3a30] text-white p-6 sm:p-8 rounded-3xl border border-[#0e4337] shadow-xl">
           <div className="space-y-2 max-w-xl">
@@ -1076,11 +1082,12 @@ export default function BarterHubPage() {
         )}
       </div>
 
-      {/* Barter Proposal Modal */}
-      <BarterProposalModal
-        listing={activeModalListing}
-        onClose={() => setActiveModalListing(null)}
-      />
+        {/* Barter Proposal Modal */}
+        <BarterProposalModal
+          listing={activeModalListing}
+          onClose={() => setActiveModalListing(null)}
+        />
+      </AuthGate>
     </AppShell>
   );
 }

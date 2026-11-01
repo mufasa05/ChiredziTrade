@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/AppShell';
+import AuthGate from '@/components/AuthGate';
 import TradeReceiptModal, { ReceiptData } from '@/components/TradeReceiptModal';
 import {
   Wallet,
@@ -205,7 +206,12 @@ export default function WalletPage() {
 
   return (
     <AppShell activeNav="Wallet & Trades">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+      <AuthGate
+        featureName="Wallet & Trades"
+        description="Escrow balances, transaction histories, and digital receipts are encrypted and restricted to verified account holders. Sign in to view your ledger."
+        icon={Wallet}
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#062A22] via-[#041d18] to-[#0a3a30] text-white p-6 sm:p-8 rounded-3xl border border-[#0e4337] shadow-xl">
           <div className="space-y-1">
@@ -531,15 +537,16 @@ export default function WalletPage() {
           </div>
         )}
 
-        {/* Trade Receipt Modal */}
-        {selectedReceipt && (
-          <TradeReceiptModal
-            receipt={selectedReceipt}
-            isOpen={true}
-            onClose={() => setSelectedReceipt(null)}
-          />
-        )}
-      </div>
+          {/* Trade Receipt Modal */}
+          {selectedReceipt && (
+            <TradeReceiptModal
+              receipt={selectedReceipt}
+              isOpen={true}
+              onClose={() => setSelectedReceipt(null)}
+            />
+          )}
+        </div>
+      </AuthGate>
     </AppShell>
   );
 }

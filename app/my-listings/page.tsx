@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/AppShell';
+import AuthGate from '@/components/AuthGate';
+import { useAuth } from '@/context/AuthContext';
 import { Listing } from '@/lib/types';
 import {
   Tag,
@@ -21,20 +23,34 @@ import {
 import Link from 'next/link';
 
 export default function MyListingsPage() {
+  const { user } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'sold' | 'barter'>('all');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    if (!user) {
+      setListings([]);
+      setLoading(false);
+      return;
+    }
     const fetchListings = async () => {
       setLoading(true);
       try {
         const res = await fetch('/api/listings');
         const data = await res.json();
-        if (data.success) {
-          // Show user's listings (Prince A. Shumba demo + any user created)
-          setListings(data.listings || []);
+        if (data.success && Array.isArray(data.listings)) {
+          const userPhoneClean = user.phoneNumber ? user.phoneNumber.replace(/\D/g, '') : '';
+          const userEmailClean = user.email ? user.email.toLowerCase().trim() : '';
+
+          const mine = data.listings.filter((l: Listing) => {
+            if (l.userId === user.id || l.user?.id === user.id) return true;
+            if (userPhoneClean && l.user?.phoneNumber && l.user.phoneNumber.replace(/\D/g, '') === userPhoneClean) return true;
+            if (userEmailClean && l.user?.email && l.user.email.toLowerCase().trim() === userEmailClean) return true;
+            return false;
+          });
+          setListings(mine);
         }
       } catch (err) {
         console.error('Failed to load listings:', err);
@@ -43,7 +59,7 @@ export default function MyListingsPage() {
       }
     };
     fetchListings();
-  }, []);
+  }, [user]);
 
   const handleToggleStatus = (id: string, currentStatus: string) => {
     const nextStatus = currentStatus === 'active' ? 'sold' : 'active';
@@ -73,7 +89,12 @@ export default function MyListingsPage() {
 
   return (
     <AppShell activeNav="My Listings">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+      <AuthGate
+        featureName="My Listings"
+        description="Guest users cannot view or manage seller inventory. Sign in to post new products, manage your stock, and accept trade offers."
+        icon={Tag}
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 w-full space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#062A22] p-6 rounded-3xl border border-slate-200 dark:border-[#0e4337] shadow-sm">
           <div>
@@ -269,7 +290,8 @@ export default function MyListingsPage() {
           </div>
         )}
       </div>
-    </AppShell>
-  );
+    </AuthGate>
+  </AppShell>
+);
 }
 
