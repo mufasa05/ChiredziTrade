@@ -45,7 +45,7 @@ export default function PostListingPage() {
   const [customLocation, setCustomLocation] = useState('');
   const [conditionGrade, setConditionGrade] = useState<ConditionGrade>('New');
   const [harvestReady, setHarvestReady] = useState(false);
-  const [openToBarter, setOpenToBarter] = useState(true);
+  const [openToBarter, setOpenToBarter] = useState(false);
   const [sellerName, setSellerName] = useState('');
   const [sellerPhone, setSellerPhone] = useState('');
 
@@ -879,11 +879,11 @@ export default function PostListingPage() {
                   <input
                     type="checkbox"
                     id="barterToggle"
-                    checked={openToBarter || currency === 'BARTER'}
+                    checked={currency === 'BARTER' ? true : openToBarter}
                     onChange={(e) => setOpenToBarter(e.target.checked)}
-                    className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 bg-white dark:bg-lowveld-950"
+                    className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 bg-white dark:bg-lowveld-950 cursor-pointer"
                   />
-                  <label htmlFor="barterToggle" className="text-xs text-amber-800 dark:text-amber-200 cursor-pointer font-medium">
+                  <label htmlFor="barterToggle" className="text-xs text-amber-800 dark:text-amber-200 cursor-pointer font-medium select-none">
                     Accept items / cattle in swap
                   </label>
                 </div>

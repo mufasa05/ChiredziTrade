@@ -67,3 +67,37 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function GET(req: NextRequest) {
+  try {
+    const { user } = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ success: true, orders: [] });
+    }
+
+    const allListings = await db.getListings();
+    const myListings = allListings.filter(
+      (l) => l.userId === user.id || l.user?.id === user.id || (user.email && l.user?.email === user.email)
+    );
+    const myListingIds = new Set(myListings.map((l) => l.id));
+
+    const allOrders = await db.getAllOrders();
+    const userPhoneClean = (user.user_metadata?.phone_number || '').replace(/\D/g, '');
+    const userNameClean = (user.user_metadata?.full_name || '').toLowerCase().trim();
+
+    const userOrders = allOrders.filter((o) => {
+      // User is the seller of the listing
+      if (myListingIds.has(o.listingId)) return true;
+      // User is the buyer
+      const buyerPhoneClean = (o.buyerPhone || '').replace(/\D/g, '');
+      if (userPhoneClean && buyerPhoneClean && (buyerPhoneClean === userPhoneClean || buyerPhoneClean.includes(userPhoneClean))) return true;
+      if (userNameClean && (o.buyerName || '').toLowerCase().trim() === userNameClean) return true;
+      return false;
+    });
+
+    return NextResponse.json({ success: true, orders: userOrders });
+  } catch (error) {
+    console.error('Error in GET /api/orders:', error);
+    return NextResponse.json({ success: false, orders: [] }, { status: 500 });
+  }
+}
+
