@@ -39,6 +39,7 @@ import {
   markAllNotificationsAsRead, 
   markNotificationAsRead 
 } from '@/lib/notifications';
+import Logo from '@/components/Logo';
 
 interface TopBarProps {
   onToggleSidebar?: () => void;
@@ -135,10 +136,7 @@ export default function TopBar({
         >
           <Menu className="w-5 h-5" />
         </button>
-        <Link href="/" className="flex items-center gap-1.5 font-display font-black text-base text-slate-900 dark:text-white">
-          <span>Zim</span>
-          <span className="text-emerald-600 dark:text-[#F5C542]">Barter</span>
-        </Link>
+        <Logo withLink={true} size="sm" />
       </div>
 
       {/* Global Search Input */}

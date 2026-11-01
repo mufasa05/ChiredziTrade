@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import Logo from '@/components/Logo';
 
 interface SidebarProps {
   activeNav?: string;
@@ -136,25 +137,8 @@ export default function Sidebar({
     <aside className="w-60 shrink-0 bg-white dark:bg-[#062A22] text-slate-800 dark:text-white min-h-screen flex flex-col justify-between border-r border-slate-200 dark:border-[#0e4337] select-none transition-colors duration-200">
       {/* Top Brand Logo */}
       <div>
-        <div className="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-[#0e4337]/60">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            {/* Swirl Green & Gold Emblem matching screenshot */}
-            <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-[#F5C542] p-0.5 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform">
-              <div className="w-full h-full rounded-full bg-white dark:bg-[#062A22] flex items-center justify-center">
-                <RefreshCw className="w-4 h-4 text-emerald-600 dark:text-[#F5C542] animate-spin" style={{ animationDuration: '12s' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-1 leading-none">
-                <span className="font-display font-black text-lg tracking-tight text-slate-900 dark:text-white">
-                  Zim<span className="text-emerald-600 dark:text-[#F5C542]">Barter</span>
-                </span>
-              </div>
-              <p className="text-[10px] text-emerald-600 dark:text-emerald-400/90 font-medium tracking-wide">
-                Trade • Swap • Grow
-              </p>
-            </div>
-          </Link>
+        <div className="h-16 px-5 flex items-center border-b border-slate-200 dark:border-[#0e4337]/60">
+          <Logo withLink={true} size="md" />
         </div>
 
         {/* Navigation Links */}

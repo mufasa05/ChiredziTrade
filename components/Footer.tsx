@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Store, ShieldCheck, Heart } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 export default function Footer() {
   return (
@@ -9,12 +10,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Left: Brand & Founder Credential */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 text-center md:text-left">
-            <Link href="/" className="flex items-center gap-1.5 font-display font-black text-sm text-slate-900 dark:text-white">
-              <span className="w-6 h-6 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-sm">
-                <Store className="w-3.5 h-3.5" />
-              </span>
-              <span>Zim<span className="text-emerald-600 dark:text-[#F5C542]">Barter</span></span>
-            </Link>
+            <Logo withLink={true} size="sm" />
 
             <span className="text-slate-300 dark:text-emerald-800/80 hidden sm:inline">•</span>
 

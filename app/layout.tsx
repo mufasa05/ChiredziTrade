@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   description: 'Nationwide marketplace for Zimbabwe. Swap goods, farm produce, livestock, hardware, solar, and artisan services via WhatsApp and Web PWA across Harare, Bulawayo, Mutare, Masvingo, Chiredzi & nationwide.',
   keywords: ['Zim Barter', 'Zimbabwe Barter', 'Harare Marketplace', 'Bulawayo Barter', 'Masvingo Trades', 'Chiredzi Trade', 'Cattle Barter Zimbabwe', 'ZWG USD Barter'],
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

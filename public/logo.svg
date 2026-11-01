@@ -1,0 +1,45 @@
+<svg viewBox="0 0 240 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#041d18" />
+      <stop offset="100%" stopColor="#062A22" />
+    </linearGradient>
+    <linearGradient id="borderGradFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#059669" />
+      <stop offset="50%" stopColor="#10B981" />
+      <stop offset="100%" stopColor="#F5C542" />
+    </linearGradient>
+    <linearGradient id="zimGreenFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#34D399" />
+      <stop offset="100%" stopColor="#059669" />
+    </linearGradient>
+    <linearGradient id="zimGoldFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FDE047" />
+      <stop offset="100%" stopColor="#F5C542" />
+    </linearGradient>
+  </defs>
+
+  <!-- Emblem Icon -->
+  <g transform="translate(4, 4)">
+    <rect x="0" y="0" width="56" height="56" rx="15" fill="url(#bgGradFull)" stroke="url(#borderGradFull)" stroke-width="2" />
+    <circle cx="28" cy="28" r="21" stroke="#F5C542" stroke-width="1.2" stroke-opacity="0.3" stroke-dasharray="2 2" />
+    <path
+      d="M 18 20 C 24 14 33 14 38 18 L 40 14 L 41 23 L 32 23 L 35 20 C 31 16 23 16 20 21 Z"
+      fill="url(#zimGreenFull)"
+    />
+    <path
+      d="M 38 36 C 32 42 23 42 18 38 L 16 42 L 15 33 L 24 33 L 21 36 C 25 40 33 40 36 35 Z"
+      fill="url(#zimGoldFull)"
+    />
+    <polygon points="28,21 33,28 28,35 23,28" fill="#FFFFFF" fill-opacity="0.95" />
+    <circle cx="28" cy="28" r="2.5" fill="#F5C542" />
+  </g>
+
+  <!-- Typographic Wordmark -->
+  <text x="72" y="36" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF" letter-spacing="-0.5">
+    Zim<tspan fill="#F5C542">Barter</tspan>
+  </text>
+  <text x="73" y="49" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="9.5" font-weight="800" fill="#10B981" letter-spacing="2">
+    TRADE • SWAP • GROW
+  </text>
+</svg>

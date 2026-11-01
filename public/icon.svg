@@ -1,0 +1,43 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#041d18" />
+      <stop offset="100%" stopColor="#062A22" />
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#059669" />
+      <stop offset="50%" stopColor="#10B981" />
+      <stop offset="100%" stopColor="#F5C542" />
+    </linearGradient>
+    <linearGradient id="zimGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#34D399" />
+      <stop offset="100%" stopColor="#059669" />
+    </linearGradient>
+    <linearGradient id="zimGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FDE047" />
+      <stop offset="100%" stopColor="#F5C542" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded squircle with gold/emerald border -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="2.5" />
+
+  <!-- Dotted trade orbit ring -->
+  <circle cx="32" cy="32" r="23" stroke="#F5C542" stroke-width="1.2" stroke-opacity="0.3" stroke-dasharray="2 2" />
+
+  <!-- Upper Exchange Arrow Arc (Emerald) -->
+  <path
+    d="M 21 23 C 27 16 37 16 43 21 L 45 17 L 46 26 L 37 26 L 40 23 C 35 19 27 19 23 24 Z"
+    fill="url(#zimGreen)"
+  />
+
+  <!-- Lower Exchange Arrow Arc (Gold) -->
+  <path
+    d="M 43 41 C 37 48 27 48 21 43 L 19 47 L 18 38 L 27 38 L 24 41 C 29 45 37 45 41 40 Z"
+    fill="url(#zimGold)"
+  />
+
+  <!-- Central Great Zimbabwe Faceted Star / Diamond -->
+  <polygon points="32,24 38,32 32,40 26,32" fill="#FFFFFF" fill-opacity="0.95" />
+  <circle cx="32" cy="32" r="3" fill="#F5C542" />
+</svg>

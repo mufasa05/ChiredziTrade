@@ -27,6 +27,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Language } from '@/lib/i18n';
+import Logo from '@/components/Logo';
 
 interface NavbarProps {
   onOpenWhatsApp?: () => void;
@@ -52,21 +53,7 @@ export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
     <header className="sticky top-0 z-40 w-full border-b border-[#0e4337] bg-[#062A22] text-white shadow-md transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-[#F5C542] p-0.5 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform">
-            <div className="w-full h-full rounded-full bg-[#062A22] flex items-center justify-center">
-              <RefreshCw className="w-4 h-4 text-[#F5C542] animate-spin" style={{ animationDuration: '12s' }} />
-            </div>
-          </div>
-          <div>
-            <span className="font-display font-black text-lg sm:text-xl tracking-tight text-white">
-              Zim<span className="text-[#F5C542]">Barter</span>
-            </span>
-            <p className="text-[10px] text-emerald-400 font-medium leading-none">
-              Trade • Swap • Grow
-            </p>
-          </div>
-        </Link>
+        <Logo withLink={true} size="md" />
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
